@@ -1,0 +1,3 @@
+module Structure
+  # Your code goes here...
+end
