@@ -19,7 +19,7 @@ Structure is a nested OpenStruct implementation. Or, recursively put, Structure 
     book = Structure.new(source)
     
     puts book.authors.first.name
-    => "Gilles Deleuze"
+    => "Deleuze"
     
     puts book.publisher.name
     => "Minuit"
