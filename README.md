@@ -35,5 +35,5 @@ Usage
     node = { s: { t: { a: { b: { at: 'a rhizome' } } } } }
     this = Structure.new({ is: { a: [node] } })
     
-    puts this.is.a.first.s.t.a.b.at
+    this.is.a.first.s.t.a.b.at
     => "a rhizome"
