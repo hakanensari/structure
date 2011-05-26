@@ -1,7 +1,7 @@
 Structure
 =========
 
-Structure is a nested or recursively-OpenStruct OpenStruct implementation.
+Structure is a better struct.
 
 
     #_                                                                       d
@@ -30,10 +30,33 @@ Structure is a nested or recursively-OpenStruct OpenStruct implementation.
 Usage
 -----
 
+Structure, like Struct, is great for defining ephemeral models.
+
     require 'structure'
-    
-    node = { s: { t: { a: { b: { at: 'a rhizome' } } } } }
-    this = Structure.new({ is: { a: [node] } })
-    
-    this.is.a.first.s.t.a.b.at
-    => "a rhizome"
+
+    class Person < Structure
+      key :name
+      key :age,     :type => Integer
+      key :friends, :type => Array
+    end
+
+    john = Person.new(:name => "John",
+                      :age  => 28)
+
+    jane = Person.new(:name => "Jane",
+                      :age  => 24)
+
+    john.friends = [jane]
+
+When it comes to dumping JSON, Structure is more aesthetically-minded.
+
+    require 'structure/json'
+
+    json = john.to_json
+    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":"Jane","age":24,"friends":null}]}
+
+    person = JSON.parse(json)
+    person.friends.first.name
+    => "Jane"
+    person.friends.first.age
+    => 24
