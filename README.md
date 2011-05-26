@@ -1,7 +1,7 @@
 Structure
 =========
 
-Structure is a better struct.
+Structure is a better Struct.
 
 
     #_                                                                       d
