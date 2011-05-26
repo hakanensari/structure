@@ -12,7 +12,8 @@ class Structure
   #
   # Takes a name and an optional hash of options. Available options are:
   #
-  # * :type, which can be Integer, Float, String, and Array.
+  # * :type, which can be Array, Complex, Float, Integer, JSON, Pathname,
+  # Rational, String, or URI.
   #
   #    class Book
   #      key :title,   :type => String
