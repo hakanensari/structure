@@ -1,5 +1,3 @@
-require 'json'
-
 # A better Ruby Struct.
 class Structure
   include Enumerable
