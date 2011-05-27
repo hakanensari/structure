@@ -68,7 +68,9 @@ models set up:
     person.friends.first
     => #<Person:0x0000010107d030 @attributes={:name=>"Jane", :age=>nil, :friends=>[#<Person:0x0000010107d030 ...>]}, @modifiable=true>
 
-Make your model quack like ActiveRecord:
+Throw in some Active Model modules...
+
+    require 'active_model'
 
     class Book < Structure
       include ActiveModel::Validations
@@ -79,9 +81,13 @@ Make your model quack like ActiveRecord:
       validates_presence_of :title
     end
 
+... and make your model quack like ActiveRecord:
+
     book = Book.new
     book.valid?
     => false
+    book.errors
+    => {:title=>["can't be blank"]}
     book.title = "Society of the Spectacle"
     book.valid?
     => true
