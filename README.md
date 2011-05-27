@@ -39,7 +39,7 @@ Define a model:
     class Person < Structure
       key :name
       key :age,     :type => Integer
-      key :friends, :type => Array, :value => []
+      key :friends, :type => Array, :default => []
     end
 
 Typecast values:
@@ -59,14 +59,14 @@ Dump good-looking JSON:
     require 'structure/json'
 
     json = p1.to_json
-    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name": null,"age":null,"friends":[]}]}
+    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name": "Jane","age":null,"friends":[]}]}
 
 Load the JSON elsewhere back into Ruby seamlessly, provided you have the same
 models set up:
 
     person = JSON.parse(json)
-    person.friends.first.class
-    => Person
+    person.friends.first
+    => #<Person:0x0000010107d030 @attributes={:name=>"Jane", :age=>nil, :friends=>[#<Person:0x0000010107d030 ...>]}, @modifiable=true>
 
 Types
 -----
