@@ -49,6 +49,16 @@ describe Structure do
     end
   end
 
+  describe "#default_attributes" do
+    it "returns the default attributes for the structure" do
+      Person.send(:default_attributes).should == { :name    => nil,
+                                                   :age     => nil,
+                                                   :friends => [] }
+      Book.send(:default_attributes).should == { :title   => nil,
+                                                 :authors => nil }
+    end
+  end
+
   describe "attribute getter" do
     it "returns the value of the attribute" do
       person.instance_variable_get(:@attributes)[:name] = 'Joe'
