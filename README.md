@@ -68,6 +68,16 @@ models set up:
     person.friends.first
     => #<Person:0x0000010107d030 @attributes={:name=>"Jane", :age=>nil, :friends=>[#<Person:0x0000010107d030 ...>]}, @modifiable=true>
 
+Make your model quack like ActiveRecord:
+
+    class Book < Structure
+      include ActiveModel::Validations
+
+      key :title
+      key :authors, :type => Array, :default => []
+
+      validates_presence_of :title
+    end
 Types
 -----
 
