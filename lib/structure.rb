@@ -61,8 +61,7 @@ class Structure
 
   # Creates a new structure.
   #
-  # Optionally, populates the structure with a hash of attributes. Otherwise,
-  # all values default to nil.
+  # Optionally, seeds the structure with a hash of attributes.
   def initialize(seed = {})
     initialize_attributes
     seed.each { |key, value| self.send("#{key}=", value) }
