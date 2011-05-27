@@ -1,8 +1,8 @@
 Structure
 =========
 
-Structure is a better Struct.
-
+Structure is a better Struct and does wonders when modeling ephemeral
+data fed in from an API.
 
     #_                                                                       d
     ##_                                                                     d#
@@ -30,33 +30,51 @@ Structure is a better Struct.
 Usage
 -----
 
-Structure, like Struct, is great for defining ephemeral models.
+Require:
 
     require 'structure'
+
+Define a model:
 
     class Person < Structure
       key :name
       key :age,     :type => Integer
-      key :friends, :type => Array
+      key :friends, :type => Array, :value => []
     end
 
-    john = Person.new(:name => "John",
-                      :age  => 28)
+Typecast values:
 
-    jane = Person.new(:name => "Jane",
-                      :age  => 24)
+    p1 = Person.new :name => 'John'
+    p1.age = '28'
+    p1.age
+    => 28
 
-    john.friends = [jane]
+Use ORM-esque association idioms:
 
-When it comes to dumping JSON, Structure is more aesthetically-minded.
+    p2 = Person.new :name => 'Jane'
+    p1.friends << p2
+
+Dump good-looking JSON:
 
     require 'structure/json'
 
-    json = john.to_json
-    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":"Jane","age":24,"friends":null}]}
+    json = p1.to_json
+    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name": null,"age":null,"friends":[]}]}
+
+Load the JSON in a different app back into Ruby seamlessly, provided you
+have the same models defined there:
 
     person = JSON.parse(json)
-    person.friends.first.name
-    => "Jane"
-    person.friends.first.age
-    => 24
+    person.friends.first.class
+    => Person
+
+Types
+-----
+
+Structure supports the following types:
+* Array
+* Boolean
+* Float
+* Hash
+* Integer
+* String
