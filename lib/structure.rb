@@ -2,7 +2,14 @@
 class Structure
   include Enumerable
 
-  TYPES = [Array, Boolean, Float, Integer, JSON, Pathname, String, URI]
+  # Ruby doesn't have a Boolean class, so let's feign one.
+  unless Object.const_defined?(:Boolean)
+    module ::Boolean; end
+    class ::TrueClass; include Boolean; end
+    class ::FalseClass; include Boolean; end
+  end
+
+  TYPES = [Array, Boolean, Float, Hash, Integer, String]
 
   @@default_attributes = {}
 
@@ -27,12 +34,12 @@ class Structure
 
     type = options[:type] || String
     unless TYPES.include? type
-      raise TypeError, "#{type} is not a valid type", caller(3)
+      raise TypeError, "#{type} is not a valid type"
     end
 
     default = options[:default]
     unless default.nil? || default.is_a?(type)
-      raise TypeError, "#{default} is not an instance of #{type}", caller(3)
+      raise TypeError, "#{default} is not #{%w{AEIOU}.include?(type.to_s[0]) ? 'an' : 'a'} #{type}"
     end
 
     @@default_attributes[name] = default
@@ -41,17 +48,30 @@ class Structure
 
       # Define a proc to typecast value.
       typecast =
-        case type
-        when Boolean
-          lambda { |value| !!value }
+        if type == Boolean
+          lambda do |value|
+            case value
+            when String
+             !(value =~ /false/i)
+            else
+             !!value
+            end
+          end
+        elsif type == Hash
+          lambda do |value|
+            unless value.is_a? Hash
+              raise TypeError, "#{value} is not a Hash"
+            end
+            value
+          end
         else
           lambda { |value| Kernel.send(type.to_s, value) }
         end
 
-      # Define the getter.
+      # Define a getter.
       define_method(name) { @attributes[name] }
 
-      # Define the setter.
+      # Define a setter.
       define_method("#{name}=") do |value|
         modifiable[name] = value.nil? ? nil : typecast.call(value)
       end
@@ -104,7 +124,7 @@ class Structure
     begin
       @modifiable = true
     rescue
-      raise TypeError, "can't modify frozen #{self.class}", caller(3)
+      raise TypeError, "can't modify frozen #{self.class}"
     end
     @attributes
   end

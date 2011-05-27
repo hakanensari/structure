@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Structure do
   context "when `structure/json' is required" do
     let(:person) { Person.new(:name => 'Joe', :age => 28) }
-    let(:json) { '{"json_class":"Person","name":"Joe","age":28,"friends":null}' }
+    let(:json) { '{"json_class":"Person","name":"Joe","age":28,"friends":[]}' }
 
     before do
       require 'structure/json'
@@ -22,9 +22,9 @@ describe Structure do
         person.friends = [Person.new(:name => 'Jane')]
       end
 
-      it "loads nested structures from JSON" do
+      it "loads them into their corresponding structures" do
         json = person.to_json
-        JSON.parse(json).friends.first.name.should eql 'Jane'
+        JSON.parse(json).friends.first.should be_a Person
       end
     end
   end
