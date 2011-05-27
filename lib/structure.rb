@@ -117,7 +117,7 @@ class Structure
   def initialize_attributes
     @attributes =
       self.class.default_attributes.inject({}) do |attributes, (key, value)|
-        attributes[key] = value
+        attributes[key] = value.is_a?(Array) ? value.dup : value
         attributes
       end
   end

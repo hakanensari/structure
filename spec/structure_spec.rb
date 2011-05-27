@@ -66,9 +66,12 @@ describe Structure do
     end
 
     context "when type is Array and default value is []" do
+      let(:friend) { Person.new }
+
       it "supports the `<<' idiom" do
-        person.friends << Person.new
+        person.friends << friend
         person.friends.count.should eql 1
+        friend.friends.count.should eql 0
       end
     end
   end
