@@ -72,6 +72,7 @@ Types
 -----
 
 Structure supports the following types:
+
 * Array
 * Boolean
 * Float
