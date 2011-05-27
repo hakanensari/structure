@@ -1,47 +1,60 @@
 require 'json'
 
-# A better struct.
+# A better Ruby Struct.
 class Structure
-
-  # Mix in the Enumerable module.
   include Enumerable
 
-  @@keys = []
+  AVAILABLE_TYPES = [Array, Boolean, Float, Integer, String]
+
+  @@default_attributes = {}
 
   # Defines an attribute key.
   #
   # Takes a name and an optional hash of options. Available options are:
   #
-  # * :type, which can be Array, Complex, Float, Integer, JSON, Pathname,
-  # Rational, String, or URI.
+  # * :type, which can be Array, Boolean, Float, Integer, or String.
+  # * :default, which sets the default value for the attribute.
   #
   #    class Book
   #      key :title,   :type => String
-  #      key :authors, :type => Array
+  #      key :authors, :type => Array, :default => []
   #    end
   #
   def self.key(name, options={})
+    name = name.to_sym
     if method_defined?(name)
       raise NameError, "#{name} is already defined"
     end
 
-    name = name.to_sym
-    type = options[:type]
-    @@keys << name
+    type = options[:type] || String
+    unless AVAILABLE_TYPES.include? type
+      raise TypeError, "#{type} is not a valid type", caller(3)
+    end
+
+    default = options[:default]
+    unless default.nil? || default.is_a?(type)
+      raise TypeError, "#{default} is not an instance of #{type}", caller(3)
+    end
+
+    @@default_attributes[name] = default
 
     module_eval do
 
-      # Define a getter.
+      # Define a proc to typecast value.
+      typecast =
+        case type
+        when Boolean
+          lambda { |value| !!value }
+        else
+          lambda { |value| Kernel.send(type.to_s, value) }
+        end
+
+      # Define the getter.
       define_method(name) { @attributes[name] }
 
-      # Define a setter. The setter will optionally typecast.
+      # Define the setter.
       define_method("#{name}=") do |value|
-        modifiable[name] =
-          if type && value
-            Kernel.send(type.to_s, value)
-          else
-            value
-          end
+        modifiable[name] = value.nil? ? nil : typecast.call(value)
       end
     end
   end
@@ -51,12 +64,7 @@ class Structure
   # Optionally, populates the structure with a hash of attributes. Otherwise,
   # all values default to nil.
   def initialize(seed = {})
-    @attributes =
-      @@keys.inject({}) do |attributes, name|
-        attributes[name] = nil
-        attributes
-      end
-
+    initialize_attributes
     seed.each { |key, value| self.send("#{key}=", value) }
   end
 
@@ -85,6 +93,14 @@ class Structure
   end
 
   private
+
+  def initialize_attributes
+    @attributes =
+      @@default_attributes.inject({}) do |attributes, (name, default)|
+        attributes[name] = default
+        attributes
+      end
+  end
 
   def modifiable
     begin
