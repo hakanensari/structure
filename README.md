@@ -42,9 +42,12 @@ Define a model:
       key :friends, :type => Array, :default => []
     end
 
-Typecast values:
+Conjure an object:
 
     p1 = Person.new :name => 'John'
+
+Typecast values:
+
     p1.age = '28'
     p1.age
     => 28
