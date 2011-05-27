@@ -7,18 +7,6 @@ describe Structure do
     person.should respond_to :map
   end
 
-  context "when frozen" do
-    before do
-      person.freeze
-    end
-
-    it "raises an error" do
-      expect do
-        person.name = 'Joe'
-      end.to raise_error TypeError
-    end
-  end
-
   describe ".key" do
     it "defines accessors" do
       %w{name name=}.each { |method| person.should respond_to method }
@@ -138,6 +126,18 @@ describe Structure do
     context "when a default is not specified" do
       it "defaults to nil" do
         person.age.should be_nil
+      end
+    end
+
+    context "when frozen" do
+      before do
+        person.freeze
+      end
+
+      it "raises an error" do
+        expect do
+          person.name = 'Joe'
+        end.to raise_error TypeError
       end
     end
 
