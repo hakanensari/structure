@@ -61,8 +61,8 @@ Dump good-looking JSON:
     json = p1.to_json
     => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name": null,"age":null,"friends":[]}]}
 
-Load the JSON in a different app back into Ruby seamlessly, provided you
-have the same models defined there:
+Load the JSON elsewhere back into Ruby seamlessly, provided you have the same
+models set up:
 
     person = JSON.parse(json)
     person.friends.first.class
