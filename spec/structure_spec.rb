@@ -143,10 +143,24 @@ describe Structure do
         Person.key :education, :type => Hash
       end
 
-      context "when setting to a value is not a Hash" do
+      context "when setting to a value that is not a Hash" do
         it "raises an error" do
           expect do
             person.education = 'foo'
+          end.to raise_error TypeError
+        end
+      end
+    end
+
+    context "when type is Structure" do
+      before(:all) do
+        Person.key :father, :type => Structure
+      end
+
+      context "when setting to a value that is not a Structure" do
+        it "raises an error" do
+          expect do
+            person.father = 'foo'
           end.to raise_error TypeError
         end
       end
