@@ -2,7 +2,7 @@
 class Structure
   include Enumerable
 
-  AVAILABLE_TYPES = [Array, Boolean, Float, Integer, String]
+  TYPES = [Array, Boolean, Float, Integer, JSON, Pathname, String, URI]
 
   @@default_attributes = {}
 
@@ -10,7 +10,8 @@ class Structure
   #
   # Takes a name and an optional hash of options. Available options are:
   #
-  # * :type, which can be Array, Boolean, Float, Integer, or String.
+  # * :type, which can be Array, Boolean, Float, Integer, JSON, Pathname,
+  # String, or URI.
   # * :default, which sets the default value for the attribute.
   #
   #    class Book
@@ -25,7 +26,7 @@ class Structure
     end
 
     type = options[:type] || String
-    unless AVAILABLE_TYPES.include? type
+    unless TYPES.include? type
       raise TypeError, "#{type} is not a valid type", caller(3)
     end
 
