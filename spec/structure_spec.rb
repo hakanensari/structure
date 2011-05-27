@@ -37,7 +37,7 @@ describe Structure do
     end
   end
 
-  describe "#default_attributes" do
+  describe ".default_attributes" do
     it "returns the default attributes for the structure" do
       Person.send(:default_attributes).should == { :name    => nil,
                                                    :age     => nil,
