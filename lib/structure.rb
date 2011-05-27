@@ -11,8 +11,6 @@ class Structure
 
   TYPES = [Array, Boolean, Float, Hash, Integer, String]
 
-  @@default_attributes = {}
-
   # Defines an attribute key.
   #
   # Takes a name and an optional hash of options. Available options are:
@@ -42,7 +40,7 @@ class Structure
       raise TypeError, "#{default} is not #{%w{AEIOU}.include?(type.to_s[0]) ? 'an' : 'a'} #{type}"
     end
 
-    @@default_attributes[name] = default
+    default_attributes[name] = default
 
     module_eval do
 
@@ -112,9 +110,13 @@ class Structure
 
   private
 
+  def self.default_attributes
+    @default_attributes ||= {}
+  end
+
   def initialize_attributes
     @attributes =
-      @@default_attributes.inject({}) do |attributes, (key, value)|
+      self.class.default_attributes.inject({}) do |attributes, (key, value)|
         attributes[key] = value
         attributes
       end
