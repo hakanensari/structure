@@ -48,6 +48,16 @@ describe Structure do
         end
       end
     end
+
+    context "when a default is specified" do
+      it ""
+    end
+
+    context "when a default is not specified" do
+      it "defaults to nil" do
+        person.age.
+      end
+    end
   end
 
   describe ".new" do
