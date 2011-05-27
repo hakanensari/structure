@@ -4,7 +4,7 @@ require 'structure/version'
 
 Gem::Specification.new do |s|
   s.name        = "structure"
-  s.version     = Sucker::VERSION
+  s.version     = Structure::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Paper Cavalier"]
   s.email       = ["code@papercavalier.com"]
