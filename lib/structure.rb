@@ -9,7 +9,7 @@ class Structure
     class ::FalseClass; include Boolean; end
   end
 
-  TYPES = [Array, Boolean, Float, Hash, Integer, String]
+  TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
   # Defines an attribute key.
   #
@@ -57,10 +57,10 @@ class Structure
              !!value
             end
           end
-        elsif type == Hash
+        elsif [Hash, Structure].include? type
           lambda do |value|
-            unless value.is_a? Hash
-              raise TypeError, "#{value} is not a Hash"
+            unless value.is_a? type
+              raise TypeError, "#{value} is not a #{type}"
             end
             value
           end
