@@ -41,11 +41,12 @@ Define a model:
       key :name
       key :age,     :type => Integer
       key :friends, :type => Array, :default => []
+      key :partner, :type => Structure
     end
 
 Conjure an object:
 
-    p1 = Person.new :name => 'John'
+    p1 = Person.new :name => 'Gilles'
 
 Typecast values:
 
@@ -53,10 +54,13 @@ Typecast values:
     p1.age
     => 28
 
-Use ORM-esque association idioms:
+Boast ORM-esque association idioms:
 
-    p2 = Person.new :name => 'Jane'
-    p1.friends << p2
+    p2 = Person.new :name => 'Michel'
+    p1.friends << p2 # has many
+
+    p3 = Person.new :name => 'Félix'
+    p1.partner = p3 # has one
 
 Dump good-looking JSON:
 
@@ -107,3 +111,4 @@ Structure supports the following types:
 * Hash
 * Integer
 * String
+* Structure
