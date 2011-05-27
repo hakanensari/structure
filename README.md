@@ -78,6 +78,14 @@ Make your model quack like ActiveRecord:
 
       validates_presence_of :title
     end
+
+    book = Book.new
+    book.valid?
+    => false
+    book.title = "Society of the Spectacle"
+    book.valid?
+    => true
+
 Types
 -----
 
