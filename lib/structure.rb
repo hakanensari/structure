@@ -96,8 +96,8 @@ class Structure
 
   def initialize_attributes
     @attributes =
-      @@default_attributes.inject({}) do |attributes, (name, default)|
-        attributes[name] = default
+      @@default_attributes.inject({}) do |attributes, (key, value)|
+        attributes[key] = value
         attributes
       end
   end
