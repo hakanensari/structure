@@ -1,8 +1,9 @@
 Structure
 =========
 
-Structure is a better Struct and does wonders when modeling ephemeral
-data fed in from an API.
+Structure is a better Struct.
+
+It does wonders when modeling ephemeral data fed in from an API.
 
     #_                                                                       d
     ##_                                                                     d#
