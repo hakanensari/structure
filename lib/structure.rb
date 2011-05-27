@@ -50,7 +50,9 @@ class Structure
           lambda do |value|
             case value
             when String
-             !(value =~ /false/i)
+             value =~ /1|true/i
+            when Integer
+              value != 0
             else
              !!value
             end

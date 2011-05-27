@@ -100,6 +100,42 @@ describe Structure do
           end.not_to raise_error
         end
       end
+
+      context "when typecasting a set value" do
+        before(:all) do
+          Person.key :vegetarian, :type => Boolean
+        end
+
+        it "typecasts 'true' to true" do
+          person.vegetarian = 'true'
+          person.vegetarian.should be_true
+        end
+
+        it "typecasts 'TRUE' to true" do
+          person.vegetarian = 'TRUE'
+          person.vegetarian.should be_true
+        end
+
+        it "typecasts '1' to true" do
+          person.vegetarian = '1'
+          person.vegetarian.should be_true
+        end
+
+        it "typecasts all other strings to false" do
+          person.vegetarian = 'foo'
+          person.vegetarian.should be_false
+        end
+
+        it "typecasts 0 to false" do
+          person.vegetarian = 0
+          person.vegetarian.should be_false
+        end
+
+        it "typecasts all other integers to true" do
+          person.vegetarian = 1
+          person.vegetarian.should be_true
+        end
+      end
     end
 
     context "when type is Hash" do
