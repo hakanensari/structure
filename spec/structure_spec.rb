@@ -4,11 +4,10 @@ describe Structure do
   let(:person) { Person.new }
 
   it "is enumerable" do
-    person.name ="Joe"
-    person.map { |key, value| value }.should include "Joe"
+    person.should respond_to :map
   end
 
-  context "when object is frozen" do
+  context "when frozen" do
     before do
       person.freeze
     end
@@ -25,37 +24,114 @@ describe Structure do
       %w{name name=}.each { |method| person.should respond_to method }
     end
 
-    context "when name clashes with an existing method" do
+    context "when a key name clashes with a method name" do
       it "raises an error" do
         expect do
-          Person.key :name
+          Person.key :class
         end.to raise_error NameError
       end
     end
 
+    context "when an invalid type is specified" do
+      it "raises an error" do
+        expect do
+          Person.key :location, :type => Object
+        end.to raise_error TypeError
+      end
+    end
+
+    context "when default value is not of the specified type" do
+      it "raises an error" do
+        expect do
+          Person.key :location, :type => String, :default => 0
+        end.to raise_error TypeError
+      end
+    end
+  end
+
+  describe "attribute getter" do
+    it "returns the value of the attribute" do
+      person.instance_variable_get(:@attributes)[:name] = 'Joe'
+      person.name.should eql 'Joe'
+    end
+
+    context "when type is Array and default value is []" do
+      it "supports the `<<' idiom" do
+        person.friends << Person.new
+        person.friends.count.should eql 1
+      end
+    end
+  end
+
+  describe "attribute setter" do
+    it "sets the value of the attribute" do
+      person.name = "Joe"
+      person.instance_variable_get(:@attributes)[:name].should eql 'Joe'
+    end
+
     context "when a type is specified" do
-      context "when setting the attribute to a non-nil value" do
-        it "casts the value" do
-          person.age = "28"
-          person.age.should eql 28
+      it "casts the value" do
+        person.age = "28"
+        person.age.should be_an Integer
+      end
+    end
+
+    context "when a type is not specified" do
+      it "casts to String" do
+        person.name = 123
+        person.name.should be_a String
+      end
+    end
+
+    context "when type is Boolean" do
+      context "when default value is true" do
+        it "does not raise an invalid type error" do
+          expect do
+            Person.key :single, :type => Boolean, :default => true
+          end.not_to raise_error
         end
       end
 
-      context "when setting the attribute to nil" do
-        it "does not set the value" do
-          person.age = nil
-          person.age.should be_nil
+      context "when default value is false" do
+        it "does not raise an invalid type error" do
+          expect do
+            Person.key :married, :type => Boolean, :default => false
+          end.not_to raise_error
+        end
+      end
+    end
+
+    context "when type is Hash" do
+      before(:all) do
+        Person.key :education, :type => Hash
+      end
+
+      context "when setting to a value is not a Hash" do
+        it "raises an error" do
+          expect do
+            person.education = 'foo'
+          end.to raise_error TypeError
         end
       end
     end
 
     context "when a default is specified" do
-      it ""
+      it "defaults to that value" do
+        Person.key :location, :default => 'New York'
+        person.location.should eql 'New York'
+      end
     end
 
     context "when a default is not specified" do
       it "defaults to nil" do
-        person.age.
+        person.age.should be_nil
+      end
+    end
+
+    context "when setting the value of an attribute to nil" do
+      it "does not typecast the value" do
+        person.age = nil
+        person.age.should be_a NilClass
       end
     end
   end
