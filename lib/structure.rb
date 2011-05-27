@@ -11,7 +11,7 @@ class Structure
   # Takes a name and an optional hash of options. Available options are:
   #
   # * :type, which can be Array, Boolean, Float, Integer, JSON, Pathname,
-  # String, or URI.
+  # String, or URI. If not specified, type defaults to String.
   # * :default, which sets the default value for the attribute.
   #
   #    class Book
