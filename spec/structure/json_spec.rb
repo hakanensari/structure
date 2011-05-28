@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe Structure do
   context "when `structure/json' is required" do
-    let(:person) { Person.new(:name => 'Joe', :age => 28) }
-    let(:json) { '{"json_class":"Person","name":"Joe","age":28,"friends":[]}' }
+    let(:person) { Person.new(:name => 'Joe', :age => 28, :website => 'http://example.com') }
+    let(:json) { '{"json_class":"Person","name":"Joe","age":28,"website":"http://example.com","friends":[]}' }
 
     before do
       require 'structure/json'
