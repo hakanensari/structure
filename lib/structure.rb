@@ -13,13 +13,13 @@ class Structure
 
   class << self
 
-    # A shortcut to define an attribute that corresponds to an array of other
-    # objects, possibly Structures.
+    # A shortcut to define an attribute that represents an array of other
+    # objects, possibly structures.
     def has_many(name)
       key name, :type => Array, :default => []
     end
 
-    # A shortcut to define an attribute that corresponds to another Structure.
+    # A shortcut to define an attribute that represents another structure.
     def has_one(name)
       key name, :type => Structure
     end
