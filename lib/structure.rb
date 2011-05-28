@@ -73,7 +73,7 @@ class Structure
 
       # Define a setter.
       define_method("#{name}=") do |value|
-        modifiable[name] = value.nil? ? nil : typecast.call(value)
+        @attributes[name] = value.nil? ? nil : typecast.call(value)
       end
     end
   end
@@ -122,14 +122,5 @@ class Structure
         attributes[key] = value.is_a?(Array) ? value.dup : value
         attributes
       end
-  end
-
-  def modifiable
-    begin
-      @modifiable = true
-    rescue
-      raise TypeError, "can't modify frozen #{self.class}"
-    end
-    @attributes
   end
 end

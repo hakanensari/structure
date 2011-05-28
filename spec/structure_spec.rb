@@ -179,18 +179,6 @@ describe Structure do
       end
     end
 
-    context "when frozen" do
-      before do
-        person.freeze
-      end
-
-      it "raises an error" do
-        expect do
-          person.name = 'Joe'
-        end.to raise_error TypeError
-      end
-    end
-
     context "when setting the value of an attribute to nil" do
       it "does not typecast the value" do
         person.age = nil
