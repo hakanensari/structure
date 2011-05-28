@@ -154,7 +154,7 @@ describe Structure do
 
     context "when type is Structure" do
       before(:all) do
-        Person.key :father, :type => Structure
+        Person.has_one :father
       end
 
       context "when setting to a value that is not a Structure" do

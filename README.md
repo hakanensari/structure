@@ -3,7 +3,7 @@ Structure
 
 Structure is a better Struct.
 
-It does wonders when modeling ephemeral data fed in from an API.
+It works great when modeling ephemeral data fed in from an API.
 
     #_                                                                       d
     ##_                                                                     d#
@@ -38,10 +38,10 @@ Require:
 Define a model:
 
     class Person < Structure
-      key :name
-      key :age,     :type => Integer
-      key :friends, :type => Array, :default => []
-      key :partner, :type => Structure
+      key      :name
+      key      :age, :type => Integer
+      has_many :friends
+      has_one  :partner
     end
 
 Conjure an object:
@@ -54,27 +54,24 @@ Typecast values:
     p1.age
     => 28
 
-Boast ORM-esque association idioms:
+Use ORM-esque association idioms:
 
-    p2 = Person.new :name => 'Michel'
-    p1.friends << p2 # has many
+    p2 = Person.new
+    p1.friends << p2
 
-    p3 = Person.new :name => 'Félix'
-    p1.partner = p3 # has one
-
-Dump good-looking JSON:
+Dump well-structured JSON:
 
     require 'structure/json'
 
     json = p1.to_json
-    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name": "Jane","age":null,"friends":[]}]}
+    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":null,"age":null,"friends":[]}],"partner":null}
 
-Load the JSON elsewhere back into Ruby seamlessly, provided you have the same
+Load the JSON elsewhere into Ruby seamlessly, provided you have the same
 models set up:
 
     person = JSON.parse(json)
     person.friends.first
-    => #<Person:0x0000010107d030 @attributes={:name=>"Jane", :age=>nil, :friends=>[#<Person:0x0000010107d030 ...>]}, @modifiable=true>
+    => #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}, @modifiable=true>
 
 Throw in some Active Model modules...
 
@@ -84,7 +81,6 @@ Throw in some Active Model modules...
       include ActiveModel::Validations
 
       key :title
-      key :authors, :type => Array, :default => []
 
       validates_presence_of :title
     end

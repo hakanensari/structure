@@ -11,6 +11,17 @@ class Structure
 
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
+  # A shortcut to define an attribute that corresponds to an array of other
+  # objects, possibly Structures.
+  def self.has_many(name)
+    key name, :type => Array, :default => []
+  end
+
+  # A shortcut to define an attribute that corresponds to another Structure.
+  def self.has_one(name)
+    key name, :type => Structure
+  end
+
   # Defines an attribute key.
   #
   # Takes a name and an optional hash of options. Available options are:
@@ -58,6 +69,9 @@ class Structure
             end
           end
         elsif [Hash, Structure].include? type
+
+          # Raise an exception rather than typecast if type is Hash or
+          # Structure.
           lambda do |value|
             unless value.is_a? type
               raise TypeError, "#{value} is not a #{type}"
