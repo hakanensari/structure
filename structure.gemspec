@@ -9,12 +9,10 @@ Gem::Specification.new do |s|
   s.authors     = ["Paper Cavalier"]
   s.email       = ["code@papercavalier.com"]
   s.homepage    = "http://rubygems.com/gems/structure"
-  s.summary     = "A better Struct"
+  s.summary     = "Struct-like key/value container in Ruby"
   s.description = <<-END_OF_DESCRIPTION.strip
-    Structure is a better Struct and does wonders when modeling ephemeral data
-    fed in from an API. It typecasts values, works with ORM-esque association
-    idioms, dumps good-looking JSON, and loads the same JSON seamlessly back
-    into Ruby.
+    Structure is a Struct-like key/value container for modeling ephemeral data
+    in Ruby.
     END_OF_DESCRIPTION
 
   s.rubyforge_project = "structure"
