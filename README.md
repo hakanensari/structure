@@ -56,7 +56,7 @@ Typecast:
     p1.age
     => 28
 
-Use AR-like association idioms:
+Embed other structures:
 
     p2 = Person.new
     p1.friends << p2
