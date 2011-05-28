@@ -1,9 +1,11 @@
 Structure
 =========
 
-Structure is a better Struct.
+Structure is a Struct-like key/value container for modeling ephemeral data in
+Ruby.
 
-It works great when modeling ephemeral data fed in from an API.
+Structure typecasts, uses basic association idioms, and converts to and from
+JSON seamlessly.
 
     #_                                                                       d
     ##_                                                                     d#
@@ -48,13 +50,13 @@ Conjure an object:
 
     p1 = Person.new :name => 'Gilles'
 
-Typecast values:
+Typecast:
 
     p1.age = '28'
     p1.age
     => 28
 
-Use ORM-esque association idioms:
+Use AR-like association idioms:
 
     p2 = Person.new
     p1.friends << p2
@@ -66,14 +68,13 @@ Dump well-structured JSON:
     json = p1.to_json
     => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":null,"age":null,"friends":[]}],"partner":null}
 
-Load the JSON elsewhere into Ruby seamlessly, provided you have the same
-models set up:
+Load the JSON seamlessly back into Ruby:
 
     person = JSON.parse(json)
     person.friends.first
     => #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}, @modifiable=true>
 
-Throw in some Active Model modules...
+Throw in some Active Model modules:
 
     require 'active_model'
 
@@ -108,3 +109,4 @@ Structure supports the following types:
 * Integer
 * String
 * Structure
+* URI
