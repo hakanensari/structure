@@ -11,84 +11,91 @@ class Structure
 
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
-  # A shortcut to define an attribute that corresponds to an array of other
-  # objects, possibly Structures.
-  def self.has_many(name)
-    key name, :type => Array, :default => []
-  end
+  class << self
 
-  # A shortcut to define an attribute that corresponds to another Structure.
-  def self.has_one(name)
-    key name, :type => Structure
-  end
-
-  # Defines an attribute key.
-  #
-  # Takes a name and an optional hash of options. Available options are:
-  #
-  # * :type, which can be Array, Boolean, Float, Hash, Integer, String, or
-  # Structure. If not specified, type defaults to String.
-  # * :default, which sets the default value for the attribute.
-  #
-  #    class Book
-  #      key :title,   :type => String
-  #      key :authors, :type => Array, :default => []
-  #    end
-  #
-  def self.key(name, options={})
-    name = name.to_sym
-    if method_defined?(name)
-      raise NameError, "#{name} is already defined"
+    # A shortcut to define an attribute that corresponds to an array of other
+    # objects, possibly Structures.
+    def has_many(name)
+      key name, :type => Array, :default => []
     end
 
-    type = options[:type] || String
-    unless TYPES.include? type
-      raise TypeError, "#{type} is not a valid type"
+    # A shortcut to define an attribute that corresponds to another Structure.
+    def has_one(name)
+      key name, :type => Structure
     end
 
-    default = options[:default]
-    unless default.nil? || default.is_a?(type)
-      raise TypeError, "#{default} is not #{%w{AEIOU}.include?(type.to_s[0]) ? 'an' : 'a'} #{type}"
-    end
-
-    default_attributes[name] = default
-
-    module_eval do
-
-      # Define a proc to typecast value.
-      typecast =
-        if type == Boolean
-          lambda do |value|
-            case value
-            when String
-             value =~ /1|true/i
-            when Integer
-              value != 0
-            else
-             !!value
-            end
-          end
-        elsif [Hash, Structure].include? type
-
-          # Raise an exception rather than typecast if type is Hash or
-          # Structure.
-          lambda do |value|
-            unless value.is_a? type
-              raise TypeError, "#{value} is not a #{type}"
-            end
-            value
-          end
-        else
-          lambda { |value| Kernel.send(type.to_s, value) }
-        end
-
-      # Define a getter.
-      define_method(name) { @attributes[name] }
-
-      # Define a setter.
-      define_method("#{name}=") do |value|
-        @attributes[name] = value.nil? ? nil : typecast.call(value)
+    # Defines an attribute key.
+    #
+    # Takes a name and an optional hash of options. Available options are:
+    #
+    # * :type, which can be Array, Boolean, Float, Hash, Integer, String, or
+    # Structure. If not specified, type defaults to String.
+    # * :default, which sets the default value for the attribute.
+    #
+    #    class Book
+    #      key :title,   :type => String
+    #      key :authors, :type => Array, :default => []
+    #    end
+    def key(name, options={})
+      name = name.to_sym
+      if method_defined?(name)
+        raise NameError, "#{name} is already defined"
       end
+
+      type = options[:type] || String
+      unless TYPES.include? type
+        raise TypeError, "#{type} is not a valid type"
+      end
+
+      default = options[:default]
+      unless default.nil? || default.is_a?(type)
+        raise TypeError, "#{default} is not #{%w{AEIOU}.include?(type.to_s[0]) ? 'an' : 'a'} #{type}"
+      end
+
+      default_attributes[name] = default
+
+      module_eval do
+
+        # Define a proc to typecast value.
+        typecast =
+          if type == Boolean
+            lambda do |value|
+              case value
+              when String
+               value =~ /1|true/i
+              when Integer
+                value != 0
+              else
+               !!value
+              end
+            end
+          elsif [Hash, Structure].include? type
+
+            # Raise an exception rather than typecast if type is Hash or
+            # Structure.
+            lambda do |value|
+              unless value.is_a? type
+                raise TypeError, "#{value} is not a #{type}"
+              end
+              value
+            end
+          else
+            lambda { |value| Kernel.send(type.to_s, value) }
+          end
+
+        # Define a getter.
+        define_method(name) { @attributes[name] }
+
+        # Define a setter.
+        define_method("#{name}=") do |value|
+          @attributes[name] = value.nil? ? nil : typecast.call(value)
+        end
+      end
+    end
+
+    # Returns a hash of all attributes with default values.
+    def default_attributes
+      @default_attributes ||= {}
     end
   end
 
@@ -126,15 +133,10 @@ class Structure
 
   private
 
-  def self.default_attributes
-    @default_attributes ||= {}
-  end
-
-  def initialize_attributes
-    @attributes =
-      self.class.default_attributes.inject({}) do |attributes, (key, value)|
-        attributes[key] = value.is_a?(Array) ? value.dup : value
-        attributes
+    def initialize_attributes
+      @attributes = {}
+      self.class.default_attributes.each do |key, value|
+        @attributes[key] = value.is_a?(Array) ? value.dup : value
       end
-  end
+    end
 end
