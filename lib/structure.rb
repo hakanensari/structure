@@ -1,3 +1,5 @@
+require 'uri'
+
 # Ruby doesn't have a Boolean class, so let's feign one.
 unless Object.const_defined?(:Boolean)
   module Boolean; end
