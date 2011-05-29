@@ -1,13 +1,13 @@
+# Ruby doesn't have a Boolean class, so let's feign one.
+unless Object.const_defined?(:Boolean)
+  module Boolean; end
+  class TrueClass; include Boolean; end
+  class FalseClass; include Boolean; end
+end
+
 # A Struct-like data container.
 class Structure
   include Enumerable
-
-  # Ruby doesn't have a Boolean class, so let's feign one.
-  unless Object.const_defined?(:Boolean)
-    module ::Boolean; end
-    class ::TrueClass; include Boolean; end
-    class ::FalseClass; include Boolean; end
-  end
 
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure, URI]
 
