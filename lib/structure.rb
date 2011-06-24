@@ -1,5 +1,3 @@
-require 'uri'
-
 # Ruby doesn't have a Boolean class, so let's feign one.
 unless Object.const_defined?(:Boolean)
   module Boolean; end
@@ -11,7 +9,7 @@ end
 class Structure
   include Enumerable
 
-  TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure, URI]
+  TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
   class << self
 
@@ -31,7 +29,7 @@ class Structure
     # Takes a name and an optional hash of options. Available options are:
     #
     # * :type, which can be Array, Boolean, Float, Hash, Integer, String,
-    # Structure, or URI. If not specified, type defaults to String.
+    # or Structure. If not specified, type defaults to String.
     # * :default, which sets the default value for the attribute.
     #
     #    class Book

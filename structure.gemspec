@@ -18,8 +18,9 @@ Gem::Specification.new do |s|
   s.rubyforge_project = "structure"
 
   {
-    'rspec'         => '~> 2.6.0',
-    'ruby-debug19'  => '~> 0.11.6'
+    'activesupport'  => '>= 3.0',
+    'rspec'          => '~> 2.6',
+    'ruby-debug19'   => '~> 0.11.6'
   }.each do |lib, version|
     s.add_development_dependency lib, version
   end

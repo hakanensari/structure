@@ -41,7 +41,6 @@ describe Structure do
     it "returns the default attributes for the structure" do
       Person.send(:default_attributes).should == { :name    => nil,
                                                    :age     => nil,
-                                                   :website => nil,
                                                    :friends => [] }
       Book.send(:default_attributes).should == { :title   => nil,
                                                  :authors => nil }
