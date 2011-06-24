@@ -5,7 +5,8 @@ Structure is a Struct-like key/value container for modeling ephemeral data in
 Ruby.
 
 Structure typecasts, uses basic association idioms, and converts to and from
-JSON seamlessly.
+JSON seamlessly, even when nested in structures or other structure-like
+objects.
 
     #_                                                                       d
     ##_                                                                     d#
@@ -109,4 +110,3 @@ Structure supports the following types:
 * Integer
 * String
 * Structure
-* URI
