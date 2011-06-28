@@ -73,7 +73,7 @@ Load the JSON seamlessly back into Ruby:
 
     person = JSON.parse(json)
     person.friends.first
-    => #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}, @modifiable=true>
+    => #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}>
 
 Throw in some Active Model modules:
 
