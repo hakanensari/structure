@@ -90,6 +90,9 @@ class Structure
         define_method("#{name}=") do |value|
           @attributes[name] = value.nil? ? nil : typecast.call(value)
         end
+
+        # Define a "presence" (for lack of a better term) method
+        define_method("#{name}?") { !!@attributes[name] }
       end
     end
 

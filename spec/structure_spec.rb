@@ -187,6 +187,28 @@ describe Structure do
     end
   end
 
+  describe "attribute presence" do
+    context "when the value of an attribute is nil" do
+      it "returns false" do
+        person.name?.should be_false
+      end
+    end
+
+    context "when the value of an attribute is false" do
+      it "returns false" do
+        person.instance_variable_get(:@attributes)[:name] = false
+        person.name?.should be_false
+      end
+    end
+
+    context "when the value of an attribute is set to a value other than false or nil" do
+      it "returns true" do
+        person.instance_variable_get(:@attributes)[:name] = "John"
+        person.name?.should be_true
+      end
+    end
+  end
+
   describe ".new" do
     context "when attributes are specified" do
       it "initializes the object with those attributes" do
