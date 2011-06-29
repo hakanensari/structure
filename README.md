@@ -84,6 +84,7 @@ json = p1.to_json
 person = JSON.parse(json)
 person.friends.first
 => #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}>
+```
 
 Quack Active Model:
 
