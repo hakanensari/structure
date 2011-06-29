@@ -57,6 +57,10 @@ Typecast:
     p1.age
     => 28
 
+Check for presence:
+    p1.age?
+    => true
+
 Embed other structures:
 
     p2 = Person.new
