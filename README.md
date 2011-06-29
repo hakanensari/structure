@@ -1,12 +1,9 @@
 Structure
 =========
 
-Structure is a Struct-like key/value container for modeling ephemeral data in
-Ruby.
+Structure is a key/value container for modeling ephemeral data in Ruby.
 
-Structure typecasts, uses basic association idioms, and converts to and from
-JSON seamlessly, even when nested in structures or other structure-like
-objects.
+Structure typecasts, nests other structures, and talks flawless JSON.
 
     #_                                                                       d
     ##_                                                                     d#
@@ -34,73 +31,82 @@ objects.
 Usage
 -----
 
-Require:
-
-    require 'structure'
-
 Define a model:
 
-    class Person < Structure
-      key      :name
-      key      :age, :type => Integer
-      has_many :friends
-      has_one  :partner
-    end
+```ruby
+require 'structure'
+
+class Person < Structure
+  key      :name
+  key      :age, :type => Integer
+  has_many :friends
+  has_one  :partner
+end
+```
 
 Conjure an object:
 
-    p1 = Person.new :name => 'Gilles'
+```ruby
+p1 = Person.new :name => 'Gilles'
+```
 
 Typecast:
 
-    p1.age = '28'
-    p1.age
-    => 28
+```ruby
+p1.age = '28'
+p1.age
+=> 28
+```
 
 Check for presence:
-    p1.age?
-    => true
+
+```ruby
+p1.age?
+=> true
+```
+
 
 Embed other structures:
 
-    p2 = Person.new
-    p1.friends << p2
+```ruby
+p2 = Person.new
+p1.friends << p2
+```
 
-Dump well-structured JSON:
+Talk JSON:
 
-    require 'structure/json'
+```ruby
+require 'structure/json'
 
-    json = p1.to_json
-    => {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":null,"age":null,"friends":[]}],"partner":null}
+json = p1.to_json
+=> {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":null,"age":null,"friends":[]}],"partner":null}
 
-Load the JSON seamlessly back into Ruby:
+person = JSON.parse(json)
+person.friends.first
+=> #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}>
 
-    person = JSON.parse(json)
-    person.friends.first
-    => #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}>
+Quack Active Model:
 
-Throw in some Active Model modules:
+```ruby
+require 'active_model'
 
-    require 'active_model'
+class Book < Structure
+  include ActiveModel::Validations
 
-    class Book < Structure
-      include ActiveModel::Validations
+  key :title
 
-      key :title
+  validates_presence_of :title
+end
 
-      validates_presence_of :title
-    end
-
-... and make your model quack like ActiveRecord:
-
-    book = Book.new
-    book.valid?
-    => false
-    book.errors
-    => {:title=>["can't be blank"]}
-    book.title = "Society of the Spectacle"
-    book.valid?
-    => true
+book = Book.new
+book.valid?
+=> false
+book.errors
+=> {:title=>["can't be blank"]}
+book.title = "Society of the Spectacle"
+book.valid?
+=> true
+```
 
 Types
 -----
