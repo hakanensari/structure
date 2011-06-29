@@ -9,10 +9,9 @@ Gem::Specification.new do |s|
   s.authors     = ["Paper Cavalier"]
   s.email       = ["code@papercavalier.com"]
   s.homepage    = "http://rubygems.com/gems/structure"
-  s.summary     = "Struct-like key/value container in Ruby"
+  s.summary     = "A key/value container for modeling ephemeral data"
   s.description = <<-END_OF_DESCRIPTION.strip
-    Structure is a Struct-like key/value container for modeling ephemeral data
-    in Ruby.
+    Structure is a key/value container for modeling ephemeral data.
     END_OF_DESCRIPTION
 
   s.rubyforge_project = "structure"
