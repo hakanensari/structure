@@ -15,12 +15,12 @@ class Structure
 
     # A shortcut to define an attribute that represents an array of other
     # objects, possibly structures.
-    def has_many(name)
+    def embeds_many(name)
       key name, :type => Array, :default => []
     end
 
     # A shortcut to define an attribute that represents another structure.
-    def has_one(name)
+    def embeds_one(name)
       key name, :type => Structure
     end
 
