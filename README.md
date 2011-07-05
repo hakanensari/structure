@@ -37,10 +37,10 @@ Define a model:
 require 'structure'
 
 class Person < Structure
-  key      :name
-  key      :age, :type => Integer
-  has_many :friends
-  has_one  :partner
+  key         :name
+  key         :age, :type => Integer
+  embeds_many :friends
+  embeds_one  :partner
 end
 ```
 
