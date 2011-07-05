@@ -79,7 +79,7 @@ Talk JSON:
 require 'structure/json'
 
 json = p1.to_json
-=> {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":"John Doe","age":null,"friends":[]}],"partner":null}
+=> {"json_class":"Person","name":"Gilles","age":28,"friends":[{"json_class":"Person","name":"John Doe","age":null,"friends":[]}],"partner":null}
 
 person = JSON.parse(json)
 person.friends.first
