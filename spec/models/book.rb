@@ -1,4 +1,4 @@
 class Book < Structure
   key :title
-  key :authors, :type => Array, :value => []
+  key :authors, Array, :value => []
 end

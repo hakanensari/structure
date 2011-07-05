@@ -1,5 +1,5 @@
 class Person < Structure
   key :name
-  key :age, :type => Integer
+  key :age, Integer
   embeds_many :friends
 end
