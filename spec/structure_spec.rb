@@ -23,7 +23,7 @@ describe Structure do
     context "when an invalid type is specified" do
       it "raises an error" do
         expect do
-          Person.key :location, :type => Object
+          Person.key :location, Object
         end.to raise_error TypeError
       end
     end
@@ -31,7 +31,7 @@ describe Structure do
     context "when default value is not of the specified type" do
       it "raises an error" do
         expect do
-          Person.key :location, :type => String, :default => 0
+          Person.key :location, String, :default => 0
         end.to raise_error TypeError
       end
     end
@@ -88,7 +88,7 @@ describe Structure do
       context "when default value is true" do
         it "does not raise an invalid type error" do
           expect do
-            Person.key :single, :type => Boolean, :default => true
+            Person.key :single, Boolean, :default => true
           end.not_to raise_error
         end
       end
@@ -96,14 +96,14 @@ describe Structure do
       context "when default value is false" do
         it "does not raise an invalid type error" do
           expect do
-            Person.key :married, :type => Boolean, :default => false
+            Person.key :married, Boolean, :default => false
           end.not_to raise_error
         end
       end
 
       context "when typecasting a set value" do
         before(:all) do
-          Person.key :vegetarian, :type => Boolean
+          Person.key :vegetarian, Boolean
         end
 
         it "typecasts 'true' to true" do
@@ -140,7 +140,7 @@ describe Structure do
 
     context "when type is Hash" do
       before(:all) do
-        Person.key :education, :type => Hash
+        Person.key :education, Hash
       end
 
       context "when setting to a value that is not a Hash" do

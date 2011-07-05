@@ -37,14 +37,14 @@ Define a model:
 require 'structure'
 
 class Person < Structure
-  key         :name
-  key         :age, :type => Integer
+  key         :name, :default => "John Doe"
+  key         :age, Integer
   embeds_many :friends
   embeds_one  :partner
 end
 ```
 
-Conjure an object:
+Create an object:
 
 ```ruby
 p1 = Person.new :name => 'Gilles'
@@ -79,11 +79,11 @@ Talk JSON:
 require 'structure/json'
 
 json = p1.to_json
-=> {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":null,"age":null,"friends":[]}],"partner":null}
+=> {"json_class":"Person","name":"John","age":28,"friends":[{"json_class":"Person","name":"John Doe","age":null,"friends":[]}],"partner":null}
 
 person = JSON.parse(json)
 person.friends.first
-=> #<Person:0x0000010107d030 @attributes={:name=>nil, :age=>nil, :friends=>[], :partner=>nil}>
+=> #<Person:0x0000010107d030 @attributes={:name=>"John Doe", :age=>nil, :friends=>[], :partner=>nil}>
 ```
 
 Quack Active Model:
