@@ -11,3 +11,7 @@
 
 * Rename has_one and has_many to embeds_one and embeds_many to make room
   for associations.
+
+# 0.11
+
+* .key now emulates the DataMapper.property method.
