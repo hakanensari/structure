@@ -15,3 +15,7 @@
 # 0.11
 
 * .key now emulates the DataMapper.property method.
+
+# 0.12
+
+* Add basic support for static models.
