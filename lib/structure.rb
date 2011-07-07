@@ -12,7 +12,6 @@ class Structure
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
   class << self
-
     # A shortcut to define an attribute that represents an array of other
     # objects, possibly structures.
     def embeds_many(name)
@@ -145,10 +144,10 @@ class Structure
 
   private
 
-    def initialize_attributes
-      @attributes = {}
-      self.class.default_attributes.each do |key, value|
-        @attributes[key] = value.is_a?(Array) ? value.dup : value
-      end
+  def initialize_attributes
+    @attributes = {}
+    self.class.default_attributes.each do |key, value|
+      @attributes[key] = value.is_a?(Array) ? value.dup : value
     end
+  end
 end
