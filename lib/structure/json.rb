@@ -1,5 +1,3 @@
-require 'structure'
-
 unless Object.const_defined?(:JSON) and ::JSON.const_defined?(:JSON_LOADED) and
   ::JSON::JSON_LOADED
   require 'json'
