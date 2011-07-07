@@ -2,7 +2,7 @@ require 'yaml'
 
 class Structure
 
-  # An enumurable static structure, sourced from a yaml file.
+  # An enumerable static structure, sourced from a yaml file.
   module Static
     def self.included(base)
       base.key(:id, Integer)
