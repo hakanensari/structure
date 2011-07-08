@@ -2,6 +2,12 @@ require 'spec_helper'
 
 class Structure
   describe "A static structure" do
+    def replace_fixture(new_path)
+      City.instance_variable_set(:@all, nil)
+      fixture = File.expand_path("../../fixtures/#{new_path}", __FILE__)
+      City.set_data_path(fixture)
+    end
+
     it "is enumerable" do
       City.should be_an Enumerable
     end
@@ -29,11 +35,14 @@ class Structure
       end
     end
 
-    context "when sourced data does not include ids" do
+    context "when sourcing data without ids" do
       before(:all) do
-        City.instance_variable_set(:@all, nil)
-        fixture = File.expand_path("../../fixtures/cities_without_id.yml", __FILE__) 
-        City.set_data_path(fixture)
+        @old_path = City.instance_variable_get(:@data_path)
+        replace_fixture("cities_without_id.yml")
+      end
+
+      after(:all) do
+        replace_fixture(@old_path)
       end
 
       it "should auto-increment the ids of loaded records" do
