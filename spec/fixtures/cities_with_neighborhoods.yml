@@ -1,0 +1,7 @@
+---
+- id: 1
+  name: New York
+  neighborhoods:
+  - name: Manhattan
+  - name: Brooklyn
+  - name: Queens

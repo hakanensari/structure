@@ -64,5 +64,22 @@ class Structure
         end
       end
     end
+
+    context "when sourcing nested models" do
+      before(:all) do
+        @old_path = City.instance_variable_get(:@data_path)
+        replace_fixture("cities_with_neighborhoods.yml")
+      end
+
+      after(:all) do
+        replace_fixture(@old_path)
+      end
+
+      it "loads nested models" do
+        pending
+        neighborhoods = City.first.neighborhoods
+        neighborhoods.first.should be_a Neighborhood
+      end
+    end
   end
 end
