@@ -26,10 +26,6 @@ describe Structure do
   let(:json) { '{"json_class":"Person","name":"Joe","age":null,"friends":[]}' }
 
   context "without Active Support" do
-    before(:all) do
-      require 'structure/json'
-    end
-
     it_behaves_like "a JSON interface"
   end
 
@@ -37,7 +33,6 @@ describe Structure do
     before(:all) do
       require 'active_support/ordered_hash'
       require 'active_support/json'
-      load 'structure/json.rb'
     end
 
     after(:all) do
