@@ -177,9 +177,9 @@ class Structure
   end
 
   # Compares this object with another object for equality. A Structure is equal
-  # to the other object when latter is also a Structure and the two objects'
-  # attributes are equal.
+  # to the other object when latter is of the same class and the two objects'
+  # attributes are the same.
   def ==(other)
-    other.is_a?(Structure) && @attributes == other.attributes
+    other.is_a?(self.class) && @attributes == other.attributes
   end
 end
