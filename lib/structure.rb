@@ -125,7 +125,11 @@ class Structure
   #
   # Optionally, seeds the structure with a hash of attributes.
   def initialize(seed = {})
-    initialize_attributes
+    @attributes = {}
+    self.class.default_attributes.each do |key, value|
+      @attributes[key] = value.is_a?(Array) ? value.dup : value
+    end
+
     seed.each { |key, value| self.send("#{key}=", value) }
   end
 
@@ -177,14 +181,5 @@ class Structure
   # attributes are equal.
   def ==(other)
     other.is_a?(Structure) && @attributes == other.attributes
-  end
-
-  private
-
-  def initialize_attributes
-    @attributes = {}
-    self.class.default_attributes.each do |key, value|
-      @attributes[key] = value.is_a?(Array) ? value.dup : value
-    end
   end
 end
