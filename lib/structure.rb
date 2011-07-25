@@ -1,3 +1,9 @@
+begin
+  ::JSON::JSON_LOADED
+rescue NameError
+  require 'json'
+end
+
 # Ruby doesn't have a Boolean class, so let's feign one.
 unless Object.const_defined?(:Boolean)
   module Boolean; end
@@ -21,6 +27,11 @@ class Structure
     # A shortcut to define an attribute that represents another structure.
     def embeds_one(name)
       key name, Structure
+    end
+
+    def json_create(object)
+      object.delete('json_class')
+      new(object)
     end
 
     # Defines an attribute key.
@@ -114,12 +125,35 @@ class Structure
   #
   # Optionally, seeds the structure with a hash of attributes.
   def initialize(seed = {})
-    initialize_attributes
+    @attributes = {}
+    self.class.default_attributes.each do |key, value|
+      @attributes[key] = value.is_a?(Array) ? value.dup : value
+    end
+
     seed.each { |key, value| self.send("#{key}=", value) }
   end
 
   # A hash of attributes.
   attr_reader :attributes
+
+  def as_json(options = nil)
+    # create a subset of the attributes by applying :only or :except
+    subset = if options
+      if attrs = options[:only]
+        @attributes.slice(*Array.wrap(attrs))
+      elsif attrs = options[:except]
+        @attributes.except(*Array.wrap(attrs))
+      else
+        @attributes.dup
+      end
+    else
+      @attributes.dup
+    end
+
+    klass = self.class.name
+    { JSON.create_id => klass }.
+      merge(subset)
+  end
 
   def each(&block)
     @attributes.each { |value| block.call(value) }
@@ -130,24 +164,22 @@ class Structure
     @attributes.keys
   end
 
+  def to_json(*args)
+    klass = self.class.name
+    { JSON.create_id => klass }.
+      merge(@attributes).
+      to_json(*args)
+  end
+
   # Returns an array populated with the attribute values.
   def values
     @attributes.values
   end
 
   # Compares this object with another object for equality. A Structure is equal
-  # to the other object when latter is also a Structure and the two objects'
-  # attributes are equal.
+  # to the other object when latter is of the same class and the two objects'
+  # attributes are the same.
   def ==(other)
-    other.is_a?(Structure) && @attributes == other.attributes
-  end
-
-  private
-
-  def initialize_attributes
-    @attributes = {}
-    self.class.default_attributes.each do |key, value|
-      @attributes[key] = value.is_a?(Array) ? value.dup : value
-    end
+    other.is_a?(self.class) && @attributes == other.attributes
   end
 end

@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
 
   {
     'activesupport'  => '>= 3.0',
+    'rake'           => '~> 0.9',
     'rspec'          => '~> 2.6',
     'ruby-debug19'   => '~> 0.11.6'
   }.each do |lib, version|
