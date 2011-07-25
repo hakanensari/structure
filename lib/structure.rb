@@ -11,7 +11,7 @@ unless Object.const_defined?(:Boolean)
   class FalseClass; include Boolean; end
 end
 
-# A Struct-like data container.
+# A key/value container for modeling ephemeral data.
 class Structure
   include Enumerable
 
