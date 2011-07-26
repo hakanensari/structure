@@ -8,10 +8,10 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Paper Cavalier"]
   s.email       = ["code@papercavalier.com"]
-  s.homepage    = "http://rubygems.com/gems/structure"
-  s.summary     = "A key/value container for modeling ephemeral data"
+  s.homepage    = "http://code.papercavalier.com/structure"
+  s.summary     = "A module that turns a class into a key/value container"
   s.description = <<-END_OF_DESCRIPTION.strip
-    Structure is a key/value container for modeling ephemeral data.
+    Structure is a Ruby module that turns a class into a key/value container.
     END_OF_DESCRIPTION
 
   s.rubyforge_project = "structure"
@@ -19,8 +19,6 @@ Gem::Specification.new do |s|
   {
     'activesupport'  => '>= 3.0',
     'rake'           => '~> 0.9',
-    'rspec'          => '~> 2.6',
-    'ruby-debug19'   => '~> 0.11.6'
   }.each do |lib, version|
     s.add_development_dependency lib, version
   end
