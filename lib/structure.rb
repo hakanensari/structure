@@ -4,94 +4,95 @@ rescue NameError
   require 'json'
 end
 
-# Ruby doesn't have a Boolean class, so let's feign one.
-unless Object.const_defined?(:Boolean)
+# Fabricate a +Boolean+ class.
+unless defined? Boolean
   module Boolean; end
-  class TrueClass; include Boolean; end
-  class FalseClass; include Boolean; end
+  [TrueClass, FalseClass].each { |klass| klass.send :include, Boolean }
 end
 
-# A key/value container for modeling ephemeral data.
-class Structure
+# Structure is a Ruby module that turns a class into a key/value container.
+#
+#    class Person
+#      include Structure
+#
+#      attribute :name
+#      attribute :age, Integer
+#    end
+#
+#    person = Person.new(:name => "John")
+#    person.name
+#    => "John"
+#
+module Structure
   include Enumerable
 
+  # Structure supports the following types.
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
-  class << self
-    # A shortcut to define an attribute that represents an array of other
-    # objects, possibly structures.
-    def embeds_many(name)
-      key name, Array, :default => []
+  module ClassMethods
+    # Defines an attribute that represents an array of objects, possibly
+    # structures.
+    def embeds_many(key)
+      attribute key, Array, :default => []
     end
 
-    # A shortcut to define an attribute that represents another structure.
-    def embeds_one(name)
-      key name, Structure
+    # Defines an attribute that represents another structure.
+    def embeds_one(key)
+      attribute key, Structure
     end
 
+    # Builds a structure out of its JSON representation.
     def json_create(object)
-      object.delete('json_class')
-      new(object)
+      object.delete 'json_class'
+      new object
     end
 
-    # Defines an attribute key.
+    # Defines an attribute.
     #
-    # Takes a name, an optional type, and an optional hash of options.
+    # Takes a key, an optional type, and an optional hash of options.
     #
-    # The type can be Array, Boolean, Float, Hash, Integer, String, or
-    # Structure. If none is specified, it defaults to String.
+    # The type can be +Array+, +Boolean+, +Float+, +Hash+, +Integer+, +String+,
+    # or +Structure+. If none is specified, this defaults to String.
     #
     # Available options are:
     #
-    # * :default, which sets the default value for the attribute.
-    #
-    #    class Book
-    #      key :title
-    #      key :authors, Array, :default => []
-    #    end
-    def key(name, *args)
-      name = name.to_sym
-      options = if args.last.is_a? Hash
-                  args.pop
-                else
-                  {}
-                end
-      type = args.shift || String
-
-      if method_defined?(name)
-        raise NameError, "#{name} is already defined"
-      end
-
-      unless TYPES.include? type
-        raise TypeError, "#{type} is not a valid type"
-      end
-
+    # * +:default+, which sets the default value for the attribute.
+    def attribute(key, *args)
+      key     = key.to_sym
+      options = args.last.is_a?(Hash) ?  args.pop : {}
+      type    = args.shift || String
       default = options[:default]
-      unless default.nil? || default.is_a?(type)
-        raise TypeError, "#{default} is not #{%w{AEIOU}.include?(type.to_s[0]) ? 'an' : 'a'} #{type}"
+
+      if method_defined? key
+        raise NameError, "#{key} is already defined"
       end
 
-      default_attributes[name] = default
+      if TYPES.include?(type) && (default.nil? || default.is_a?(type))
+        default_attributes[key] = default
+      else
+        msg = "#{default} is not a#{'n' if type.to_s.match(/^[AI]/)} #{type}"
+        raise TypeError, msg
+      end
 
       module_eval do
-
-        # Define a proc to typecast value.
+        # Define a closure that typecasts value.
         typecast =
           if type == Boolean
             lambda do |value|
               case value
+              when Boolean
+                value
               when String
-               value =~ /1|true/i
+                value !~ /0|false/i
               when Integer
                 value != 0
               else
-               !!value
+                !!value
               end
             end
           elsif [Hash, Structure].include? type
-
-            # Raise an exception rather than typecast if type is Hash or
-            # Structure.
+            # Don't bother with typecasting attributes of type +Hash+ or
+            # +Structure+.
             lambda do |value|
               unless value.is_a? type
                 raise TypeError, "#{value} is not a #{type}"
@@ -102,16 +103,17 @@ class Structure
             lambda { |value| Kernel.send(type.to_s, value) }
           end
 
-        # Define a getter.
-        define_method(name) { @attributes[name] }
+        # Define attribute accessors.
+        define_method(key) { @attributes[key] }
 
-        # Define a setter.
-        define_method("#{name}=") do |value|
-          @attributes[name] = value.nil? ? nil : typecast.call(value)
+        define_method("#{key}=") do |value|
+          @attributes[key] = value.nil? ? nil : typecast.call(value)
         end
 
-        # Define a "presence" (for lack of a better term) method
-        define_method("#{name}?") { !!@attributes[name] }
+        # Define a method to check for presence.
+        unless type == Array
+          define_method("#{key}?") { !!@attributes[key] }
+        end
       end
     end
 
@@ -121,23 +123,27 @@ class Structure
     end
   end
 
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
+
   # Creates a new structure.
   #
-  # Optionally, seeds the structure with a hash of attributes.
-  def initialize(seed = {})
+  # A hash, if provided, will seed its attributes.
+  def initialize(hash = {})
     @attributes = {}
     self.class.default_attributes.each do |key, value|
       @attributes[key] = value.is_a?(Array) ? value.dup : value
     end
 
-    seed.each { |key, value| self.send("#{key}=", value) }
+    hash.each { |key, value| self.send("#{key}=", value) }
   end
 
-  # A hash of attributes.
+  # A hash that stores the attributes of the structure.
   attr_reader :attributes
 
+  # Returns a Rails-friendly JSON representation of the structure.
   def as_json(options = nil)
-    # create a subset of the attributes by applying :only or :except
     subset = if options
       if attrs = options[:only]
         @attributes.slice(*Array.wrap(attrs))
@@ -155,6 +161,8 @@ class Structure
       merge(subset)
   end
 
+  # Calls block once for each attribute in the structure, passing that
+  # attribute as a parameter.
   def each(&block)
     @attributes.each { |value| block.call(value) }
   end
@@ -164,6 +172,7 @@ class Structure
     @attributes.keys
   end
 
+  # Returns a JSON representation of the structure.
   def to_json(*args)
     klass = self.class.name
     { JSON.create_id => klass }.
