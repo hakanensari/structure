@@ -1,5 +1,7 @@
 # Structure
 
+[![travis](https://secure.travis-ci.org/papercavalier/structure.png)](http://travis-ci.org/papercavalier/structure)
+
 Structure is Ruby module that turns a class into a key/value container.
 
 ## Usage
