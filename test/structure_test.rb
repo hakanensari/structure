@@ -112,8 +112,7 @@ class TestStructure < Test::Unit::TestCase
 
   def test_json
     person = Person.new(:name => 'Joe')
-    json = '{"json_class":"Person","name":"Joe","age":null,"married":false,"spouse":null,"children":[]}'
-    assert_equal(json, person.to_json)
+    json = person.to_json
     assert_equal(person, JSON.parse(json))
   end
 
@@ -129,8 +128,7 @@ class TestStructure < Test::Unit::TestCase
     require 'active_support/json'
 
     person = Person.new
-    assert_equal(['json_class', :name, :age, :married, :spouse, :children], person.as_json.keys)
-    assert_equal(['json_class', :name], person.as_json(:only => :name).keys)
-    assert_equal(['json_class', :age, :married, :spouse, :children], person.as_json(:except => :name).keys)
+    assert(person.as_json(:only => :name).has_key?(:name))
+    assert(!person.as_json(:except => :name).has_key?(:name))
   end
 end
