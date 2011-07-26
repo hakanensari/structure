@@ -52,6 +52,7 @@ puts json
 book = JSON.parse(json)
 puts book.authors.first.name
 => "Gilles Deleuze"
+```
 
 Mix in Active Model modules.
 
