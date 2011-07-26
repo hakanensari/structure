@@ -9,10 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Paper Cavalier"]
   s.email       = ["code@papercavalier.com"]
   s.homepage    = "http://code.papercavalier.com/structure"
-  s.summary     = "A module that turns a class into a key/value container"
-  s.description = <<-END_OF_DESCRIPTION.strip
-    Structure is a Ruby module that turns a class into a key/value container.
-    END_OF_DESCRIPTION
+  s.summary     = "Turns a class into a key/value container"
+  s.description = "Structure turns a class into a key/value container."
 
   s.rubyforge_project = "structure"
 
