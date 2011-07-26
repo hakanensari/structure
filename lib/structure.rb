@@ -167,22 +167,12 @@ module Structure
     @attributes.each { |value| block.call(value) }
   end
 
-  # Returns an array populated with the attribute keys.
-  def keys
-    @attributes.keys
-  end
-
   # Returns a JSON representation of the structure.
   def to_json(*args)
     klass = self.class.name
     { JSON.create_id => klass }.
       merge(@attributes).
       to_json(*args)
-  end
-
-  # Returns an array populated with the attribute values.
-  def values
-    @attributes.values
   end
 
   # Compares this object with another object for equality. A Structure is equal
