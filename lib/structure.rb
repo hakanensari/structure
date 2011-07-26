@@ -140,7 +140,7 @@ module Structure
   end
 
   # A hash that stores the attributes of the structure.
-  attr_reader :attributes
+  attr :attributes
 
   # Returns a Rails-friendly JSON representation of the structure.
   def as_json(options = nil)
