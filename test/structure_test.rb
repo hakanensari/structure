@@ -2,7 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'test/unit'
 
-require_relative "../lib/structure"
+require File.expand_path("../../lib/structure", __FILE__)
 
 class Person
   include Structure
