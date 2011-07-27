@@ -52,7 +52,7 @@ module Structure
     # Takes a key, an optional type, and an optional hash of options.
     #
     # The type can be +Array+, +Boolean+, +Float+, +Hash+, +Integer+, +String+,
-    # or +Structure+. If none is specified, this defaults to String.
+    # or +Structure+. If none is specified, this defaults to +String+.
     #
     # Available options are:
     #
