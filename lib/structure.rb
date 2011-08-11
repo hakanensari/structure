@@ -10,30 +10,30 @@ unless defined? Boolean
   [TrueClass, FalseClass].each { |klass| klass.send :include, Boolean }
 end
 
-# Structure is a Ruby module that turns a class into a key/value container.
+# = Structure
 #
-#    class Person
-#      include Structure
+# Structure is a Struct-like key/value container.
 #
 #      attribute :name
 #      attribute :age, Integer
+#    class Person < Structure
 #    end
 #
 #    person = Person.new(:name => "John")
 #    person.name
 #    => "John"
 #
-module Structure
+class Structure
   include Enumerable
 
   # Structure supports the following types.
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
-  module ClassMethods
     # Defines an attribute that represents an array of objects, possibly
     # structures.
     def embeds_many(key)
       attribute key, Array, :default => []
+  class << self
     end
 
     # Defines an attribute that represents another structure.
@@ -121,10 +121,6 @@ module Structure
     def default_attributes
       @default_attributes ||= {}
     end
-  end
-
-  def self.included(base)
-    base.extend(ClassMethods)
   end
 
   # Creates a new structure.
