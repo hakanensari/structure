@@ -1,75 +1,28 @@
 # Structure
 
-[![travis](https://secure.travis-ci.org/papercavalier/structure.png)](http://travis-ci.org/papercavalier/structure)
+Structure is a Struct-like key/value container.
 
-Structure is Ruby module that turns a class into a key/value container.
+[![travis](https://secure.travis-ci.org/papercavalier/structure.png)](http://travis-ci.org/papercavalier/structure)
 
 ## Usage
 
-Set up models.
+Set up a model:
 
-```ruby
-require 'structure'
+    require 'structure'
 
-class Book
-  include Structure
+    class Person < Structure
+      key  :name
+      many :friends
+    end
 
-  attribute   :title
-  attribute   :binding, :default => "Hardcover"
-  attribute   :year_published, Integer
-  embeds_many :authors
-end
+Do things with it:
 
-class Author
-  include Structure
+    person = Person.new
+    friend = Person.new
+    person.friends << friend
+    puts person.to_json
+    => {"json_class":"Person","name":null,"friends":[{"json_class":"Person","name":null,"friends":[]}]}
 
-  attribute :name
-  attribute :role
-end
-```
+Please see [the project page] [1] for more detailed info.
 
-Create some objects.
-
-```ruby
-book = Book.new :title => "A Thousand Plateaus"
-author = Author.new :name => "Gilles Deleuze"
-book.authors << author
-```
-
-Attributes in structures are typecasted.
-
-```ruby
-book.year_published = "1985"
-puts book.year_published
-=> 1985
-```
-
-Translate to JSON and back into Ruby.
-
-```ruby
-json = book.to_json
-puts json
-=> {"json_class":"Book","title":"A Thousand Plateaus","binding":"Hardcover,"year_published":1985,"authors":[{"json_class":"Author","name":"Gilles Deleuze","role":null}]}
-
-book = JSON.parse(json)
-puts book.authors.first.name
-=> "Gilles Deleuze"
-```
-
-Mix in Active Model modules.
-
-```ruby
-require 'active_model'
-
-class Book
-  include ActiveModel::Validations
-
-  validates_presence_of :title
-end
-
-book = Book.new
-book.valid?
-=> false
-book.errors
-=> {:title=>["can't be blank"]}
-```
+[1]: http://code.papercavalier.com/structure/
