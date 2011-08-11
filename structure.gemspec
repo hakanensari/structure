@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
   s.name        = "structure"
   s.version     = Structure::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Paper Cavalier"]
+  s.authors     = ["Hakan Ensari"]
   s.email       = ["code@papercavalier.com"]
   s.homepage    = "http://code.papercavalier.com/structure"
-  s.summary     = "Turns a class into a key/value container"
-  s.description = "Structure turns a class into a key/value container."
+  s.summary     = "A Struct-like key/value container"
+  s.description = "Structure is a Struct-like key/value container."
 
   s.rubyforge_project = "structure"
 
