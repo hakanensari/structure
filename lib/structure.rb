@@ -1,5 +1,5 @@
 begin
-  ::JSON::JSON_LOADED
+  JSON::JSON_LOADED
 rescue NameError
   require 'json'
 end
@@ -14,9 +14,9 @@ end
 #
 # Structure is a Struct-like key/value container.
 #
-#      attribute :name
-#      attribute :age, Integer
 #    class Person < Structure
+#      key :name
+#      key :age, Integer
 #    end
 #
 #    person = Person.new(:name => "John")
@@ -29,16 +29,15 @@ class Structure
   # Structure supports the following types.
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
-    # Defines an attribute that represents an array of objects, possibly
-    # structures.
-    def embeds_many(key)
-      attribute key, Array, :default => []
   class << self
+    # Defines an attribute that represents an array of objects.
+    def many(name, options = {})
+      key name, Array, { :default => [] }.merge(options)
     end
 
     # Defines an attribute that represents another structure.
-    def embeds_one(key)
-      attribute key, Structure
+    def one(name)
+      key name, Structure
     end
 
     # Builds a structure out of its JSON representation.
@@ -49,33 +48,38 @@ class Structure
 
     # Defines an attribute.
     #
-    # Takes a key, an optional type, and an optional hash of options.
+    # Takes a name, an optional type, and an optional hash of options.
     #
     # The type can be +Array+, +Boolean+, +Float+, +Hash+, +Integer+, +String+,
-    # or +Structure+. If none is specified, this defaults to +String+.
+    # a +Structure+, or a subclass thereof. If none is specified, this defaults
+    # to +String+.
     #
     # Available options are:
     #
     # * +:default+, which sets the default value for the attribute.
-    def attribute(key, *args)
-      key     = key.to_sym
+    def key(name, *args)
+      name    = name.to_sym
       options = args.last.is_a?(Hash) ?  args.pop : {}
       type    = args.shift || String
       default = options[:default]
 
-      if method_defined? key
-        raise NameError, "#{key} is already defined"
+      if method_defined? name
+        raise NameError, "#{name} is already defined"
       end
 
-      if TYPES.include?(type) && (default.nil? || default.is_a?(type))
-        default_attributes[key] = default
+      if (type.ancestors & TYPES).empty?
+        raise TypeError, "#{type} is not a valid type"
+      end
+
+      if default.nil? || default.is_a?(type)
+        default_attributes[name] = default
       else
         msg = "#{default} is not a#{'n' if type.to_s.match(/^[AI]/)} #{type}"
         raise TypeError, msg
       end
 
       module_eval do
-        # Define a closure that typecasts value.
+        # Typecast value based on type.
         typecast =
           if type == Boolean
             lambda do |value|
@@ -91,8 +95,6 @@ class Structure
               end
             end
           elsif [Hash, Structure].include? type
-            # Don't bother with typecasting attributes of type +Hash+ or
-            # +Structure+.
             lambda do |value|
               unless value.is_a? type
                 raise TypeError, "#{value} is not a #{type}"
@@ -104,15 +106,10 @@ class Structure
           end
 
         # Define attribute accessors.
-        define_method(key) { @attributes[key] }
+        define_method(name) { @attributes[name] }
 
-        define_method("#{key}=") do |value|
-          @attributes[key] = value.nil? ? nil : typecast.call(value)
-        end
-
-        # Define a method to check for presence.
-        unless type == Array
-          define_method("#{key}?") { !!@attributes[key] }
+        define_method("#{name}=") do |value|
+          @attributes[name] = value.nil? ? nil : typecast.call(value)
         end
       end
     end
