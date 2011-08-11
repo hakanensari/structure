@@ -21,6 +21,7 @@ class Person < Structure
   key  :name
   one  :partner
   many :friends
+  many :parents, :default => 2.times.map { Person.new }
 end
 
 class TestStructure < Test::Unit::TestCase
@@ -101,6 +102,11 @@ class TestStructure < Test::Unit::TestCase
     person.friends << person
     assert_equal 1, person.friends.count
     assert_equal 0, friend.friends.count
+  end
+
+  def test_many
+    person = Person.new
+    assert_equal 2, person.parents.size
   end
 
   def test_json
