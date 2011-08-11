@@ -2,7 +2,7 @@
 
 Structure is a Struct-like key/value container.
 
-[![travis](https://secure.travis-ci.org/papercavalier/structure.png)](http://travis-ci.org/papercavalier/structure)
+[![travis](https://secure.travis-ci.org/hakanensari/structure.png)](http://travis-ci.org/hakanensari/structure)
 
 ## Usage
 
