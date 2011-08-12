@@ -6,7 +6,7 @@
 class Structure
   module Static
     def self.included(base)
-      base.key(:id, Integer)
+      base.key(:_id, Integer)
       base.extend(ClassMethods)
     end
 
@@ -23,7 +23,7 @@ class Structure
       # Returns all records.
       def all
         @records ||= data.map do |record|
-          record["id"] ||= increment_id
+          record["_id"] ||= record.delete("id") || increment_id
           new(record)
         end
       end
@@ -38,7 +38,7 @@ class Structure
 
       # Finds a record by its ID.
       def find(id)
-        detect { |record| record.id == id }
+        detect { |record| record._id == id }
       end
 
       # Sets the path for the data file.
