@@ -22,7 +22,8 @@ end
 class Structure
   include Enumerable
 
-  # Structure supports the following types.
+  autoload :Static, 'structure/static'
+
   # Available data type.
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
