@@ -2,7 +2,9 @@
 
 [![travis](https://secure.travis-ci.org/hakanensari/structure.png)](http://travis-ci.org/hakanensari/structure)
 
-Structure is a Struct-like key/value container.
+Structure is a Struct-like key/value container .
+
+It will shine in the ephemeral landscape of API-backed data.
 
     require 'structure'
 

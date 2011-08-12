@@ -15,18 +15,15 @@ end
 # Structure is a Struct-like key/value container.
 #
 #    class Person < Structure
-#      key :name
-#      key :age, Integer
+#      key  :name
+#      many :friends
 #    end
-#
-#    person = Person.new(:name => "John")
-#    person.name
-#    => "John"
 #
 class Structure
   include Enumerable
 
   # Structure supports the following types.
+  # Available data type.
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
   class << self
@@ -50,9 +47,9 @@ class Structure
     #
     # Takes a name, an optional type, and an optional hash of options.
     #
-    # The type can be +Array+, +Boolean+, +Float+, +Hash+, +Integer+, +String+,
-    # a +Structure+, or a subclass thereof. If none is specified, this defaults
-    # to +String+.
+    # The type can be +Array+, +Boolean+, +Float+, +Hash+, +Integer+,
+    # +String+, a +Structure+, or a subclass thereof. If none is
+    # specified, this defaults to +String+.
     #
     # Available options are:
     #
@@ -74,15 +71,26 @@ class Structure
       if default.nil? || default.is_a?(type)
         default_attributes[name] = default
       else
-        msg = "#{default} is not a#{'n' if type.to_s.match(/^[AI]/)} #{type}"
+        msg = "#{default} isn't a#{'n' if type.name.match(/^[AI]/)} #{type}"
         raise TypeError, msg
       end
 
       module_eval do
-        # Typecast value based on type.
-        typecast =
-          if type == Boolean
-            lambda do |value|
+        # A proc that typecasts value based on type.
+        typecaster =
+          case type.name
+          when 'Boolean'
+            lambda { |value|
+              # This should take care of the different representations
+              # of truth we might be feeding into the model.
+              #
+              # Any string other than "0" or "false" will evaluate to
+              # true.
+              #
+              # Any integer other than 0 will evaluate to true.
+              #
+              # Otherwise, we do the double-bang trick to non-boolean
+              # values.
               case value
               when Boolean
                 value
@@ -93,14 +101,17 @@ class Structure
               else
                 !!value
               end
-            end
-          elsif [Hash, Structure].include? type
-            lambda do |value|
+            }
+          when /Hash|Structure/
+            # We could possibly check if the value responds to #to_hash
+            # and cast to hash if it does, but I don't see any use case
+            # for this right now.
+            lambda { |value|
               unless value.is_a? type
                 raise TypeError, "#{value} is not a #{type}"
               end
               value
-            end
+            }
           else
             lambda { |value| Kernel.send(type.to_s, value) }
           end
@@ -109,7 +120,7 @@ class Structure
         define_method(name) { @attributes[name] }
 
         define_method("#{name}=") do |value|
-          @attributes[name] = value.nil? ? nil : typecast.call(value)
+          @attributes[name] = value.nil? ? nil : typecaster.call(value)
         end
       end
     end
@@ -168,9 +179,9 @@ class Structure
       to_json(*args)
   end
 
-  # Compares this object with another object for equality. A Structure is equal
-  # to the other object when latter is of the same class and the two objects'
-  # attributes are the same.
+  # Compares this object with another object for equality. A Structure
+  # is equal to the other object when latter is of the same class and
+  # the two objects' attributes are the same.
   def ==(other)
     other.is_a?(self.class) && @attributes == other.attributes
   end
