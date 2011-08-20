@@ -23,7 +23,7 @@ class Structure
       # Returns all records.
       def all
         @records ||= data.map do |record|
-          record["_id"] ||= record.delete("id") || increment_id
+          record['_id'] ||= record.delete('id') || increment_id
           new(record)
         end
       end

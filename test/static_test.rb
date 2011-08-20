@@ -4,7 +4,7 @@ class City < Structure
   include Static
 
   key  :name
-  many :neighborhoods
+  many :neighborhoods, Neighborhood
 end
 
 class Neighborhood < Structure
@@ -57,6 +57,6 @@ class TestStatic < Test::Unit::TestCase
 
   def test_nesting
     fixture City, 'cities_with_neighborhoods'
-    # assert_kind_of Neighborhood, City.first.neighborhoods.first
+    assert_kind_of Neighborhood, City.first.neighborhoods.first
   end
 end

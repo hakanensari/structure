@@ -4,41 +4,49 @@ rescue NameError
   require 'json'
 end
 
-# Fabricate a +Boolean+ class.
-unless defined? Boolean
-  module Boolean; end
-  [TrueClass, FalseClass].each { |klass| klass.send :include, Boolean }
-end
-
 # = Structure
 #
-# Structure is a Struct-like key/value container.
+# +Structure+ is a typecast, nestable key/value container.
 #
 #    class Person < Structure
 #      key  :name
-#      many :friends
+#      many :friends, Person
 #    end
 #
 class Structure
   include Enumerable
 
-  autoload :Static, 'structure/static'
+  autoload :Boolean,    'certainty'
+  autoload :Collection, 'structure/collection'
+  autoload :Static,     'structure/static'
 
-  # Available data type.
+  module Type; end
+
+  # An attribute may be of the following data types.
   TYPES = [Array, Boolean, Float, Hash, Integer, String, Structure]
 
   class << self
-    # Defines an attribute that represents an array of objects.
-    def many(name, options = {})
-      key name, Array, { :default => [] }.merge(options)
+    def const_missing(class_name)
+      Object.const_set class_name, Class.new(Structure)
+    end
+
+    # Defines an attribute that represents a collection.
+    def many(name, klass)
+      collection = Collection.new(klass)
+      key(name, collection, :default => collection.new)
     end
 
     # Defines an attribute that represents another structure.
-    def one(name)
-      key name, Structure
+    def one(name, klass)
+      key(name, klass)
+
+      define_method("create_#{name}") do |*args|
+        self.send("#{name}=", klass.new(*args))
+      end
     end
 
-    # Builds a structure out of its JSON representation.
+    # Builds a Ruby object out of the JSON representation of a
+    # structure.
     def json_create(object)
       object.delete 'json_class'
       new object
@@ -48,13 +56,12 @@ class Structure
     #
     # Takes a name, an optional type, and an optional hash of options.
     #
-    # The type can be +Array+, +Boolean+, +Float+, +Hash+, +Integer+,
-    # +String+, a +Structure+, or a subclass thereof. If none is
-    # specified, this defaults to +String+.
+    # If nothing is specified, type defaults to +String+.
     #
     # Available options are:
     #
-    # * +:default+, which sets the default value for the attribute.
+    # * +:default+, which sets the default value for the attribute. If
+    #   no default value is specified, it defaults to +nil+.
     def key(name, *args)
       name    = name.to_sym
       options = args.last.is_a?(Hash) ?  args.pop : {}
@@ -66,69 +73,35 @@ class Structure
       end
 
       if (type.ancestors & TYPES).empty?
-        raise TypeError, "#{type} is not a valid type"
+        raise TypeError, "#{type} isn't a valid type"
       end
 
       if default.nil? || default.is_a?(type)
-        default_attributes[name] = default
+        defaults[name] = default
       else
-        msg = "#{default} isn't a#{'n' if type.name.match(/^[AI]/)} #{type}"
-        raise TypeError, msg
+        raise TypeError, "#{default} isn't a #{type}"
       end
 
       module_eval do
-        # A proc that typecasts value based on type.
-        typecaster =
-          case type.name
-          when 'Boolean'
-            lambda { |value|
-              # This should take care of the different representations
-              # of truth we might be feeding into the model.
-              #
-              # Any string other than "0" or "false" will evaluate to
-              # true.
-              #
-              # Any integer other than 0 will evaluate to true.
-              #
-              # Otherwise, we do the double-bang trick to non-boolean
-              # values.
-              case value
-              when Boolean
-                value
-              when String
-                value !~ /0|false/i
-              when Integer
-                value != 0
-              else
-                !!value
-              end
-            }
-          when /Hash|Structure/
-            # We could possibly check if the value responds to #to_hash
-            # and cast to hash if it does, but I don't see any use case
-            # for this right now.
-            lambda { |value|
-              unless value.is_a? type
-                raise TypeError, "#{value} is not a #{type}"
-              end
-              value
-            }
-          else
-            lambda { |value| Kernel.send(type.to_s, value) }
-          end
-
         # Define attribute accessors.
         define_method(name) { @attributes[name] }
 
         define_method("#{name}=") do |value|
-          @attributes[name] = value.nil? ? nil : typecaster.call(value)
+          @attributes[name] =
+            if value.is_a?(type) || value.nil?
+              value
+            elsif Kernel.respond_to? type.to_s
+              Kernel.send(type.to_s, value)
+            else
+              Type.send(type.to_s, value)
+            end
         end
       end
     end
 
     # Returns a hash of all attributes with default values.
-    def default_attributes
-      @default_attributes ||= {}
+    def defaults
+      @defaults ||= {}
     end
   end
 
@@ -136,15 +109,25 @@ class Structure
   #
   # A hash, if provided, will seed its attributes.
   def initialize(hash = {})
-    @attributes = {}
-    self.class.default_attributes.each do |key, value|
-      @attributes[key] = value.is_a?(Array) ? value.dup : value
+    @attributes = self.class.defaults.inject({}) do |a, (k, v)|
+      a[k] = v.is_a?(Array) ? v.dup : v
+      a
     end
 
-    hash.each { |key, value| self.send("#{key}=", value) }
+    method_name = self.class.name || self.class.to_s
+    (class << Type; self; end).send(:define_method, method_name) do |arg|
+      case arg
+      when self.class
+        arg
+      else
+        new arg
+      end
+    end
+
+    hash.each { |k, v| self.send("#{k}=", v) }
   end
 
-  # A hash that stores the attributes of the structure.
+  # The attributes that make up the structure.
   attr :attributes
 
   # Returns a Rails-friendly JSON representation of the structure.
@@ -169,7 +152,22 @@ class Structure
   # Calls block once for each attribute in the structure, passing that
   # attribute as a parameter.
   def each(&block)
-    @attributes.each { |value| block.call(value) }
+    @attributes.each { |v| block.call(v) }
+  end
+
+  # Returns a hash representation of the structure.
+  def to_hash
+    @attributes.inject({}) do |a, (k, v)|
+      a[k] =
+        if v.respond_to?(:to_hash)
+          v.to_hash
+        elsif v.is_a? Array
+          v.map { |e| e.respond_to?(:to_hash) ? e.to_hash : e }
+        else
+          v
+        end
+      a
+    end
   end
 
   # Returns a JSON representation of the structure.
