@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.16.0
+* typecast embedded objects and collections
+* adopt AR-like idioms for embedded structures, such as
+  `foo.bars.create` and `foo.create_bar`
+
 ## 0.15.0
 * bring back static module
 
