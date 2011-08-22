@@ -4,6 +4,8 @@ rescue NameError
   require 'json'
 end
 
+require 'certainty'
+
 # = Structure
 #
 # +Structure+ is a typecast, nestable key/value container.
@@ -16,7 +18,6 @@ end
 class Structure
   include Enumerable
 
-  autoload :Boolean,    'certainty'
   autoload :Collection, 'structure/collection'
   autoload :Static,     'structure/static'
 
