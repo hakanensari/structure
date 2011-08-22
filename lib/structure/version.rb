@@ -1,3 +1,3 @@
-class Structure
+module Structure
   VERSION = '0.16.0'
 end

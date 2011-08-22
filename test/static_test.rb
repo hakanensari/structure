@@ -1,17 +1,17 @@
 require File.expand_path('../helper.rb', __FILE__)
 
-class City < Structure
+class City < Document
   include Static
 
   key  :name
-  many :neighborhoods, Neighborhood
+  many :neighborhoods
 end
 
-class Neighborhood < Structure
+class Neighborhood < Document
   key :name
 end
 
-class Dummy < Structure
+class Dummy < Document
   include Static
 
   key :name
