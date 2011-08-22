@@ -114,7 +114,8 @@ class Structure
       a
     end
 
-    method_name = self.class.name || self.class.to_s
+    method_name = self.class.name
+    method_name = self.class.to_s if method_name.nil? || method_name.empty?
     (class << Type; self; end).send(:define_method, method_name) do |arg|
       case arg
       when self.class
