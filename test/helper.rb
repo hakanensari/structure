@@ -10,8 +10,4 @@ end
 require 'structure'
 require 'test/unit'
 
-require 'active_support/testing/isolation'
-
-Test::Unit::TestCase.send :include, ActiveSupport::Testing::Isolation
-
 Object.const_set(:Document, Structure::Document)

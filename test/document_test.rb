@@ -2,6 +2,7 @@ require File.expand_path('../helper.rb', __FILE__)
 
 class Person < Document
   key  :name
+  key  :single, Boolean, :default => true
   one  :location
   many :friends,  :class_name => 'Person'
 end
@@ -11,7 +12,7 @@ class Location < Document
   key :lat, Float
 end
 
-class TestStructure < Test::Unit::TestCase
+class TestDocument < Test::Unit::TestCase
   def test_enumeration
     assert_respond_to Person.new, :map
   end
@@ -21,15 +22,20 @@ class TestStructure < Test::Unit::TestCase
     assert_respond_to Person.new, :name=
   end
 
+  def test_converter
+    assert_kind_of Person, Person(Person.new)
+    assert_kind_of Person, Person(:name => 'John')
+    assert_raise(TypeError) { Person('John') }
+  end
+
   def test_errors
     assert_raise(NameError) { Person.key :class }
     assert_raise(TypeError) { Person.key :foo, Object }
-    assert_raise(TypeError) { Person.key :bar, :default => 1 }
+    assert_raise(TypeError) { Person.key :foo, :default => 1 }
   end
 
   def test_defaults
-    Person.key :foo, :default => 'bar'
-    assert_equal 'bar', Person.new.foo
+    assert_equal true, Person.new.single?
   end
 
   def test_typecheck
@@ -42,13 +48,7 @@ class TestStructure < Test::Unit::TestCase
     assert_nil location.lon
   end
 
-  def test_boolean
-    Person.key :foo, Boolean, :default => false
-    assert_equal false, Person.new.foo
-    assert_equal false, Person.new.foo?
-  end
-
-  def test_one_relationship
+  def test_one
     person = Person.new
 
     person.location = Location.new(:lon => 2.0)
