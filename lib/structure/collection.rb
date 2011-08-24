@@ -1,7 +1,7 @@
 require 'forwardable'
 
 module Structure
-  class Collection < Array #:nodoc:[all]
+  class Collection < Array
     class << self
       attr :type
 
