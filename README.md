@@ -2,22 +2,26 @@
 
 [![travis](https://secure.travis-ci.org/hakanensari/structure.png)](http://travis-ci.org/hakanensari/structure)
 
-Structure is a typed, nestable key/value container.
+Structure is a typed, nestable, ephemeral key/value container.
 
-It will shine in the ephemeral landscape of API-backed data.
+## Usage
+
+Install and require the gem.
 
     require 'structure'
 
-    class Person < Structure
+Define a model.
+
+    Document = Structure::Document
+
+    class Person < Document
       key  :name
-      one  :location, Location
-      many :friends,  Person
+      many :friends, :class_name => 'Person'
     end
 
-    class Location < Structure
-      key :lon, Float
-      key :lat, Float
-    end
+    person = Person.create(:name => 'John')
+    person.friends << Person.create(:name => 'Jane')
+    person.friends.size # 1
 
 Please see [the project page] [1] for more detailed info.
 
