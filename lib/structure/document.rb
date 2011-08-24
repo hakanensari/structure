@@ -111,6 +111,8 @@ module Structure
         key name, klass, options
       end
 
+      alias create new
+
       private
 
       def constantize(name)

@@ -35,7 +35,7 @@ class TestDocument < Test::Unit::TestCase
   end
 
   def test_defaults
-    assert_equal true, Person.new.single?
+    assert_equal true, Person.create.single?
   end
 
   def test_typecheck
