@@ -27,6 +27,7 @@ class TestCollection < Test::Unit::TestCase
   end
 
   def test_enumeration
-    assert_respond_to Foo.new, :map
+    assert_respond_to FooCollection.new, :map
+    assert_kind_of    FooCollection, FooCollection.new.map! { |e| e }
   end
 end

@@ -1,15 +1,7 @@
 require 'forwardable'
 
 module Structure
-  class Collection #:nodoc:[all]
-    extend Forwardable
-
-    Enumerable.instance_methods.each do |method|
-      def_delegator :@members, method
-    end
-
-    def_delegators :@members, :clear, :empty?, :last, :size, :to_json
-
+  class Collection < Array #:nodoc:[all]
     class << self
       attr :type
 
@@ -50,30 +42,20 @@ module Structure
 
     attr :members
 
-    def initialize
-      @members = []
-    end
-
-    def ==(other)
-      @members == other.members
+    %w{concat eql? push replace unshift}.each do |method|
+      define_method method do |ary|
+        super ary.map { |item| Kernel.send(type.to_s, item) }
+      end
     end
 
     def <<(item)
-      @members << Kernel.send(type.to_s, item)
-
-      self
+      super Kernel.send(type.to_s, item)
     end
 
     def create(*args)
-      @members << type.new(*args)
+      self.<< type.new(*args)
 
       true
-    end
-
-    def dup
-      @members = @members.dup
-
-      super
     end
 
     private
