@@ -10,4 +10,4 @@ end
 require 'structure'
 require 'test/unit'
 
-Object.const_set(:Document, Structure::Document)
+Document = Structure::Document
