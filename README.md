@@ -2,7 +2,7 @@
 
 [![travis](https://secure.travis-ci.org/hakanensari/structure.png)](http://travis-ci.org/hakanensari/structure)
 
-Structure is a typed, nestable, ephemeral key/value container.
+Structure is a typed, nestable key/value container.
 
 ## Usage
 
