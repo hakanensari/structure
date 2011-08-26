@@ -49,7 +49,7 @@ class Structure
         raise NameError, "#{name} is taken"
       end
 
-      if default.nil? || default.is_a?(type)
+      if default.nil? || type.nil? || default.is_a?(type)
         defaults[name] = default
       else
         raise TypeError, "#{default} isn't a #{type}"
