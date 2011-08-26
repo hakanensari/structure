@@ -59,29 +59,27 @@ class Structure
         raise TypeError, "#{default} isn't a #{type}"
       end
 
-      module_eval do
-        define_method(name) { attributes[name] }
+      define_method(name) { attributes[name] }
 
-        if type.nil?
-          define_method("#{name}=") { |val| attributes[name] = val }
-        elsif Kernel.respond_to? type.to_s
-          define_method("#{name}=") do |val|
-            attributes[name] =
-              if val.nil? || val.is_a?(type)
-                val
-              else
-                Kernel.send(type.to_s, val)
-              end
-          end
-        else
-          define_method("#{name}=") do |val|
-            attributes[name] =
-              if val.nil? || val.is_a?(type)
-                val
-              else
-                raise TypeError, "#{val} isn't a #{type}"
-              end
-          end
+      if type.nil?
+        define_method("#{name}=") { |val| attributes[name] = val }
+      elsif Kernel.respond_to? type.to_s
+        define_method("#{name}=") do |val|
+          attributes[name] =
+            if val.nil? || val.is_a?(type)
+              val
+            else
+              Kernel.send(type.to_s, val)
+            end
+        end
+      else
+        define_method("#{name}=") do |val|
+          attributes[name] =
+            if val.nil? || val.is_a?(type)
+              val
+            else
+              raise TypeError, "#{val} isn't a #{type}"
+            end
         end
       end
     end
