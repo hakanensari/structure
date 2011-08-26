@@ -38,7 +38,6 @@ class TestStructure < Test::Unit::TestCase
 
   test "should raise errors" do
     assert_raise(NameError) { Person.key :class }
-    assert_raise(TypeError) { Person.key :foo, Module.new }
     assert_raise(TypeError) { Person.key :foo, String, :default => 1 }
   end
 

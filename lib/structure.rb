@@ -49,10 +49,6 @@ class Structure
         raise NameError, "#{name} is taken"
       end
 
-      unless type.nil? || type.is_a?(Class)
-        raise TypeError, "#{type} isn't a Class" 
-      end
-
       if default.nil? || default.is_a?(type)
         defaults[name] = default
       else
