@@ -4,24 +4,10 @@
 
 Structure is a typed, nestable key/value container.
 
-## Usage
-
-Install and require the gem.
-
-    require 'structure'
-
-Define a model.
-
-    Document = Structure::Document
-
-    class Person < Document
-      key  :name
-      many :friends, :class_name => 'Person'
+    class Person < Structure
+      key  :name, String
+      many :friends
     end
-
-    person = Person.create(:name => 'John')
-    person.friends << Person.create(:name => 'Jane')
-    person.friends.size # 1
 
 Please see [the project page] [1] for more detailed info.
 

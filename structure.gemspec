@@ -10,13 +10,9 @@ Gem::Specification.new do |s|
   s.email       = ['code@papercavalier.com']
   s.homepage    = 'http://github.com/hakanensari/structure'
   s.summary     = 'A typed, nestable key/value container'
-  s.description = 'A typed, nestable key/value container'
+  s.description = 'Structure is a typed, nestable key/value container.'
 
   s.rubyforge_project = 'structure'
-
-  s.add_dependency 'certainty',     '~> 0.2.0'
-  s.add_dependency 'activesupport', '~> 3.0'
-  s.add_dependency 'i18n',          '~> 0.6.0'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
