@@ -15,8 +15,6 @@ end
 class Structure
   include Enumerable
 
-  autoload :Static,'structure/static'
-
   class << self
     # Returns attribute keys and their default values.
     def defaults
@@ -83,14 +81,6 @@ class Structure
     # A shorthand that defines an attribute that is an array.
     def many(name)
       key name, Array, :default => []
-    end
-
-    # Renders the structure static by setting the path for a YAML file
-    # that stores the records.
-    def set_data_file(path)
-      extend Static unless self.respond_to? :all
-
-      @data_path = path
     end
   end
 
