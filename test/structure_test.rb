@@ -3,7 +3,7 @@ $:.push File.expand_path('../../lib', __FILE__)
 require 'bundler/setup'
 
 begin
-  require 'ruby-debug'
+  require 'pry'
 rescue LoadError
 end
 
