@@ -4,6 +4,8 @@ rescue NameError
   require 'json'
 end
 
+require 'structure/wrapper'
+
 # A structure is a nestable key/value container.
 #
 #    class Person < Structure
