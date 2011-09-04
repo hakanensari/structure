@@ -1,5 +1,3 @@
-$:.push File.expand_path('../../lib', __FILE__)
-
 require 'bundler/setup'
 
 begin
@@ -7,8 +5,9 @@ begin
 rescue LoadError
 end
 
-require 'structure'
 require 'test/unit'
+
+require File.expand_path('../../lib/structure', __FILE__)
 
 class Test::Unit::TestCase
   def self.test(name, &block)
