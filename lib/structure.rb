@@ -59,20 +59,13 @@ class Structure
 
       if type.nil?
         define_method("#{name}=") { |val| attributes[name] = val }
-      elsif Kernel.respond_to? type.to_s
+      elsif !type.is_a?(Wrapper)
         define_method("#{name}=") do |val|
           attributes[name] =
             if val.nil? || val.is_a?(type)
               val
-            else
+            elsif Kernel.respond_to?(type.to_s)
               Kernel.send(type.to_s, val)
-            end
-        end
-      else
-        define_method("#{name}=") do |val|
-          attributes[name] =
-            if val.nil? || val.is_a?(type)
-              val
             else
               raise TypeError, "#{val} isn't a #{type}"
             end
@@ -83,6 +76,12 @@ class Structure
     # A shorthand that defines an attribute that is an array.
     def many(name)
       key name, Array, :default => []
+    end
+
+    private
+
+    def const_missing(name)
+      Wrapper.new(name)
     end
   end
 
