@@ -9,6 +9,6 @@ Structure is a typed, nestable key/value container.
       many :friends
     end
 
-Please see [the wiki] [1] for more detailed info.
+Please see the [wiki] [1] for more detail.
 
-[1]: https://github.hakanensari.com/structure/wiki/
+[1]: https://github.com/hakanensari/structure/wiki/
