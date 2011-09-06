@@ -5,10 +5,10 @@
 Structure is a typed, nestable key/value container.
 
     class Person < Structure
-      key  :name, String
+      key  :name
       many :friends
     end
 
-Please see [the project page] [1] for more detailed info.
+Please see [the wiki] [1] for more detailed info.
 
-[1]: http://code.papercavalier.com/structure/
+[1]: https://github.hakanensari.com/structure/wiki/
