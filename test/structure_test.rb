@@ -18,11 +18,12 @@ class Location < Structure
 end
 
 class TestStructure < Test::Unit::TestCase
-  def test_wrapper
-    wrapper = Structure::Wrapper.new(:Foo)
-    assert_raise(NameError) { wrapper.class }
+  def test_double
+    double = Structure::Double.new(:Foo)
+    assert_equal 'Foo', "#{double}"
+    assert_raise(NameError) { double.class }
     ::Kernel.const_set(:Foo, 1)
-    assert_kind_of Fixnum, wrapper
+    assert_kind_of Fixnum, double
   end
 
   def test_enumeration
@@ -60,12 +61,12 @@ class TestStructure < Test::Unit::TestCase
     assert_equal 0, person.friends.first.friends.size
   end
 
-  def test_to_hash
-    person = Person.new(:name => 'John')
-    person.friends << Person.new(:name => 'Jane')
-    assert_equal 'John', person.to_hash[:name]
-    assert_equal 'Jane', person.to_hash[:friends].first[:name]
-  end
+  # def test_to_hash
+  #   person = Person.new(:name => 'John')
+  #   person.friends << Person.new(:name => 'Jane')
+  #   assert_equal 'John', person.to_hash[:name]
+  #   assert_equal 'Jane', person.to_hash[:friends].first[:name]
+  # end
 
   def test_json
     person = Person.new

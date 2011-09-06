@@ -5,10 +5,10 @@ rescue NameError
   require 'json'
 end
 
-# A structure is a nestable, typed key/value container.
+# Structure is a nestable, typed key/value container.
 #
 #    class Person < Structure
-#      key  :name, String
+#      key  :name
 #      many :friends
 #    end
 #
@@ -16,7 +16,10 @@ class Structure
   extend Forwardable
   include Enumerable
 
-  # Fabricate a Basic Object if not running Ruby version >= 1.9.
+  # A namespaced basic object.
+  #
+  # If running a legacy Ruby version, we either quote Builder's or
+  # fabricate ourselves.
   if defined?(BasicObject)
     BasicObject = ::BasicObject
   elsif defined?(BlankSlate)
@@ -29,19 +32,22 @@ class Structure
     end
   end
 
-  # A wrapper for lazy-evaluating constants.
+  # A double that stands in for a yet-to-be-defined class. Otherwise
+  # known as "lazy evaluation."
   #
-  # The idea is lifted from:
+  # Idea lifted from:
   # http://github.com/soveran/ohm/
-  class Wrapper < BasicObject
+  class Double < BasicObject
     def initialize(name)
       @name = name
     end
 
-    # Delegates called method to wrapped class.
+    def to_s
+      @name.to_s
+    end
+
     def method_missing(mth, *args, &block)
-      super if @unwrapped
-      @unwrapped = true
+      @unwrapped ? super : @unwrapped = true
       ::Kernel.const_get(@name).send(mth, *args, &block)
     ensure
       @unwrapped = false
@@ -54,11 +60,7 @@ class Structure
       @defaults ||= {}
     end
 
-    def inherited(child)
-      child.def_delegator child, :defaults
-    end
-
-    # Builds a structure out of its JSON representation.
+    # Recreates a structure out of its JSON representation.
     def json_create(hsh)
       hsh.delete('json_class')
       new(hsh)
@@ -66,21 +68,27 @@ class Structure
 
     # Defines an attribute.
     #
-    # Takes a name and optionally, a type and default value.
+    # Takes a name and, optionally, a type and default value.
     def key(name, type = nil, default = nil)
-      raise NameError, "#{name} is taken" if method_defined?(name)
       name = name.to_sym
-      defaults[name] = default
+
+      if method_defined?(name)
+        raise NameError, "#{name} is taken"
+      end
+
+      if !default || !type || default.is_a?(type)
+        defaults[name] = default
+      else
+        binding.pry
+        raise TypeError, "#{default} isn't a #{type}"
+      end
 
       define_method(name) { attributes[name] }
 
       define_method("#{name}=") do |val|
         attributes[name] =
-          # TODO: There must be a simpler way of saying this.
-          if val.is_a?(Array) && type == Array
-            val.dup
-          elsif type.nil? || val.nil? || val.is_a?(type)
-            val
+          if type.nil? || val.nil? || val.is_a?(type)
+            val.dup rescue val
           elsif Kernel.respond_to?(type.to_s)
             Kernel.send(type.to_s, val)
           else
@@ -98,16 +106,24 @@ class Structure
     # Lazy-eval undefined constants, typically other structures,
     # assuming they will be defined later in the text.
     def const_missing(name)
-      Wrapper.new(name)
+      Double.new(name)
     end; private :const_missing
+
+    def inherited(child)
+      child.def_delegator child, :defaults
+    end; private :inherited
   end
 
   # Creates a new structure.
   #
   # A hash, if provided, seeds the attributes.
   def initialize(hsh = {})
-    @attributes = Hash.new
-    defaults.merge(hsh).each { |k, v| self.send("#{k}=", v) }
+    @attributes = defaults.inject({}) do |a, (k, v)|
+      a[k] = v.is_a?(Array) ? v.dup : v
+      a
+    end
+
+    hsh.each { |k, v| self.send("#{k}=", v) }
   end
 
   # The attributes that make up the structure.
