@@ -37,6 +37,7 @@ class TestStructure < Test::Unit::TestCase
 
   def test_key_errors
     assert_raise(NameError) { Person.key :class }
+    assert_raise(TypeError) { Person.key :foo, String, 1 }
   end
 
   def test_key_defaults

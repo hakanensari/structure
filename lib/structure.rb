@@ -79,7 +79,6 @@ class Structure
       if !default || !type || default.is_a?(type)
         defaults[name] = default
       else
-        binding.pry
         raise TypeError, "#{default} isn't a #{type}"
       end
 
