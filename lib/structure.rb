@@ -1,21 +1,52 @@
+require 'forwardable'
 begin
   JSON::JSON_LOADED
 rescue NameError
   require 'json'
 end
 
-require 'structure/wrapper'
-
-# A structure is a nestable key/value container.
+# A structure is a nestable, typed key/value container.
 #
 #    class Person < Structure
-#      key  :name
-#      key  :age, Integer
+#      key  :name, String
 #      many :friends
 #    end
 #
 class Structure
+  extend Forwardable
   include Enumerable
+
+  # Fabricate a Basic Object if not running Ruby version >= 1.9.
+  if defined?(BasicObject)
+    BasicObject = ::BasicObject
+  elsif defined?(BlankSlate)
+    BasicObject = ::BlankSlate
+  else
+    class BasicObject
+      instance_methods.each do |mth|
+        undef_method(mth) unless mth =~ /\A(__|instance_eval)/
+      end
+    end
+  end
+
+  # A wrapper for lazy-evaluating constants.
+  #
+  # The idea is lifted from:
+  # http://github.com/soveran/ohm/
+  class Wrapper < BasicObject
+    def initialize(name)
+      @name = name
+    end
+
+    # Delegates called method to wrapped class.
+    def method_missing(mth, *args, &block)
+      super if @unwrapped
+      @unwrapped = true
+      ::Kernel.const_get(@name).send(mth, *args, &block)
+    ensure
+      @unwrapped = false
+    end; private :method_missing
+  end
 
   class << self
     # Returns attribute keys and their default values.
@@ -23,78 +54,60 @@ class Structure
       @defaults ||= {}
     end
 
-    # Builds a structure out of the JSON representation of a
-    # structure.
+    def inherited(child)
+      child.def_delegator child, :defaults
+    end
+
+    # Builds a structure out of its JSON representation.
     def json_create(hsh)
-      hsh.delete 'json_class'
-      new hsh
+      hsh.delete('json_class')
+      new(hsh)
     end
 
     # Defines an attribute.
     #
-    # Takes a name and, optionally, a type and options hash.
-    #
-    # The type should be a Ruby class.
-    #
-    # Available options are:
-    #
-    # * +:default+, which specifies a default value for the attribute.
-    def key(name, *args)
-      name    = name.to_sym
-      options = args.last.is_a?(Hash) ?  args.pop : {}
-      type    = args.shift
-      default = options[:default]
-
-      if method_defined?(name)
-        raise NameError, "#{name} is taken"
-      end
-
-      if default.nil? || type.nil? || default.is_a?(type)
-        defaults[name] = default
-      else
-        raise TypeError, "#{default} isn't a #{type}"
-      end
+    # Takes a name and optionally, a type and default value.
+    def key(name, type = nil, default = nil)
+      raise NameError, "#{name} is taken" if method_defined?(name)
+      name = name.to_sym
+      defaults[name] = default
 
       define_method(name) { attributes[name] }
 
-      if type.nil?
-        define_method("#{name}=") { |val| attributes[name] = val }
-      elsif !type.is_a?(Wrapper)
-        define_method("#{name}=") do |val|
-          attributes[name] =
-            if val.nil? || val.is_a?(type)
-              val
-            elsif Kernel.respond_to?(type.to_s)
-              Kernel.send(type.to_s, val)
-            else
-              raise TypeError, "#{val} isn't a #{type}"
-            end
-        end
+      define_method("#{name}=") do |val|
+        attributes[name] =
+          # TODO: There must be a simpler way of saying this.
+          if val.is_a?(Array) && type == Array
+            val.dup
+          elsif type.nil? || val.nil? || val.is_a?(type)
+            val
+          elsif Kernel.respond_to?(type.to_s)
+            Kernel.send(type.to_s, val)
+          else
+            raise TypeError, "#{val} isn't a #{type}"
+          end
       end
     end
 
-    # A shorthand that defines an attribute that is an array.
+    # Defines an attribute that is an array and defaults to an empty
+    # one.
     def many(name)
-      key name, Array, :default => []
+      key name, Array, []
     end
 
-    private
-
+    # Lazy-eval undefined constants, typically other structures,
+    # assuming they will be defined later in the text.
     def const_missing(name)
       Wrapper.new(name)
-    end
+    end; private :const_missing
   end
 
   # Creates a new structure.
   #
-  # A hash, if provided, will seed the attributes.
+  # A hash, if provided, seeds the attributes.
   def initialize(hsh = {})
-    @attributes = self.class.defaults.inject({}) do |a, (k, v)|
-      a[k] = v.is_a?(Array) ? v.dup : v
-      a
-    end
-
-    hsh.each { |k, v| self.send("#{k}=", v) }
+    @attributes = Hash.new
+    defaults.merge(hsh).each { |k, v| self.send("#{k}=", v) }
   end
 
   # The attributes that make up the structure.
@@ -110,9 +123,9 @@ class Structure
   def to_hash
     attributes.inject({}) do |a, (k, v)|
       a[k] =
-        if v.respond_to? :to_hash
+        if v.respond_to?(:to_hash)
           v.to_hash
-        elsif v.is_a? Array
+        elsif v.is_a?(Array)
           v.map { |e| e.respond_to?(:to_hash) ? e.to_hash : e }
         else
           v
@@ -122,7 +135,7 @@ class Structure
     end
   end
 
-  # Converts structure to a JSON representation.
+  # Converts structure to its JSON representation.
   def to_json(*args)
     { JSON.create_id => self.class.name }.
       merge(attributes).
@@ -137,4 +150,4 @@ class Structure
   end
 end
 
-require 'structure/rails' if defined?(Rails)
+require 'structure/active_support' if defined?(Rails)
