@@ -19,7 +19,7 @@ class Structure
   # A namespaced basic object.
   #
   # If running a legacy Ruby version, we either quote Builder's or
-  # fabricate ourselves.
+  # fabricate one ourselves.
   if defined?(BasicObject)
     BasicObject = ::BasicObject
   elsif defined?(BlankSlate)
