@@ -118,7 +118,7 @@ class Structure
   # A hash, if provided, seeds the attributes.
   def initialize(hsh = {})
     @attributes = defaults.inject({}) do |a, (k, v)|
-      a[k] = v.is_a?(Array) ? v.dup : v
+      a[k] = v.dup rescue v
       a
     end
 
