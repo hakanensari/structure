@@ -26,6 +26,14 @@ class TestStructure < Test::Unit::TestCase
     assert_kind_of Fixnum, double
   end
 
+  def test_anonymous_structure
+    hsh = { 'FirstName' => 'John', 'LastName' => 'Doe' }
+    str = Structure.new(hsh)
+    assert_equal hsh['FirstName'], str.first_name
+    assert_equal hsh['LastName'], str.last_name
+    assert_raise(NoMethodError) { str.FirstName }
+  end
+
   def test_enumeration
     assert_respond_to Person.new, :map
   end
