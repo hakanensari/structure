@@ -110,19 +110,22 @@ class Structure
 
     def inherited(child)
       child.def_delegator child, :defaults
+
+      child.class_eval do
+        def initialize(hsh = {})
+          @attributes = defaults.inject({}) do |a, (k, v)|
+            a[k] = v.dup rescue v
+            a
+          end
+
+          hsh.each { |k, v| self.send("#{k}=", v) }
+        end
+      end
     end; private :inherited
   end
 
-  # Creates a new structure.
-  #
-  # A hash, if provided, seeds the attributes.
-  def initialize(hsh = {})
-    @attributes = defaults.inject({}) do |a, (k, v)|
-      a[k] = v.dup rescue v
-      a
-    end
-
-    hsh.each { |k, v| self.send("#{k}=", v) }
+  def initialize
+    raise
   end
 
   # The attributes that make up the structure.
