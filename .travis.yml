@@ -6,6 +6,3 @@ rvm:
   - rbx
   - rbx-2.0
   - ree
-branches:
-  only:
-    - master
