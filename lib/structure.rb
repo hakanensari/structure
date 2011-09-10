@@ -1,4 +1,3 @@
-require 'forwardable'
 begin
   JSON::JSON_LOADED
 rescue NameError
@@ -13,7 +12,6 @@ end
 #    end
 #
 class Structure
-  extend Forwardable
   include Enumerable
 
   # A namespaced basic object.
@@ -109,8 +107,6 @@ class Structure
     end; private :const_missing
 
     def inherited(child)
-      child.def_delegator child, :defaults
-
       child.class_eval do
         def initialize(hsh = {})
           @attributes = defaults.inject({}) do |a, (k, v)|
@@ -166,6 +162,10 @@ class Structure
   def ==(other)
     other.is_a?(self.class) && attributes == other.attributes
   end
+
+  def defaults
+    self.class.defaults
+  end; private :defaults
 end
 
 require 'structure/ext/active_support' if defined?(Rails)
