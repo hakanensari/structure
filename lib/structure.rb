@@ -168,4 +168,4 @@ class Structure
   end
 end
 
-require 'structure/active_support' if defined?(Rails)
+require 'structure/ext/active_support' if defined?(Rails)
