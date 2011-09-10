@@ -113,7 +113,6 @@ class Structure
           else
             v
           end
-
         a
       end
 
@@ -131,13 +130,8 @@ class Structure
     end; private :const_missing
 
     def inherited(child)
-      # Watch out for obsure discrepancy between JRuby and other
-      # Rubies. In former, Kernel#methods returns strings as opposed to
-      # symbols.
-      if methods(false).grep /new_original/
-        class << child
-          alias_method :new, :new_original
-        end
+      if self.eql? Structure
+        class << child; alias_method :new, :new_original; end
       end
     end; private :inherited
   end
