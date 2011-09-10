@@ -100,6 +100,30 @@ class Structure
       key name, Array, []
     end
 
+    alias_method :new_original, :new
+
+    def new(hsh)
+      hsh = hsh.inject({}) do |a, (k, v)|
+        a[Inflector.underscore(k)] =
+          case v
+          when Hash
+            Structure.new(v)
+          when Array
+            v.map { |e| e.is_a?(Hash) ? Structure.new(e) : e }
+          else
+            v
+          end
+
+        a
+      end
+
+      klass = Class.new(Structure) do
+        hsh.keys.each { |k| key k }
+      end
+
+      klass.new(hsh)
+    end
+
     # Lazy-eval undefined constants, typically other structures,
     # assuming they will be defined later in the text.
     def const_missing(name)
@@ -107,21 +131,24 @@ class Structure
     end; private :const_missing
 
     def inherited(child)
-      child.class_eval do
-        def initialize(hsh = {})
-          @attributes = defaults.inject({}) do |a, (k, v)|
-            a[k] = v.dup rescue v
-            a
-          end
-
-          hsh.each { |k, v| self.send("#{k}=", v) }
+      if methods(false).include? :new_original
+        class << child
+          alias_method :new, :new_original
         end
       end
     end; private :inherited
   end
 
-  def initialize
-    raise
+  # Creates a new structure.
+  #
+  # A hash, if provided, seeds the attributes.
+  def initialize(hsh = {})
+    @attributes = defaults.inject({}) do |a, (k, v)|
+      a[k] = v.dup rescue v
+      a
+    end
+
+    hsh.each { |k, v| self.send("#{k}=", v) }
   end
 
   # The attributes that make up the structure.
@@ -166,6 +193,22 @@ class Structure
   def defaults
     self.class.defaults
   end; private :defaults
+
+  module Inflector
+    # Makes an underscored, lowercase form from the expression in the
+    # string.
+    #
+    # You know where this is lifted from.
+    def self.underscore(camel_cased_word)
+      word = camel_cased_word.to_s.dup
+      word.gsub!(/::/, '/')
+      word.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+      word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+      word.tr!("-", "_")
+      word.downcase!
+      word
+    end
+  end
 end
 
 require 'structure/ext/active_support' if defined?(Rails)

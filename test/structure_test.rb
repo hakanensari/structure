@@ -26,12 +26,22 @@ class TestStructure < Test::Unit::TestCase
     assert_kind_of Fixnum, double
   end
 
-  def test_anonymous_structure
+  def test_anonymous
     hsh = { 'FirstName' => 'John', 'LastName' => 'Doe' }
     str = Structure.new(hsh)
     assert_equal hsh['FirstName'], str.first_name
     assert_equal hsh['LastName'], str.last_name
     assert_raise(NoMethodError) { str.FirstName }
+  end
+
+  def test_anonymous_recursion
+    hsh = { 'Name' => 'John',
+            'Address' => { 'City' => 'Oslo' },
+            'Friends' => [{ 'Name' => 'Jane' }]
+          }
+    str = Structure.new(hsh)
+    assert_equal hsh['Address']['City'], str.address.city
+    assert_equal hsh['Friends'].first['Name'], str.friends.first.name
   end
 
   def test_enumeration
@@ -88,7 +98,7 @@ class TestStructure < Test::Unit::TestCase
 
     require 'active_support/ordered_hash'
     require 'active_support/json'
-    require 'structure/active_support'
+    require 'structure/ext/active_support'
 
     assert_equal true,  person.as_json(:only => :name).has_key?(:name)
     assert_equal false, person.as_json(:except => :name).has_key?(:name)
