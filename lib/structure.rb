@@ -30,12 +30,12 @@ class Structure
     end
   end
 
-  # A double that stands in for a yet-to-be-defined class. Otherwise
-  # known as "lazy evaluation."
+  # A wrapper that stands in for a yet-to-be-defined class. A sleight
+  # of hand known in certain circles as lazy evaluation.
   #
   # Idea lifted from:
   # http://github.com/soveran/ohm/
-  class Double < BasicObject
+  class Wrapper < BasicObject
     def initialize(name)
       @name = name
     end
@@ -44,12 +44,18 @@ class Structure
       @name.to_s
     end
 
+    def unwrap
+      ::Kernel.const_get(@name)
+    end
+
+    private
+
     def method_missing(mth, *args, &block)
       @unwrapped ? super : @unwrapped = true
-      ::Kernel.const_get(@name).send(mth, *args, &block)
+      unwrap.send(mth, *args, &block)
     ensure
       @unwrapped = false
-    end; private :method_missing
+    end
   end
 
   class << self
@@ -83,6 +89,7 @@ class Structure
       define_method(name) { attributes[name] }
 
       define_method("#{name}=") do |val|
+        type = type.unwrap rescue type
         attributes[name] =
           if type.nil? || val.nil? || val.is_a?(type)
             val.dup rescue val
@@ -123,17 +130,19 @@ class Structure
       klass.new(hsh)
     end
 
-    # Lazy-eval undefined constants, typically other structures,
+    private
+
+    # Lazy-evaluate undefined constants, typically other structures,
     # assuming they will be defined later in the text.
     def const_missing(name)
-      Double.new(name)
-    end; private :const_missing
+      Wrapper.new(name)
+    end
 
     def inherited(child)
       if self.eql? Structure
         class << child; alias_method :new, :new_original; end
       end
-    end; private :inherited
+    end
   end
 
   # Creates a new structure.
@@ -187,9 +196,11 @@ class Structure
     other.is_a?(self.class) && attributes == other.attributes
   end
 
+  private
+
   def defaults
     self.class.defaults
-  end; private :defaults
+  end
 
   module Inflector
     # Makes an underscored, lowercase form from the expression in the

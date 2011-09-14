@@ -18,12 +18,12 @@ class Location < Structure
 end
 
 class TestStructure < Test::Unit::TestCase
-  def test_double
-    double = Structure::Double.new(:Foo)
-    assert_equal 'Foo', "#{double}"
-    assert_raise(NameError) { double.class }
+  def test_wrapper
+    wrapper = Structure::Wrapper.new(:Foo)
+    assert_equal 'Foo', "#{wrapper}"
+    assert_raise(NameError) { wrapper.class }
     ::Kernel.const_set(:Foo, 1)
-    assert_kind_of Fixnum, double
+    assert_kind_of Fixnum, wrapper
   end
 
   def test_anonymous
@@ -69,6 +69,12 @@ class TestStructure < Test::Unit::TestCase
 
     loc.lon = nil
     assert_nil loc.lon
+  end
+
+  def test_typechecking_for_wrapped_classes
+    person = Person.new
+    person.location = Location.new
+    assert_kind_of Location, person.location
   end
 
   def test_array_type
