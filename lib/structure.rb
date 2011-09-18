@@ -4,6 +4,9 @@ rescue NameError
   require 'json'
 end
 
+require 'structure/inflector'
+require 'structure/wrapper'
+
 # Structure is a nestable, typed key/value container.
 #
 #    class Person < Structure
@@ -13,50 +16,6 @@ end
 #
 class Structure
   include Enumerable
-
-  # A namespaced basic object.
-  #
-  # If running a legacy Ruby version, we either quote Builder's or
-  # fabricate one ourselves.
-  if defined?(BasicObject)
-    BasicObject = ::BasicObject
-  elsif defined?(BlankSlate)
-    BasicObject = ::BlankSlate
-  else
-    class BasicObject
-      instance_methods.each do |mth|
-        undef_method(mth) unless mth =~ /\A(__|instance_eval)/
-      end
-    end
-  end
-
-  # A wrapper that stands in for a yet-to-be-defined class. A sleight
-  # of hand known in certain circles as lazy evaluation.
-  #
-  # Idea lifted from:
-  # http://github.com/soveran/ohm/
-  class Wrapper < BasicObject
-    def initialize(name)
-      @name = name
-    end
-
-    def to_s
-      @name.to_s
-    end
-
-    def unwrap
-      ::Kernel.const_get(@name)
-    end
-
-    private
-
-    def method_missing(mth, *args, &block)
-      @unwrapped ? super : @unwrapped = true
-      unwrap.send(mth, *args, &block)
-    ensure
-      @unwrapped = false
-    end
-  end
 
   class << self
     # Returns attribute keys and their default values.
@@ -200,22 +159,6 @@ class Structure
 
   def defaults
     self.class.defaults
-  end
-
-  module Inflector
-    # Makes an underscored, lowercase form from the expression in the
-    # string.
-    #
-    # You know where this is lifted from.
-    def self.underscore(camel_cased_word)
-      word = camel_cased_word.to_s.dup
-      word.gsub!(/::/, '/')
-      word.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
-      word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
-      word.tr!("-", "_")
-      word.downcase!
-      word
-    end
   end
 end
 
