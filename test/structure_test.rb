@@ -1,10 +1,4 @@
-require 'bundler/setup'
-require 'test/unit'
-begin
-  require 'pry'
-rescue LoadError
-end
-require File.expand_path('../../lib/structure', __FILE__)
+require 'helper'
 
 class Person < Structure
   key  :name
@@ -17,11 +11,11 @@ class Location < Structure
   key :lat, Float
 end
 
-class TestStructure < Test::Unit::TestCase
+class TestStructure < MiniTest::Unit::TestCase
   def test_wrapper
     wrapper = Structure::Wrapper.new(:Foo)
     assert_equal 'Foo', "#{wrapper}"
-    assert_raise(NameError) { wrapper.class }
+    assert_raises(NameError) { wrapper.class }
     ::Kernel.const_set(:Foo, 1)
     assert_kind_of Fixnum, wrapper
   end
@@ -31,7 +25,7 @@ class TestStructure < Test::Unit::TestCase
     str = Structure.new(hsh)
     assert_equal hsh['FirstName'], str.first_name
     assert_equal hsh['LastName'], str.last_name
-    assert_raise(NoMethodError) { str.FirstName }
+    assert_raises(NoMethodError) { str.FirstName }
   end
 
   def test_anonymous_recursion
@@ -54,8 +48,8 @@ class TestStructure < Test::Unit::TestCase
   end
 
   def test_key_errors
-    assert_raise(NameError) { Person.key :class }
-    assert_raise(TypeError) { Person.key :foo, String, 1 }
+    assert_raises(NameError) { Person.key :class }
+    assert_raises(TypeError) { Person.key :foo, String, 1 }
   end
 
   def test_key_defaults
