@@ -6,3 +6,4 @@ rescue LoadError
 end
 
 require 'structure'
+require 'structure/json'

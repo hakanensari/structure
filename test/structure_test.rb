@@ -11,33 +11,17 @@ class Location < Structure
   key :lat, Float
 end
 
-class TestStructure < MiniTest::Unit::TestCase
-  def test_wrapper
+class TestWrapper < MiniTest::Unit::TestCase
+  def test_lazy_evaluation
     wrapper = Structure::Wrapper.new(:Foo)
-    assert_equal 'Foo', "#{wrapper}"
     assert_raises(NameError) { wrapper.class }
+
     ::Kernel.const_set(:Foo, 1)
     assert_kind_of Fixnum, wrapper
   end
+end
 
-  def test_anonymous
-    hsh = { 'FirstName' => 'John', 'LastName' => 'Doe' }
-    str = Structure.new(hsh)
-    assert_equal hsh['FirstName'], str.first_name
-    assert_equal hsh['LastName'], str.last_name
-    assert_raises(NoMethodError) { str.FirstName }
-  end
-
-  def test_anonymous_recursion
-    hsh = { 'Name' => 'John',
-            'Address' => { 'City' => 'Oslo' },
-            'Friends' => [{ 'Name' => 'Jane' }]
-          }
-    str = Structure.new(hsh)
-    assert_equal hsh['Address']['City'], str.address.city
-    assert_equal hsh['Friends'].first['Name'], str.friends.first.name
-  end
-
+class TestStructure < MiniTest::Unit::TestCase
   def test_enumeration
     assert_respond_to Person.new, :map
   end
