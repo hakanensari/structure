@@ -166,6 +166,9 @@ class Structure
   end
 
   # Defines an attribute that is another structure.
+  #
+  # Following Active Record conventions, this method also generates a
+  # +#build_object+ method.
   def self.one(name, type)
     type = Wrapper.wrap(type)
 

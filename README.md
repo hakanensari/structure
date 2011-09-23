@@ -6,7 +6,7 @@ Structure is a typed, nestable key/value container.
 
     class Person < Structure
       key  :name
-      many :friends
+      many :friends, Person
     end
 
 Please see the [wiki] [1] for more detail.
