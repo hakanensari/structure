@@ -1,9 +1,17 @@
-require 'helper'
+require 'minitest/autorun'
+
+begin
+  require 'pry'
+rescue LoadError
+end
+
+require 'structure'
 
 class Person < Structure
   key  :name
   key  :location, Location
-  many :friends
+  one  :partner, Person
+  many :friends, Person
 end
 
 class Location < Structure
@@ -12,12 +20,20 @@ class Location < Structure
 end
 
 class TestWrapper < MiniTest::Unit::TestCase
-  def test_lazy_evaluation
-    wrapper = Structure::Wrapper.new(:Foo)
-    assert_raises(NameError) { wrapper.class }
-
+  def test_lazy_eval
+    wrapped = Structure::Wrapper.new(:Foo)
+    assert_raises(NameError) { wrapped.unwrap.class }
     ::Kernel.const_set(:Foo, 1)
-    assert_kind_of Fixnum, wrapper
+    assert_kind_of Fixnum, wrapped.unwrap
+  end
+end
+
+class TestCollection < MiniTest::Unit::TestCase
+  def test_push
+    ary = Structure::Collection.new(Integer)
+    assert_raises(TypeError) { ary.push('1') }
+    ary.push(*(1..3).to_a)
+    assert_equal 3, ary.count
   end
 end
 
@@ -55,13 +71,29 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_kind_of Location, person.location
   end
 
-  def test_array_type
+  def test_many_relationship
     person = Person.new
     assert_equal [], person.friends
 
     person.friends << Person.new
     assert_equal 1, person.friends.size
     assert_equal 0, person.friends.first.friends.size
+
+    person.friends.build(:name => 'Joe')
+    assert_equal 2, person.friends.count
+    assert_equal 'Joe', person.friends.last.name
+  end
+
+  def test_one_relationship
+    person = Person.new
+    assert_equal nil, person.partner
+
+    person.partner = Person.new(:name => 'Jane')
+    assert_equal 'Jane', person.partner.name
+
+    person.build_partner(:name => 'Mel')
+    assert_equal 'Mel', person.partner.name
+    binding.pry
   end
 
   def test_to_hash
