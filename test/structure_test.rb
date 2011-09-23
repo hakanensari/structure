@@ -93,7 +93,6 @@ class TestStructure < MiniTest::Unit::TestCase
 
     person.build_partner(:name => 'Mel')
     assert_equal 'Mel', person.partner.name
-    binding.pry
   end
 
   def test_to_hash
