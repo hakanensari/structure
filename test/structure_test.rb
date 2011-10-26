@@ -30,10 +30,6 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_equal Foo, wrapper.unwrap
   end
 
-  def test_enumeration
-    assert_respond_to Person.new, :map
-  end
-
   def test_accessors
     assert_respond_to Person.new, :name
     assert_respond_to Person.new, :name=

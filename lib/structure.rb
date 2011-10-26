@@ -7,8 +7,6 @@
 #    end
 #
 class Structure
-  include Enumerable
-
   # Summon a Basic Object.
   unless defined? BasicObject
     if defined? BlankSlate
@@ -156,11 +154,6 @@ class Structure
     end
 
     hsh.each { |k, v| self.send("#{k}=", v) }
-  end
-
-  # Calls block once for each attribute of the structure
-  def each(&block)
-    @attributes.each { |attr| block.call(attr) }
   end
 
   # @return [Hash] a hash representation of the structure
