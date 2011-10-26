@@ -121,6 +121,10 @@ class Structure
         raise NameError, "#{name} is taken"
       end
 
+       if default && !default.is_a?(type)
+        raise TypeError, "#{default} isn't a #{type}"
+      end
+
       # Add key to blueprint.
       blueprint[name] = Definition.new(type, default)
 
@@ -146,13 +150,12 @@ class Structure
   #
   # @param [Hash] hsh a hash of key-value pairs
   def initialize(hsh = {})
-    @attributes = {}
-
-    self.class.blueprint.inject({}) do |a, (k, v)|
-      a.merge(k => v.default)
-    end.merge(hsh).each do |k, v|
-      self.send("#{k}=", v)
+    @attributes = blueprint.inject({}) do |a, (k, v)|
+      a[k] = v.default.dup rescue v.default
+      a
     end
+
+    hsh.each { |k, v| self.send("#{k}=", v) }
   end
 
   # Calls block once for each attribute of the structure
@@ -163,14 +166,15 @@ class Structure
   # @return [Hash] a hash representation of the structure
   def to_hash
     @attributes.inject({}) do |a, (k, v)|
-      a.merge(k =>
-        if v.respond_to?(:to_hash)
-          v.to_hash
-        elsif v.is_a?(Array)
-          v.map { |e| e.respond_to?(:to_hash) ? e.to_hash : e }
-        else
-          v
-        end)
+      a[k] = if v.respond_to?(:to_hash)
+               v.to_hash
+             elsif v.is_a?(Array)
+               v.map { |e| e.respond_to?(:to_hash) ? e.to_hash : e }
+             else
+               v
+             end
+
+      a
     end
   end
 
@@ -183,5 +187,11 @@ class Structure
   # @return [true, false]
   def ==(other)
     other.is_a?(self.class) && attributes == other.attributes
+  end
+
+  private
+
+  def blueprint
+    self.class.blueprint
   end
 end

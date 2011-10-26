@@ -41,10 +41,7 @@ class TestStructure < MiniTest::Unit::TestCase
 
   def test_key_errors
     assert_raises(NameError) { Person.key :class }
-
-    klass = Class.new(Structure)
-    klass.key :foo, Hash, 1
-    assert_raises(TypeError) { klass.new }
+    assert_raises(TypeError) { Person.key :foo, Hash, 1 }
   end
 
   def test_key_defaults
@@ -69,6 +66,14 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_equal 0, person.friends.first.friends.size
   end
 
+  def test_new
+    person = Person.new(:name => 'John')
+    assert_equal 'John', person.name
+
+    other = Person.new(:name => 'Jane', :friends => [person])
+    assert_equal 'John', other.friends.first.name
+  end
+
   def test_to_hash
     person = Person.new(:name => 'John')
     person.friends << Person.new(:name => 'Jane')
@@ -81,8 +86,8 @@ class TestStructure < MiniTest::Unit::TestCase
   def test_json
     Person.send :include, Structure::JSON
 
-    person = Person.new
-    person.friends << Person.new
+    person = Person.new(:name => 'John')
+    person.friends << Person.new(:name => 'Jane')
     json = person.to_json
     assert_kind_of Person, JSON.parse(json)
     assert_kind_of Person, JSON.parse(json).friends.first
