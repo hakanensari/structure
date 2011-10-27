@@ -52,8 +52,6 @@ class Structure
       end
     end
 
-    private
-
     def method_missing(mth, *args, &block)
       @unwrapped ? super : @unwrapped = true
       ::Kernel.const_get(@name).send(mth, *args, &block)
@@ -143,8 +141,6 @@ class Structure
       end
     end
 
-    private
-
     def const_missing(name)
       Wrapper.new(name)
     end
@@ -178,9 +174,8 @@ class Structure
     other.is_a?(self.class) && attributes == other.attributes
   end
 
-  private
-
   def blueprint
     self.class.blueprint
   end
+  private :blueprint
 end
