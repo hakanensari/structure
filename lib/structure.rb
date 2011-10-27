@@ -7,7 +7,6 @@
 #    end
 #
 class Structure
-  # Summon a Basic Object.
   unless defined? BasicObject
     if defined? BlankSlate
       BasicObject = BlankSlate
@@ -22,12 +21,12 @@ class Structure
 
   # A wrapper for lazy-evaluating undeclared classes
   #
-  # @note Borrowed from the same-named class in Ohm
+  # @note Somewhat borrowed from the same-named class in Ohm
   class Wrapper < BasicObject
     # Wraps specified class in a wrapper if it is not already wrapped
     #
-    # @param [Class] klass
-    # @return [Wrapper]
+    # @param [Class] klass a class, which may already be wrapped
+    # @return [Wrapper] the wrapped class
     def self.wrap(klass)
       klass.class == self ? klass : new(klass.to_s)
     end
@@ -123,15 +122,12 @@ class Structure
         raise TypeError, "#{default} isn't a #{type}"
       end
 
-      # Add key to blueprint.
       blueprint[name] = Definition.new(type, default)
 
-      # Define getter.
       define_method(name) do
         @attributes[name]
       end
 
-      # Define setter.
       define_method("#{name}=") do |val|
         @attributes[name] = self.class.blueprint[name].typecast(val)
       end
