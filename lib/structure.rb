@@ -137,7 +137,7 @@ class Structure
       end
 
       define_method("#{name}=") do |val|
-        @attributes[name] = blueprint[name].typecast(val)
+        modifiable[name] = blueprint[name].typecast(val)
       end
     end
 
@@ -178,4 +178,19 @@ class Structure
     self.class.blueprint
   end
   private :blueprint
+
+  # Used internally to check if the structure is frozen or not before
+  # updating a value
+  #
+  # @note Borrowed from OpenStruct
+  def modifiable
+    begin
+      @modifiable = true
+    rescue
+      raise TypeError, "can't modify frozen #{self.class}", caller(3)
+    end
+
+    @attributes
+  end
+  private :modifiable
 end

@@ -70,6 +70,12 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_equal 'John', other.friends.first.name
   end
 
+  def test_cant_change_sex_when_frozen
+    person = Person.new(:name => 'John')
+    person.freeze
+    assert_raises(TypeError) { person.name = 'Jane' }
+  end
+
   def test_to_hash
     person = Person.new(:name => 'John')
     friend = Person.new(:name => 'Jane')
