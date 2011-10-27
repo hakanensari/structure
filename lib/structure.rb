@@ -112,9 +112,7 @@ class Structure
     # @param [Object] default an optional default value
     # @raise [NameError] name is already taken
     def key(name, type = String, default = nil)
-      name = name.to_sym
-
-      if method_defined?(name)
+      if method_defined?(name = name.to_sym)
         raise NameError, "#{name} is taken"
       end
 
@@ -129,7 +127,7 @@ class Structure
       end
 
       define_method("#{name}=") do |val|
-        @attributes[name] = self.class.blueprint[name].typecast(val)
+        @attributes[name] = blueprint[name].typecast(val)
       end
     end
 
