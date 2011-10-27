@@ -97,6 +97,18 @@ class Structure
     end
   end
 
+  # A lambda that converts structures and arrays thereof, in any nested
+  # shape or form, to hashes.
+  HASHER = lambda { |obj|
+    if obj.respond_to? :to_hash
+      obj.to_hash
+    elsif obj.is_a? Array
+      obj.map { |e| HASHER.call(e) }
+    else
+      obj
+    end
+  }
+
   class << self
     # @return [Hash] a collection of keys and their definitions
     def blueprint
@@ -152,17 +164,7 @@ class Structure
 
   # @return [Hash] a hash representation of the structure
   def to_hash
-    @attributes.inject({}) do |a, (k, v)|
-      a[k] = if v.respond_to?(:to_hash)
-               v.to_hash
-             elsif v.is_a?(Array)
-               v.map { |e| e.respond_to?(:to_hash) ? e.to_hash : e }
-             else
-               v
-             end
-
-      a
-    end
+    @attributes.inject({}) { |a, (k, v)| a.merge k => HASHER.call(v) }
   end
 
   # Compares this object with another object for equality

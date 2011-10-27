@@ -72,11 +72,16 @@ class TestStructure < MiniTest::Unit::TestCase
 
   def test_to_hash
     person = Person.new(:name => 'John')
-    person.friends << Person.new(:name => 'Jane')
-    hash = person.to_hash
+    friend = Person.new(:name => 'Jane')
+    person.friends << friend
+    hsh = person.to_hash
 
-    assert_equal 'John', hash[:name]
-    assert_equal 'Jane', hash[:friends].first[:name]
+    assert_equal person.name, hsh[:name]
+    assert_equal friend.name, hsh[:friends].first[:name]
+
+    person.friends = [[friend]]
+    hsh = person.to_hash
+    assert_equal friend.name, hsh[:friends].first.first[:name]
   end
 
   def test_json
