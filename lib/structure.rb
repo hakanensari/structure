@@ -68,7 +68,7 @@ class Structure
     # @param [Object] default an optional default value
     def initialize(type, default = nil)
       @wrapper = Wrapper.wrap(type)
-      @default = default
+      @default = typecast(default)
     end
 
     # @return the default value for the key
@@ -85,7 +85,9 @@ class Structure
     # @raise [TypeError] value isn't a type
     # @return [Object] a typecast value
     def typecast(val)
-      if val.nil? || val.is_a?(type)
+      if val.nil?
+        nil
+      elsif val.is_a?(type)
         val.dup rescue val
       elsif Kernel.respond_to?(type.to_s)
         Kernel.send(type.to_s, val)
@@ -94,18 +96,6 @@ class Structure
       end
     end
   end
-
-  # A lambda that converts structures and arrays thereof, in any nested
-  # shape or form, to hashes.
-  HASHER = lambda { |obj|
-    if obj.respond_to? :to_hash
-      obj.to_hash
-    elsif obj.is_a? Array
-      obj.map { |e| HASHER.call(e) }
-    else
-      obj
-    end
-  }
 
   class << self
     # @return [Hash] a collection of keys and their definitions
@@ -126,16 +116,8 @@ class Structure
         raise NameError, "#{name} is taken"
       end
 
-       if default && !default.is_a?(type)
-        raise TypeError, "#{default} isn't a #{type}"
-      end
-
       blueprint[name] = Definition.new(type, default)
-
-      define_method(name) do
-        @attributes[name]
-      end
-
+      define_method(name) { @attributes[name] }
       define_method("#{name}=") do |val|
         modifiable[name] = blueprint[name].typecast(val)
       end
@@ -160,8 +142,19 @@ class Structure
 
   # @return [Hash] a hash representation of the structure
   def to_hash
-    @attributes.inject({}) { |a, (k, v)| a.merge k => HASHER.call(v) }
+    @attributes.inject({}) { |a, (k, v)| a.merge k => hashify(v) }
   end
+
+  def hashify(obj)
+    if obj.respond_to? :to_hash
+      obj.to_hash
+    elsif obj.is_a? Array
+      obj.map { |e| hashify(e) }
+    else
+      obj
+    end
+  end
+  private :hashify
 
   # Compares this object with another object for equality
   #
