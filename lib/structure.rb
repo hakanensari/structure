@@ -1,6 +1,8 @@
+# Structure is a key/value container.
 class Structure
   def initialize(hsh = {})
-    @table = hsh.inject({}) { |a, (k, v)| a.merge new_field(k) => v }
+    @table = {}
+    marshal_load(hsh)
   end
 
   def delete_field(name)
@@ -12,11 +14,21 @@ class Structure
   end
 
   def marshal_dump
-    @table.inject({}) { |a, (k, v)| a.merge k => v }
+    @table.inject({}) do |a, (k, v)|
+      a.merge k => if v.respond_to? :marshal_dump
+                     v.marshal_dump
+                   elsif v.is_a? Array
+                     v.map { |v| v.marshal_dump }
+                   else
+                     v
+                   end
+    end
   end
 
   def marshal_load(hsh)
-    (@table = hsh).each_key { |key| new_field(key) }
+    hsh.each do |k, v|
+      self.send("#{new_field(k)}=", recursively_marshal(v))
+    end
   end
 
   def ==(other)
@@ -69,5 +81,16 @@ class Structure
     end
 
     name
+  end
+
+  def recursively_marshal(val)
+    case val
+    when Hash
+      Structure.new(val)
+    when Array
+      val.map { |v| recursively_marshal(v) }
+    else
+      val
+    end
   end
 end

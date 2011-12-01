@@ -121,6 +121,23 @@ class TestStructure < MiniTest::Unit::TestCase
     refute_respond_to @person, :gender=
   end
 
+  def test_recursive_marshaling
+    hsh = {
+      :name => 'John',
+      :friend => { :name => 'Jane' },
+      :friends => [{ :name => 'Jane' }]
+    }
+    friend = Structure.new(:name => 'Jane')
+    @person.friend = friend
+    @person.friends = [friend]
+    assert_equal hsh, @person.marshal_dump
+
+    person = Structure.new
+    person.marshal_load(hsh)
+    assert_equal friend, person.friend
+    assert_equal friend, person.friends.first
+  end
+
   def test_table
     assert_equal({ :name => 'John' }, @person.send(:table))
   end
