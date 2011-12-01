@@ -9,6 +9,7 @@ require 'structure'
 
 InheritedStructure = Class.new(Structure)
 
+# Most tests below are borrowed from RubySpec.
 class TestStructure < MiniTest::Unit::TestCase
   def setup
     @person = Structure.new(:name => 'John')

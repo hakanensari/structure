@@ -6,24 +6,39 @@ end
 
 # Structure is a key/value container.
 class Structure
+  # Builds a structure out of a JSON representation.
+  #
+  # @param [Hash] hsh a JSON representation translated to a hash
+  # @return [Structure] a structure
   def self.json_create(hsh)
     hsh.delete('json_class')
     new(hsh)
   end
 
+  # Creates a new structure
+  #
+  # @param [Hash] hsh an optional hash to populate fields
   def initialize(hsh = {})
     @table = {}
     marshal_load(hsh)
   end
 
-  def delete_field(name)
-    name = name.to_sym
-    @table.delete name
+  # Deletes a field
+  #
+  # @param [#to_sym] key
+  # @return [Object] the value of the deleted field
+  def delete_field(key)
+    key = key.to_sym
     class << self; self; end.class_eval do
-      [name, "#{name}="].each { |m| remove_method m }
+      [key, "#{key}="].each { |m| remove_method m }
     end
+
+    @table.delete key
   end
 
+  # Provides marshalling support for use by the Marshal library.
+  #
+  # @return [Hash] a hash of the keys and values of the structure
   def marshal_dump
     @table.inject({}) do |a, (k, v)|
       a.merge k => if v.respond_to? :marshal_dump
@@ -36,18 +51,24 @@ class Structure
     end
   end
 
+  # Provides marshalling support for use by the Marshal library.
+  #
+  # @param [Hash] hsh a hash of keys and values to populate the
+  # structure
   def marshal_load(hsh)
     hsh.each do |k, v|
       self.send("#{new_field(k)}=", recursively_marshal(v))
     end
   end
 
+  # @return [String] a JSON representation of the structure
   def to_json(*args)
     { JSON.create_id => self.class.name }.
       merge(marshal_dump).
       to_json(*args)
   end
 
+  # @return [Boolean] whether the object and +other+ are equal
   def ==(other)
     other.is_a?(Structure) && @table == other.table
   end

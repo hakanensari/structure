@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ['Hakan Ensari']
   s.email       = ['code@papercavalier.com']
   s.homepage    = 'http://github.com/hakanensari/structure'
-  s.summary     = 'A typed key/value container'
-  s.description = 'Structure is a typed key/value container.'
+  s.summary     = 'A key/value container'
+  s.description = 'Structure is a key/value container.'
 
   s.rubyforge_project = 'structure'
 

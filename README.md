@@ -2,13 +2,13 @@
 
 [![travis](https://secure.travis-ci.org/hakanensari/structure.png?branch=master)](http://travis-ci.org/hakanensari/structure)
 
-Structure is a typed key/value container.
+Structure is a somewhat modernised OpenStruct, best for producing and
+consuming ephemeral data across APIs.
 
-    class Person < Structure
-      key :name
-      key :friends, Array, []
-    end
+    person = Structure.new :name => 'John',
+                           :friends => [{ :name => 'Jane' }]
 
-Please see the [wiki] [1] for more detail.
-
-[1]: https://github.com/hakanensari/structure/wiki/
+    puts person.friends.first.name
+    # => "Jane"
+    puts JSON.parse(person.to_json).friends.first.name
+    # => "Jane"
