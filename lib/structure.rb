@@ -87,7 +87,7 @@ class Structure
         marshal_dump
       end
 
-      { ::JSON.create_id => self.class.name }.
+      { JSON.create_id => self.class.name }.
         merge(subset)
     end
   end
