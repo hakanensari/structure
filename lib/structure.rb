@@ -15,7 +15,7 @@ class Structure
     new(hsh)
   end
 
-  # Creates a new structure
+  # Creates a new structure.
   #
   # @param [Hash] hsh an optional hash to populate fields
   def initialize(hsh = {})
@@ -23,7 +23,7 @@ class Structure
     marshal_load(hsh)
   end
 
-  # Deletes a field
+  # Deletes a field.
   #
   # @param [#to_sym] key
   # @return [Object] the value of the deleted field
