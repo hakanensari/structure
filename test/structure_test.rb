@@ -61,6 +61,12 @@ class TestStructure < MiniTest::Unit::TestCase
     d.name = 'Jane'
     assert_equal 'Jane', d.name
     assert_equal 'John', @person.name
+
+    @person.friends = ['Joe']
+    d = @person.dup
+    d.friends = ['Jim']
+    assert_equal ['Jim'], d.friends
+    assert_equal ['Joe'], @person.friends
   end
 
   def test_inspect
