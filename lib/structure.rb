@@ -57,7 +57,7 @@ class Structure
   # structure
   def marshal_load(hsh)
     hsh.each do |k, v|
-      self.send("#{new_field(k)}=", recursively_marshal(v))
+      self.send("#{new_field(k)}=", recursively_marshal_load(v))
     end
   end
 
@@ -140,12 +140,12 @@ class Structure
     name
   end
 
-  def recursively_marshal(val)
+  def recursively_marshal_load(val)
     case val
     when Hash
       self.class.new(val)
     when Array
-      val.map { |v| recursively_marshal(v) }
+      val.map { |v| recursively_marshal_load(v) }
     else
       val
     end
