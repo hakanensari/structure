@@ -1,181 +1,54 @@
-# Structure is a typed key/value container
-#
-# @example
-#    class Person < Structure
-#      key :name
-#      key :friends, Array, []
-#    end
-#
 class Structure
-  unless defined? BasicObject
-    if defined? BlankSlate
-      BasicObject = BlankSlate
-    else
-      class BasicObject
-        instance_methods.each do |mth|
-          undef_method(mth) unless mth =~ /__/
-        end
-      end
-    end
-  end
-
-  # A wrapper for lazy-evaluating undeclared classes
-  #
-  # @note Somewhat borrowed from the same-named class in Ohm
-  class Wrapper < BasicObject
-    # Wraps specified class in a wrapper if it is not already wrapped
-    #
-    # @param [Class] klass a class, which may already be wrapped
-    # @return [Wrapper] the wrapped class
-    def self.wrap(klass)
-      klass.class == self ? klass : new(klass.to_s)
-    end
-
-    # Creates a new wrapper for specified class name
-    #
-    # @param [#to_s] name
-    def initialize(name)
-      @name = name.to_s
-    end
-
-    # @return [Class] the class of the object
-    def class
-      Wrapper
-    end
-
-    # Unwraps wrapped class
-    #
-    # @return [Class] the unwrapped class
-    def unwrap
-      @name.split('::').inject(::Kernel) do |parent, child|
-        parent.const_get(child)
-      end
-    end
-
-    def method_missing(mth, *args, &block)
-      @unwrapped ? super : @unwrapped = true
-      ::Kernel.const_get(@name).send(mth, *args, &block)
-    ensure
-      @unwrapped = false
-    end
-  end
-
-  # A key definition
-  class Definition
-    # Creates a key definition
-    #
-    # @param [Class] type the key type
-    # @param [Object] default an optional default value
-    def initialize(type, default = nil)
-      @wrapper = Wrapper.wrap(type)
-      @default = typecast(default)
-    end
-
-    # @return the default value for the key
-    attr :default
-
-    # @return [Class] the key type
-    def type
-      @type ||= @wrapper.unwrap
-    end
-
-    # Typecasts specified value
-    #
-    # @param [Object] val a value
-    # @raise [TypeError] value isn't a type
-    # @return [Object] a typecast value
-    def typecast(val)
-      if val.nil?
-        nil
-      elsif val.is_a?(type)
-        val.dup rescue val
-      elsif Kernel.respond_to?(type.to_s)
-        Kernel.send(type.to_s, val)
-      else
-        raise TypeError, "#{val} isn't a #{type}"
-      end
-    end
-  end
-
-  class << self
-    # @return [Hash] a collection of keys and their definitions
-    def blueprint
-      @blueprint ||= {}
-    end
-
-    # Defines a key
-    #
-    # @note Key type defaults to +String+ if not specified.
-    #
-    # @param [#to_sym] name the key name
-    # @param [Class] type an optional key type
-    # @param [Object] default an optional default value
-    # @raise [NameError] name is already taken
-    def key(name, type = String, default = nil)
-      if method_defined?(name = name.to_sym)
-        raise NameError, "#{name} is taken"
-      end
-
-      blueprint[name] = Definition.new(type, default)
-      define_method(name) { @attributes[name] }
-      define_method("#{name}=") do |val|
-        modifiable[name] = blueprint[name].typecast(val)
-      end
-    end
-
-    def const_missing(name)
-      Wrapper.new(name)
-    end
-  end
-
-  # Builds a new structure
-  #
-  # @param [Hash] hsh a hash of key-value pairs
   def initialize(hsh = {})
-    @attributes = blueprint.inject({}) do |a, (k, v)|
-      a[k] = v.default.dup rescue v.default
-      a
-    end
-
-    hsh.each { |k, v| self.send("#{k}=", v) }
+    @table = hsh.inject({}) { |a, (k, v)| a.merge new_field(k) => v }
   end
 
-  # @return [Hash] a hash representation of the structure
-  def to_hash
-    @attributes.inject({}) { |a, (k, v)| a.merge k => hashify(v) }
-  end
-
-  def hashify(obj)
-    if obj.respond_to? :to_hash
-      obj.to_hash
-    elsif obj.is_a? Array
-      obj.map { |e| hashify(e) }
-    else
-      obj
+  def delete_field(name)
+    name = name.to_sym
+    @table.delete name
+    class << self; self; end.class_eval do
+      [name, "#{name}="].each { |m| remove_method m }
     end
   end
-  private :hashify
 
-  # Compares this object with another object for equality
-  #
-  # A structure is equal to another object when both are of the same
-  # class and their attributes are the same.
-  #
-  # @param [Object] other another object
-  # @return [true, false]
+  def marshal_dump
+    @table.inject({}) { |a, (k, v)| a.merge k => v }
+  end
+
+  def marshal_load(hsh)
+    (@table = hsh).each_key { |key| new_field(key) }
+  end
+
   def ==(other)
-    other.is_a?(self.class) && attributes == other.attributes
+    other.is_a?(Structure) && @table == other.table
   end
 
-  def blueprint
-    self.class.blueprint
-  end
-  private :blueprint
+  protected
 
-  # Used internally to check if the structure is frozen or not before
-  # updating a value
-  #
-  # @note Borrowed from OpenStruct
+  attr :table
+
+  private
+
+  def initialize_copy(orig)
+    super
+    @table = @table.dup
+  end
+
+  def method_missing(mth, *args)
+    name = mth.to_s
+    len = args.length
+    if name.chomp!('=') && mth != :[]=
+      if len != 1
+        raise ArgumentError, "wrong number of arguments (#{len} for 1)", caller(1)
+      end
+      modifiable[new_field(name)] = args.first
+    elsif len == 0 && @table.has_key?(mth)
+      @table[new_field(mth)]
+    else
+      super
+    end
+  end
+
   def modifiable
     begin
       @modifiable = true
@@ -183,7 +56,18 @@ class Structure
       raise TypeError, "can't modify frozen #{self.class}", caller(3)
     end
 
-    @attributes
+    @table
   end
-  private :modifiable
+
+  def new_field(name)
+    name = name.to_sym
+    unless self.respond_to?(name)
+      class << self; self; end.class_eval do
+        define_method(name) { @table[name] }
+        define_method("#{name}=") { |val| modifiable[name] = val }
+      end
+    end
+
+    name
+  end
 end

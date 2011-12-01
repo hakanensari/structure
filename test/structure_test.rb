@@ -6,104 +6,119 @@ rescue LoadError
 end
 
 require 'structure'
-require 'structure/json'
 
-class Person < Structure
-  key :name
-  key :friends, Array, []
-  key :city, City
-end
-
-class City < Structure
-  key :name
-end
+InheritedStructure = Class.new(Structure)
 
 class TestStructure < MiniTest::Unit::TestCase
-  def test_lazy_evaluation
-    wrapper = Structure::Wrapper.new(:Foo)
-    assert_raises(NameError) { wrapper.bar }
-    assert_raises(NameError) { wrapper.unwrap.bar }
-
-    klass = Class.new { def self.bar; end }
-    ::Kernel.const_set(:Foo, klass)
-    assert_respond_to wrapper, :bar
-    assert_equal Foo, wrapper.unwrap
+  def setup
+    @person = Structure.new(:name => 'John')
   end
 
-  def test_accessors
-    assert_respond_to Person.new, :name
-    assert_respond_to Person.new, :name=
+  def test_delete_field
+    @person.delete_field(:name)
+    assert_nil @person.send(:table)[:name]
+    refute_respond_to(@person, :name)
+    refute_respond_to(@person, :name=)
   end
 
-  def test_key_errors
-    assert_raises(NameError) { Person.key :class }
-    assert_raises(TypeError) { Person.key :foo, Hash, 1 }
+  def test_element_reference
+    assert_raises(NoMethodError) { @person[1] }
   end
 
-  def test_key_defaults
-    assert_equal [], Person.new.friends
+  def test_element_set
+    assert_raises(NoMethodError) { @person[1] = 2 }
   end
 
-  def test_typecasting
-    person = Person.new
-    person.name = 123
-    assert_kind_of String, person.name
-
-    person.name = nil
-    assert_nil person.name
+  def test_equal_value
+    refute @person == 'foo'
+    assert @person == @person
+    assert @person == Structure.new(:name => 'John')
+    assert @person == InheritedStructure.new(:name => 'John')
+    refute @person == Structure.new(:name => 'Johnny')
+    refute @person == Structure.new(:name => 'John', :age => 20)
   end
 
-  def test_many_relationship
-    person = Person.new
-    assert_equal [], person.friends
+  def test_frozen
+    @person.freeze
 
-    person.friends << Person.new
-    assert_equal 1, person.friends.size
-    assert_equal 0, person.friends.first.friends.size
+    assert_equal 'John', @person.name
+    assert_raises(TypeError) { @person.age = 42 }
+    assert_raises(TypeError) { @person.state = :new }
+
+    c = @person.clone
+    assert_equal 'John', c.name
+    assert_raises(TypeError) { c.age = 42 }
+    assert_raises(TypeError) { c.state = :new }
+
+    d = @person.dup
+    assert_equal 'John', d.name
+    d.age = 42
+    assert_equal 42, d.age
+  end
+
+  def test_initialize_copy
+    d = @person.dup
+    d.name = 'Jane'
+    assert_equal 'Jane', d.name
+    assert_equal 'John', @person.name
+  end
+
+  def test_inspect
+  end
+
+  def test_marshaling
+    assert_equal({ :name => 'John' }, @person.marshal_dump)
+    @person.marshal_load(:age => 20, :name => 'Jane')
+    assert_equal 20, @person.age
+    assert_equal 'Jane', @person.name
+  end
+
+  def test_method_missing
+    @person.test = 'test'
+    assert_respond_to @person, :test
+    assert_respond_to @person, :test=
+    assert_equal 'test', @person.test
+    assert_equal 'test', @person.send(:table)[:test]
+    @person.test = 'changed'
+    assert_equal 'changed', @person.test
+
+
+    @person.send(:table)[:age] = 20
+    assert_equal 20, @person.age
+
+    assert_raises(NoMethodError) { @person.gender }
+    assert_raises(NoMethodError) { @person.gender(1) }
+
+    @person.freeze
+    assert_raises(TypeError) { @person.gender = 'male' }
   end
 
   def test_new
-    person = Person.new(:name => 'John')
+    person = Structure.new(:name => 'John', :age => 70)
     assert_equal 'John', person.name
-
-    other = Person.new(:name => 'Jane', :friends => [person])
-    assert_equal 'John', other.friends.first.name
+    assert_equal 70, person.age
+    assert_equal({}, Structure.new.send(:table))
   end
 
-  def test_cant_change_sex_when_frozen
-    person = Person.new(:name => 'John')
-    person.freeze
-    assert_raises(TypeError) { person.name = 'Jane' }
+  def test_new_field
+    @person.send(:table)[:age] = 20
+    @person.send(:new_field, :age)
+
+    assert_equal 20, @person.age
+
+    @person.age = 30
+    assert_equal 30, @person.age
+
+    @person.instance_eval { def gender; 'male'; end }
+    @person.send(:new_field, :gender)
+    assert_equal 'male', @person.gender
+    refute_respond_to @person, :gender=
   end
 
-  def test_to_hash
-    person = Person.new(:name => 'John')
-    friend = Person.new(:name => 'Jane')
-    person.friends << friend
-    hsh = person.to_hash
-
-    assert_equal person.name, hsh[:name]
-    assert_equal friend.name, hsh[:friends].first[:name]
-
-    person.friends = [[friend]]
-    hsh = person.to_hash
-    assert_equal friend.name, hsh[:friends].first.first[:name]
+  def test_table
+    assert_equal({ :name => 'John' }, @person.send(:table))
   end
 
-  def test_json
-    Person.send :include, Structure::JSON
-
-    person = Person.new(:name => 'John')
-    person.friends << Person.new(:name => 'Jane')
-    json = person.to_json
-    assert_kind_of Person, JSON.parse(json)
-    assert_kind_of Person, JSON.parse(json).friends.first
-    assert_equal false, person.respond_to?(:as_json)
-
-    require 'active_support/ordered_hash'
-    require 'active_support/json'
-    load 'structure/json.rb'
-    assert_equal true,  person.as_json(:only => :name).has_key?(:name)
-    assert_equal false, person.as_json(:except => :name).has_key?(:name)
+  def test_to_s
   end
 end
