@@ -69,7 +69,20 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_equal ['Joe'], @person.friends
   end
 
-  def test_inspect
+  def test_json
+    friend = Structure.new(:name => 'Jane')
+    @person.friend = friend
+    json = '{"json_class":"Structure","name":"John","friend":{"name":"Jane"}}'
+    assert_equal json, @person.to_json
+    assert_equal @person, JSON.parse(json)
+    assert_equal friend, JSON.parse(json).friend
+
+    refute_respond_to @person, :as_json
+    require 'active_support/ordered_hash'
+    require 'active_support/json'
+    load 'structure.rb'
+    assert @person.as_json(:only => :name).has_key?(:name)
+    refute @person.as_json(:except => :name).has_key?(:name)
   end
 
   def test_marshaling
@@ -140,8 +153,5 @@ class TestStructure < MiniTest::Unit::TestCase
 
   def test_table
     assert_equal({ :name => 'John' }, @person.send(:table))
-  end
-
-  def test_to_s
   end
 end

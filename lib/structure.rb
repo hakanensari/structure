@@ -1,5 +1,16 @@
+begin
+  JSON::JSON_LOADED
+rescue NameError
+  require 'json'
+end
+
 # Structure is a key/value container.
 class Structure
+  def self.json_create(hsh)
+    hsh.delete('json_class')
+    new(hsh)
+  end
+
   def initialize(hsh = {})
     @table = {}
     marshal_load(hsh)
@@ -31,8 +42,33 @@ class Structure
     end
   end
 
+  def to_json(*args)
+    { JSON.create_id => self.class.name }.
+      merge(marshal_dump).
+      to_json(*args)
+  end
+
   def ==(other)
     other.is_a?(Structure) && @table == other.table
+  end
+
+  if defined? ActiveSupport
+    def as_json(options = nil)
+      subset = if options
+        if only = options[:only]
+          marshal_dump.slice(*Array.wrap(only))
+        elsif except = options[:except]
+          marshal_dump.except(*Array.wrap(except))
+        else
+          marshal_dump
+        end
+      else
+        marshal_dump
+      end
+
+      { ::JSON.create_id => self.class.name }.
+        merge(subset)
+    end
   end
 
   protected
@@ -86,7 +122,7 @@ class Structure
   def recursively_marshal(val)
     case val
     when Hash
-      Structure.new(val)
+      self.class.new(val)
     when Array
       val.map { |v| recursively_marshal(v) }
     else
