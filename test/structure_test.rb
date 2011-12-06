@@ -73,7 +73,9 @@ class TestStructure < MiniTest::Unit::TestCase
   def test_json
     friend = Structure.new(:name => 'Jane')
     @person.friend = friend
-    json = '{"json_class":"Structure","name":"John","friend":{"name":"Jane"}}'
+    json = '{"json_class":"Structure",
+             "name":"John",
+             "friend":{"name":"Jane"}}'.gsub(/\s+/, '')
     assert_equal @person, JSON.parse(json)
     assert_equal friend, JSON.parse(json).friend
 
