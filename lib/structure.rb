@@ -107,11 +107,8 @@ class Structure
     name = mth.to_s
     len = args.length
     if name.chomp!('=') && mth != :[]=
-      if len != 1
-        raise ArgumentError, "wrong number of arguments (#{len} for 1)", caller(1)
-      end
       modifiable[new_field(name)] = args.first
-    elsif len == 0 && @table.has_key?(mth)
+    elsif len == 0
       @table[new_field(mth)]
     else
       super

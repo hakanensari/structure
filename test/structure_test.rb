@@ -107,8 +107,8 @@ class TestStructure < MiniTest::Unit::TestCase
     @person.send(:table)[:age] = 20
     assert_equal 20, @person.age
 
-    assert_raises(NoMethodError) { @person.gender }
     assert_raises(NoMethodError) { @person.gender(1) }
+    assert_nil @person.gender
 
     @person.freeze
     assert_raises(TypeError) { @person.gender = 'male' }
