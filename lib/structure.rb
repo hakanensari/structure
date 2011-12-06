@@ -57,7 +57,7 @@ class Structure
   # structure
   def marshal_load(hsh)
     hsh.each do |k, v|
-      self.send("#{new_field(k)}=", recursively_marshal_load(v))
+      self.send("#{new_field(k)}=", recursively_load(v))
     end
   end
 
@@ -107,7 +107,7 @@ class Structure
     name = mth.to_s
     len = args.length
     if name.chomp!('=') && mth != :[]=
-      modifiable[new_field(name)] = args.first
+      modifiable[new_field(name)] = recursively_load(args.first)
     elsif len == 0
       @table[new_field(mth)]
     else
@@ -129,20 +129,24 @@ class Structure
     name = name.to_sym
     unless self.respond_to?(name)
       class << self; self; end.class_eval do
-        define_method(name) { @table[name] }
-        define_method("#{name}=") { |val| modifiable[name] = val }
+        define_method(name) do
+          @table[name]
+        end
+        define_method("#{name}=") do |val|
+          modifiable[name] = recursively_load(val)
+        end
       end
     end
 
     name
   end
 
-  def recursively_marshal_load(val)
+  def recursively_load(val)
     case val
     when Hash
       self.class.new(val)
     when Array
-      val.map { |v| recursively_marshal_load(v) }
+      val.map { |v| recursively_load(v) }
     else
       val
     end

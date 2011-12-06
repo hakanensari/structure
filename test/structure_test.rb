@@ -136,6 +136,14 @@ class TestStructure < MiniTest::Unit::TestCase
     refute_respond_to @person, :gender=
   end
 
+  def test_recursive_assignment
+    friend = { :name => 'Jane' }
+    @person.friend = friend
+    @person.friends = [friend]
+    assert_equal 'Jane', @person.friend.name
+    assert_equal 'Jane', @person.friends.first.name
+  end
+
   def test_recursive_marshaling
     hsh = {
       :name => 'John',
