@@ -74,6 +74,7 @@ class Structure
       new(hsh)
     end
 
+    # Creates a field.
     # @overload field(key, opts = {})
     #   Creates a field.
     #   @param [#to_sym] key the name of the field
