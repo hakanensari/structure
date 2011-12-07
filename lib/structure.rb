@@ -4,7 +4,62 @@ rescue NameError
   require 'json'
 end
 
-# Structure is a key/value container.
+# Structure is a key/value container. On the most basic level, it
+# mirrors the functionality of OpenStruct:
+#
+#    require 'structure'
+#
+#    record = Structure.new
+#    record.name    = "John Smith"
+#    record.age     = 70
+#    record.pension = 300
+#
+#    puts record.name    # -> "John Smith"
+#    puts record.address # -> nil
+#
+# You can build structures recursively:
+#
+#    hash = {
+#     "name"    => "Australia",
+#     "population" => "20000000,
+#     "cities"     => [
+#       {
+#         "name"       => "Sydney",
+#         "population" => "4100000"
+#       },
+#       {
+#         "name"       => "Melbourne",
+#         "population" => "4000000"
+#       }
+#     }
+#
+#     country = Structure.new(hash)
+#     puts country.name              # -> "Australia"
+#     puts country.cities.count      # -> 2
+#     puts country.cities.first.name # -> "Sydney"
+#
+# You can define optionally-typed fields in a structure:
+#
+#     class Price < Structure
+#       field :cents, Integer
+#       field :currency, :default => "USD"
+#     end
+#
+#     hash = { "cents" => "100" }
+#
+#     price = Price.new(hash)
+#     puts price.cents    # -> 100
+#     puts price.currency # -> "USD"
+#
+# Alternatively, you can define a proc to cast assigned values:
+#
+#     class Product < Structure
+#       field :sku, lambda(&:upcase)
+#     end
+#
+#     product = Product.new(:sku => 'foo-bar')
+#     puts product.sku # -> "FOO-BAR"
+#
 class Structure
   class << self
     attr_accessor :blueprint
