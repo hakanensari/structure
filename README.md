@@ -1,14 +1,6 @@
-# Structure
+![structure](http://f.cl.ly/items/2u2v0e3k2I3w1A0y2e25/ruby.png)
+
+> Machines only work when they break down and by continually breaking
+> down.
 
 [![travis](https://secure.travis-ci.org/hakanensari/structure.png?branch=master)](http://travis-ci.org/hakanensari/structure)
-
-Structure is a somewhat modernised OpenStruct, best for producing and
-consuming ephemeral data across APIs.
-
-    person = Structure.new :name => 'John',
-                           :friends => [{ :name => 'Jane' }]
-
-    puts person.friends.first.name
-    # => "Jane"
-    puts JSON.parse(person.to_json).friends.first.name
-    # => "Jane"
