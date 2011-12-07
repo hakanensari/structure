@@ -60,6 +60,8 @@ end
 #     product = Product.new(:sku => 'foo-bar')
 #     puts product.sku # -> "FOO-BAR"
 #
+# Structures are fully conversant in JSON, which is quite handy in the
+# ephemeral landscape of APIs.
 class Structure
   class << self
     attr_accessor :blueprint
