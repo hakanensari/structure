@@ -144,9 +144,7 @@ class Structure
     key = key.to_sym
     unless self.respond_to?(key)
       class << self; self; end.class_eval do
-        define_method(key) do
-          @table[key]
-        end
+        define_method(key) { @table[key] }
 
         assignment =
           case type
