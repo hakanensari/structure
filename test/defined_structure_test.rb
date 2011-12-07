@@ -2,7 +2,7 @@ require File.expand_path('../helper.rb', __FILE__)
 
 class Product < Structure
   field :title
-  field :sku, lambda { |val| val.to_s.upcase }
+  field :sku, lambda(&:upcase)
   field :cents, Integer
   field :currency, String, :default => 'USD'
   field :in_stock, :default => true
