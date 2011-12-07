@@ -125,7 +125,6 @@ class Structure
   end
 
   # Deletes a field.
-  #
   # @param [#to_sym] key
   # @return [Object] the value of the deleted field
   def delete_field(key)
