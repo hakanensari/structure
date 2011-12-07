@@ -17,7 +17,7 @@ end
 #    puts record.name    # -> "John Smith"
 #    puts record.address # -> nil
 #
-# You can build structures recursively:
+# Build structures recursively:
 #
 #    hash = {
 #     "name"       => "Australia",
@@ -38,7 +38,7 @@ end
 #     puts country.cities.count      # -> 2
 #     puts country.cities.first.name # -> "Sydney"
 #
-# You can define optionally-typed fields in a structure:
+# Define optionally-typed fields in a structure:
 #
 #     class Price < Structure
 #       field :cents, Integer
@@ -51,7 +51,8 @@ end
 #     puts price.cents    # -> 100
 #     puts price.currency # -> "USD"
 #
-# Alternatively, you can define a proc to cast assigned values:
+# Alternatively, define a proc to cast or otherwise manipulate assigned
+# values:
 #
 #     class Product < Structure
 #       field :sku, lambda(&:upcase)
