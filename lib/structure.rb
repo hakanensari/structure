@@ -123,7 +123,6 @@ class Structure
     name = mth.to_s
     len = args.length
     if name.chomp!('=') && mth != :[]=
-      # self.send("#{new_field(k)}=", args.first)
       modifiable[new_field(name)] = recursively_load(args.first)
     elsif len == 0
       @table[new_field(mth)]
