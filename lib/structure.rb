@@ -20,7 +20,7 @@ end
 # You can build structures recursively:
 #
 #    hash = {
-#     "name"    => "Australia",
+#     "name"       => "Australia",
 #     "population" => "20000000",
 #     "cities"     => [
 #       {
@@ -30,7 +30,7 @@ end
 #       {
 #         "name"       => "Melbourne",
 #         "population" => "4000000"
-#       }
+#       } ]
 #     }
 #
 #     country = Structure.new(hash)
