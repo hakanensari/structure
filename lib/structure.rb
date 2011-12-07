@@ -114,6 +114,9 @@ class Structure
   # Creates a new structure.
   # @param [Hash] hsh an optional hash to populate fields
   def initialize(hsh = {})
+    # It may have improved performance if I had defined these methods
+    # on the class level, but I decided to privilege consistency here.
+    # Who wouldn't?
     @table = blueprint.inject({}) do |a, (k, v)|
       a.merge new_field(k, v[:type]) => v[:default]
     end
