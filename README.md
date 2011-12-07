@@ -3,4 +3,6 @@
 > Machines only work when they break down and by continually breaking
 > down.
 
+[Delve into the API.](http://rubydoc.info/github/hakanensari/structure/master/frames)
+
 [![travis](https://secure.travis-ci.org/hakanensari/structure.png?branch=master)](http://travis-ci.org/hakanensari/structure)
