@@ -1,13 +1,4 @@
-require 'minitest/autorun'
-
-begin
-  require 'pry'
-rescue LoadError
-end
-
-require 'structure'
-
-InheritedStructure = Class.new(Structure)
+require File.expand_path('../helper.rb', __FILE__)
 
 # Most tests below are borrowed from RubySpec.
 class TestStructure < MiniTest::Unit::TestCase
@@ -34,7 +25,7 @@ class TestStructure < MiniTest::Unit::TestCase
     refute @person == 'foo'
     assert @person == @person
     assert @person == Structure.new(:name => 'John')
-    assert @person == InheritedStructure.new(:name => 'John')
+    assert @person == Class.new(Structure).new(:name => 'John')
     refute @person == Structure.new(:name => 'Johnny')
     refute @person == Structure.new(:name => 'John', :age => 20)
   end
@@ -43,13 +34,13 @@ class TestStructure < MiniTest::Unit::TestCase
     @person.freeze
 
     assert_equal 'John', @person.name
-    assert_raises(TypeError) { @person.age = 42 }
-    assert_raises(TypeError) { @person.state = :new }
+    assert_raises(RuntimeError) { @person.age = 42 }
+    assert_raises(RuntimeError) { @person.state = :new }
 
     c = @person.clone
     assert_equal 'John', c.name
-    assert_raises(TypeError) { c.age = 42 }
-    assert_raises(TypeError) { c.state = :new }
+    assert_raises(RuntimeError) { c.age = 42 }
+    assert_raises(RuntimeError) { c.state = :new }
 
     d = @person.dup
     assert_equal 'John', d.name
@@ -114,7 +105,7 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_nil @person.gender
 
     @person.freeze
-    assert_raises(TypeError) { @person.gender = 'male' }
+    assert_raises(RuntimeError) { @person.gender = 'male' }
   end
 
   def test_new

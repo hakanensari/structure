@@ -6,20 +6,59 @@ end
 
 # Structure is a key/value container.
 class Structure
-  # Builds a structure out of a JSON representation.
-  #
-  # @param [Hash] hsh a JSON representation translated to a hash
-  # @return [Structure] a structure
-  def self.json_create(hsh)
-    hsh.delete('json_class')
-    new(hsh)
+  class << self
+    attr_accessor :blueprint
+
+    # Builds a structure out of a JSON representation.
+    # @param [Hash] hsh a JSON representation translated to a hash
+    # @return [Structure] a structure
+    def json_create(hsh)
+      hsh.delete('json_class')
+      new(hsh)
+    end
+
+    # @overload field(key, opts = {})
+    #   Creates a field.
+    #   @param [#to_sym] key the name of the field
+    #   @param [Hash] opts the options to create the field with
+    #   @option opts [Object] :default the default value
+    # @overload field(key, type, opts)
+    #   Creates a typed field.
+    #   @param [#to_sym] key the name of the field
+    #   @param [Class, Proc] type the type to cast assigned values
+    #   @param [Hash] opts the options to create the field with
+    #   @option opts [Object] :default the default value
+    def field(key, *args)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+      default = opts[:default]
+      type = args.shift
+      @blueprint[key] = { :type    => type,
+                          :default => default }
+    end
+
+    # Syntactic sugar to create a typed field that defaults to an empty
+    # array.
+    # @param key the name of the field
+    def many(key)
+      field(key, Array, :default => [])
+    end
+
+    private
+
+    def inherited(child)
+      child.blueprint = blueprint.dup
+    end
   end
 
+  @blueprint = {}
+
   # Creates a new structure.
-  #
   # @param [Hash] hsh an optional hash to populate fields
   def initialize(hsh = {})
-    @table = {}
+    @table = blueprint.inject({}) do |a, (k, v)|
+      a.merge new_field(k, v[:type]) => v[:default]
+    end
+
     marshal_load(hsh)
   end
 
@@ -37,19 +76,19 @@ class Structure
   end
 
   # Provides marshalling support for use by the Marshal library.
-  #
   # @return [Hash] a hash of the keys and values of the structure
   def marshal_dump
-    @table.inject({}) { |a, (k, v)| a.merge k => recursively_dump(v) }
+    @table.inject({}) do |a, (k, v)|
+      a.merge k => recursively_dump(v)
+    end
   end
 
   # Provides marshalling support for use by the Marshal library.
-  #
   # @param [Hash] hsh a hash of keys and values to populate the
   # structure
   def marshal_load(hsh)
     hsh.each do |k, v|
-      self.send("#{new_field(k)}=", recursively_load(v))
+      self.send("#{new_field(k)}=", v)
     end
   end
 
@@ -65,16 +104,15 @@ class Structure
     other.is_a?(Structure) && @table == other.table
   end
 
-  if defined? ActiveSupport
-    require 'structure/as_json'
-    include AsJSON
-  end
-
   protected
 
   attr :table
 
   private
+
+  def blueprint
+    self.class.blueprint
+  end
 
   def initialize_copy(orig)
     super
@@ -85,6 +123,7 @@ class Structure
     name = mth.to_s
     len = args.length
     if name.chomp!('=') && mth != :[]=
+      # self.send("#{new_field(k)}=", args.first)
       modifiable[new_field(name)] = recursively_load(args.first)
     elsif len == 0
       @table[new_field(mth)]
@@ -94,29 +133,52 @@ class Structure
   end
 
   def modifiable
-    begin
-      @modifiable = true
-    rescue
-      raise TypeError, "can't modify frozen #{self.class}", caller(3)
+    if frozen?
+      raise RuntimeError, "can't modify frozen #{self.class}", caller(3)
     end
 
     @table
   end
 
-  def new_field(name)
-    name = name.to_sym
-    unless self.respond_to?(name)
+  def new_field(key, type = nil)
+    key = key.to_sym
+    unless self.respond_to?(key)
       class << self; self; end.class_eval do
-        define_method(name) do
-          @table[name]
+        define_method(key) do
+          @table[key]
         end
-        define_method("#{name}=") do |val|
-          modifiable[name] = recursively_load(val)
-        end
+
+        assignment =
+          case type
+          when nil
+            lambda { |v| modifiable[key] = recursively_load(v) }
+          when Proc
+            lambda { |v| modifiable[key] = type.call(v) }
+          when Class
+            mth = type.to_s.to_sym
+            if Kernel.respond_to?(mth)
+              lambda { |v|
+                modifiable[key] = v.nil? ? nil : Kernel.send(mth, v)
+              }
+            else
+              lambda { |v|
+                modifiable[key] =
+                  if v.nil? || v.is_a?(type)
+                    v
+                  else
+                    raise TypeError, "#{v} isn't a #{type}"
+                  end
+              }
+            end
+          else
+            raise TypeError, "#{type} isn't a valid type"
+          end
+
+        define_method("#{key}=", assignment)
       end
     end
 
-    name
+    key
   end
 
   def recursively_dump(val)
@@ -138,5 +200,10 @@ class Structure
     else
       val
     end
+  end
+
+  if defined? ActiveSupport
+    require 'structure/ext/active_support'
+    include Ext::ActiveSupport
   end
 end
