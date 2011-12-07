@@ -40,15 +40,7 @@ class Structure
   #
   # @return [Hash] a hash of the keys and values of the structure
   def marshal_dump
-    @table.inject({}) do |a, (k, v)|
-      a.merge k => if v.respond_to? :marshal_dump
-                     v.marshal_dump
-                   elsif v.is_a? Array
-                     v.map { |v| v.marshal_dump }
-                   else
-                     v
-                   end
-    end
+    @table.inject({}) { |a, (k, v)| a.merge k => recursively_dump(v) }
   end
 
   # Provides marshalling support for use by the Marshal library.
@@ -125,6 +117,16 @@ class Structure
     end
 
     name
+  end
+
+  def recursively_dump(val)
+    if val.respond_to? :marshal_dump
+       val.marshal_dump
+     elsif val.is_a? Array
+       val.map { |v| recursively_dump(v) }
+     else
+       val
+     end
   end
 
   def recursively_load(val)

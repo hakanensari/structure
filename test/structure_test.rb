@@ -73,11 +73,14 @@ class TestStructure < MiniTest::Unit::TestCase
   def test_json
     friend = Structure.new(:name => 'Jane')
     @person.friend = friend
+    @person.cities = ['Zurich']
     json = '{"json_class":"Structure",
              "name":"John",
-             "friend":{"name":"Jane"}}'.gsub(/\s+/, '')
+             "friend":{"name":"Jane"},
+             "cities":["Zurich"]}'.gsub(/\s+/, '')
     assert_equal @person, JSON.parse(json)
     assert_equal friend, JSON.parse(json).friend
+    assert_equal 'Zurich', JSON.parse(json).cities.first
 
     refute_respond_to @person, :as_json
     require 'active_support/ordered_hash'
