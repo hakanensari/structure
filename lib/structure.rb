@@ -22,7 +22,7 @@ class Structure
     #   @param [#to_sym] key the name of the field
     #   @param [Hash] opts the options to create the field with
     #   @option opts [Object] :default the default value
-    # @overload field(key, type = nil, opts = {})
+    # @overload field(key, type, opts = {})
     #   Creates a typed field.
     #   @param [#to_sym] key the name of the field
     #   @param [Class, Proc] type the type to cast assigned values
