@@ -21,7 +21,7 @@ end
 #
 #    hash = {
 #     "name"    => "Australia",
-#     "population" => "20000000,
+#     "population" => "20000000",
 #     "cities"     => [
 #       {
 #         "name"       => "Sydney",
