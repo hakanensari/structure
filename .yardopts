@@ -1,3 +1,2 @@
 --no-private
---exclude README
 lib/**/*.rb
