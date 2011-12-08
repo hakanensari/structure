@@ -1,7 +1,6 @@
 class Structure
   # @private
   module Ext
-    # @private
     module ActiveSupport
       def as_json(options = nil)
         subset = if options
