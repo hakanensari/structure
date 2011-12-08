@@ -65,6 +65,7 @@ end
 # ephemeral landscape of APIs.
 class Structure
   class << self
+    # @private
     attr_accessor :blueprint
 
     # Builds a structure out of a JSON representation.
