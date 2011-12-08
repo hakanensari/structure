@@ -13,7 +13,7 @@ class Foo < Structure
   field :bar, Hash
 end
 
-class TestDefinedStructure < MiniTest::Unit::TestCase
+class TestStructureWithFields < MiniTest::Unit::TestCase
   def setup
     @product = Product.new(:title => 'Widget')
   end
@@ -48,7 +48,7 @@ class TestDefinedStructure < MiniTest::Unit::TestCase
     assert_equal [], @product.related
   end
 
-  def test_hashes_with_recursion
+  def test_recursive_hashes
     foo = Foo.new('bar' => { 'baz' => 1 })
     hsh = foo.marshal_dump
     foo.marshal_load(hsh)
@@ -56,5 +56,12 @@ class TestDefinedStructure < MiniTest::Unit::TestCase
 
     json = foo.to_json
     assert foo, JSON.parse(json)
+  end
+
+  def test_recursive_array_handling
+    related = Product.new
+    @product.related << related
+    assert_equal [related], @product.related
+    assert_equal [], @product.related.first.related
   end
 end

@@ -119,7 +119,8 @@ class Structure
     # on the class level, but I decided to privilege consistency here.
     # Who wouldn't?
     @table = blueprint.inject({}) do |a, (k, v)|
-      a.merge new_field(k, v[:type]) => v[:default]
+      default = v[:default].dup rescue v[:default]
+      a.merge new_field(k, v[:type]) => default
     end
 
     marshal_load(hsh)
