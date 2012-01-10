@@ -4,8 +4,8 @@ rescue NameError
   require 'json'
 end
 
-# Structure is a key/value container. On the most basic level, it
-# mirrors the functionality of OpenStruct:
+# Structure is a key/value container. On the most basic level, it mirrors the
+# functionality of OpenStruct:
 #
 #    require 'structure'
 #
@@ -42,7 +42,7 @@ end
 #
 #     class Price < Structure
 #       field :cents, Integer
-#       field :currency, :default => "USD"
+#       field :currency, String, :default => "USD"
 #     end
 #
 #     hash = { "cents" => "100" }
@@ -51,11 +51,12 @@ end
 #     puts price.cents    # -> 100
 #     puts price.currency # -> "USD"
 #
-# Alternatively, define a proc to cast or otherwise manipulate assigned
-# values:
+# Alternatively, define a proc to cast or otherwise manipulate values and
+# assign defaults:
 #
 #     class Product < Structure
 #       field :sku, lambda(&:upcase)
+#       field :created_at, String, :default => lambda { Time.now.to_s }
 #     end
 #
 #     product = Product.new(:sku => 'foo-bar')
@@ -96,8 +97,7 @@ class Structure
                           :default => default }
     end
 
-    # Syntactic sugar to create a typed field that defaults to an empty
-    # array.
+    # Syntactic sugar to create a typed field that defaults to an empty array.
     # @param key the name of the field
     def many(key)
       field(key, Array, :default => [])
@@ -115,11 +115,13 @@ class Structure
   # Creates a new structure.
   # @param [Hash] hsh an optional hash to populate fields
   def initialize(hsh = {})
-    # It may have improved performance if I had defined these methods
-    # on the class level, but I decided to privilege consistency here.
-    # Who wouldn't?
     @table = blueprint.inject({}) do |a, (k, v)|
-      default = v[:default].dup rescue v[:default]
+      default = if v[:default].is_a? Proc
+                  v[:default].call
+                else
+                  v[:default].dup rescue v[:default]
+                end
+
       a.merge new_field(k, v[:type]) => default
     end
 
@@ -147,8 +149,7 @@ class Structure
   end
 
   # Provides marshalling support for use by the Marshal library.
-  # @param [Hash] hsh a hash of keys and values to populate the
-  # structure
+  # @param [Hash] hsh a hash of keys and values to populate the structure
   def marshal_load(hsh)
     hsh.each do |k, v|
       self.send("#{new_field(k)}=", v)

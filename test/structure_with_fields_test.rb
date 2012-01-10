@@ -6,6 +6,7 @@ class Product < Structure
   field :cents, Integer
   field :currency, String, :default => 'USD'
   field :in_stock, :default => true
+  field :created_on, :default => lambda { Date.today }
   many :related
 end
 
@@ -46,6 +47,7 @@ class TestStructureWithFields < MiniTest::Unit::TestCase
     assert_equal 'USD', @product.currency
     assert_equal true, @product.in_stock
     assert_equal [], @product.related
+    assert_kind_of Date, @product.created_on
   end
 
   def test_recursive_hashes
