@@ -5,7 +5,7 @@ class Product < Structure
   field :sku, lambda(&:upcase)
   field :cents, Integer
   field :currency, String, :default => 'USD'
-  field :in_stock, :default => true
+  key :in_stock, :default => true
   field :created_on, :default => lambda { Date.today }
   many :related
 end

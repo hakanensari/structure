@@ -97,6 +97,8 @@ class Structure
                           :default => default }
     end
 
+    alias key field
+
     # Syntactic sugar to create a typed field that defaults to an empty array.
     # @param key the name of the field
     def many(key)
