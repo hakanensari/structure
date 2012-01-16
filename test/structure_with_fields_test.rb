@@ -8,6 +8,7 @@ class Product < Structure
   key :in_stock, :default => true
   field :created_on, :default => lambda { Date.today }
   many :related
+  one :manufacturer
 end
 
 class Foo < Structure
@@ -65,5 +66,15 @@ class TestStructureWithFields < MiniTest::Unit::TestCase
     @product.related << related
     assert_equal [related], @product.related
     assert_equal [], @product.related.first.related
+  end
+
+  def test_one_to_one
+    hsh = { :name => 'Manufacturer' }
+
+    @product.manufacturer = Structure.new(hsh)
+    assert_equal 'Manufacturer', @product.manufacturer.name
+
+    @product.manufacturer = hsh
+    assert_equal 'Manufacturer', @product.manufacturer.name
   end
 end

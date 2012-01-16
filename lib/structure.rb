@@ -105,6 +105,12 @@ class Structure
       field(key, Array, :default => [])
     end
 
+    # Syntactic sugar to create a field that stands in for another structure.
+    # @param key the name of the field
+    def one(key)
+      field(key, lambda { |v| v.is_a?(Structure) ? v : Structure.new(v) })
+    end
+
     private
 
     def inherited(child)
