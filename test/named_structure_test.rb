@@ -1,21 +1,22 @@
-require File.expand_path('../helper.rb', __FILE__)
+require 'minitest/autorun'
+require 'structure'
 
 class Product < Structure
-  field :title
-  field :sku, lambda(&:upcase)
-  field :cents, Integer
-  field :currency, String, :default => 'USD'
-  key :in_stock, :default => true
-  field :created_on, :default => lambda { Date.today }
+  attribute :title
+  attribute :sku, lambda(&:upcase)
+  attribute :cents, Integer
+  attribute :currency, String, :default => 'USD'
+  attribute :in_stock, :default => true
+  attribute :created_on, :default => lambda { Date.today }
   many :related
   one :manufacturer
 end
 
 class Foo < Structure
-  field :bar, Hash
+  attribute :bar, Hash
 end
 
-class TestStructureWithFields < MiniTest::Unit::TestCase
+class TestStructureWithAttributes < MiniTest::Unit::TestCase
   def setup
     @product = Product.new(:title => 'Widget')
   end

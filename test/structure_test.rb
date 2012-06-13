@@ -1,14 +1,15 @@
-require File.expand_path('../helper.rb', __FILE__)
+require 'minitest/autorun'
+require 'structure'
 
-# Most tests below are borrowed from RubySpec.
+# Most tests lifted from RubySpec.
 class TestStructure < MiniTest::Unit::TestCase
   def setup
-    @person = Structure.new(:name => 'John')
+    @person = Structure.new :name => 'John'
   end
 
-  def test_delete_field
-    @person.delete_field(:name)
-    assert_nil @person.send(:table)[:name]
+  def test_delete_attribute
+    @person.delete_attribute :name
+    assert_nil @person.send(:attributes)[:name]
     refute_respond_to(@person, :name)
     refute_respond_to(@person, :name=)
   end
@@ -93,12 +94,12 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_respond_to @person, :test
     assert_respond_to @person, :test=
     assert_equal 'test', @person.test
-    assert_equal 'test', @person.send(:table)[:test]
+    assert_equal 'test', @person.send(:attributes)[:test]
     @person.test = 'changed'
     assert_equal 'changed', @person.test
 
 
-    @person.send(:table)[:age] = 20
+    @person.send(:attributes)[:age] = 20
     assert_equal 20, @person.age
 
     assert_raises(NoMethodError) { @person.gender(1) }
@@ -112,12 +113,12 @@ class TestStructure < MiniTest::Unit::TestCase
     person = Structure.new(:name => 'John', :age => 70)
     assert_equal 'John', person.name
     assert_equal 70, person.age
-    assert_equal({}, Structure.new.send(:table))
+    assert_equal({}, Structure.new.send(:attributes))
   end
 
-  def test_new_field
-    @person.send(:table)[:age] = 20
-    @person.send(:new_field, :age)
+  def test_new_attribute
+    @person.send(:attributes)[:age] = 20
+    @person.send(:new_attribute, :age)
 
     assert_equal 20, @person.age
 
@@ -125,7 +126,7 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_equal 30, @person.age
 
     @person.instance_eval { def gender; 'male'; end }
-    @person.send(:new_field, :gender)
+    @person.send(:new_attribute, :gender)
     assert_equal 'male', @person.gender
     refute_respond_to @person, :gender=
   end
@@ -155,7 +156,7 @@ class TestStructure < MiniTest::Unit::TestCase
     assert_equal friend, person.friends.first
   end
 
-  def test_table
-    assert_equal({ :name => 'John' }, @person.send(:table))
+  def test_attributes
+    assert_equal({ :name => 'John' }, @person.send(:attributes))
   end
 end
