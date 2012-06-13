@@ -101,6 +101,8 @@ puts article.tags # => ["foo", "bar"]
 Structures speak JSON fluently, which should come handy when talking to APIs or
 handling other ephemeral data.
 
+It should be a breeze to extend a Structure with ActiveModel modules.
+
 [1]: https://secure.travis-ci.org/hakanensari/structure.png
 [2]: http://travis-ci.org/hakanensari/structure
 [3]: http://f.cl.ly/items/2u2v0e3k2I3w1A0y2e25/ruby.png
