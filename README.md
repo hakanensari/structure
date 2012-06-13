@@ -2,9 +2,9 @@
 
 [![travis][1]][2]
 
-![structure][3]
+Structure is a Ruby data structure that weighs just over 200 sloc.
 
-Structure is a key/value container.
+![structure][3]
 
 ## Installation
 
@@ -20,26 +20,30 @@ gem 'structure', '~> 1.0.pre'
 
 ## Examples
 
-On the most basic level, Structure behaves like an OpenStruct:
+Anonymous structures resemble [OpenStruct][4]:
 
 ```ruby
-person = Structure.new
-person.name = "John Smith"
+record = Structure.new
+record.name = "John Smith"
 
-puts person.name => "John Smith"
+puts record.name => "John Smith"
+puts record.address => nil
 ```
 
-You can build anonymous structures recursively:
+Structures are recursive:
 
 ```ruby
 hash = {
-  "name"   => "Australia",
-  "cities" => [
+  "name"       => "Australia",
+  "population" => "20000000",
+  "cities"     => [
     {
-      "name" => "Sydney",
+      "name"       => "Sydney",
+      "population" => "4100000"
     },
     {
-      "name" => "Melbourne",
+      "name"       => "Melbourne",
+      "population" => "4000000"
     }
   ]
 }
@@ -49,37 +53,41 @@ puts country.name              => "Australia"
 puts country.cities.first.name => "Sydney"
 ```
 
-It's also possible to define structured documents and define attributes with
-coerced types and default values:
+Named structures can define attributes:
 
 ```ruby
-class Price < Structure
+require 'money'
+
+class Product < Structure
   attribute :cents, Integer
   attribute :currency, String, default: "USD"
+
+  def price
+    Money.new cents, currency
+  end
 end
 
-hash = { "cents" => "100" }
-price = Price.new hash
-puts price.cents    => 100
-puts price.currency => "USD"
+product = Price.new "cents" => "100"
+puts product.price # => #<Money cents:10200 currency:USD>
 ```
 
-You can assign dynamic default values:
+Attributes can optionally coerce type or otherwise format their values.
 
 ```ruby
-class Product < Structure
-  now = lambda { Time.now.to_s }
-
-  attribute :sku, lambda(&:upcase)
-  attribute :created_at, String, default: now
+class Book < Structure
+  attribute :title, lambda &:capitalize
+  attribute :created_at, String, default: lambda { Time.now.to_s }
 end
 
-product = Product.new(:sku => 'abc')
-puts product.sku => "ABC"
-puts product.created_at => "2012-01-01 12:00:00 +0000"
+book = Book.new(title: "a thousand plateaus")
+puts product.sku # => "A Thousand Plateaus"
+puts product.created_at # => "2012-01-01 12:00:00 +0000"
 ```
+
+Structures speak JSON fluently, which should come handy when talking to APIs or
+handling other ephemeral data.
 
 [1]: https://secure.travis-ci.org/hakanensari/structure.png
 [2]: http://travis-ci.org/hakanensari/structure
 [3]: http://f.cl.ly/items/2u2v0e3k2I3w1A0y2e25/ruby.png
-
+[4]: http://ruby-doc.org/stdlib-1.9.3/libdoc/ostruct/rdoc/OpenStruct.html
