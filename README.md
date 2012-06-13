@@ -67,8 +67,8 @@ class Product < Structure
   end
 end
 
-product = Price.new "cents" => "100"
-puts product.price # => #<Money cents:10200 currency:USD>
+product = Product.new cents: "100"
+puts product.price # => #<Money cents:100 currency:USD>
 ```
 
 Attributes can optionally coerce type or otherwise format their values.
