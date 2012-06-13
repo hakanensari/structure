@@ -9,7 +9,7 @@ Structure is a Ruby data structure that weighs just over 200 sloc.
 ## Installation
 
 ```bash
-gem install structure
+gem install structure --pre
 ```
 
 or in your **Gemfile**
