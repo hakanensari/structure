@@ -84,6 +84,20 @@ puts product.sku # => "A Thousand Plateaus"
 puts product.created_at # => "2012-01-01 12:00:00 +0000"
 ```
 
+Some syntactic sugar:
+
+```ruby
+class Article < Structure
+  many :tags
+  one :author
+end
+
+article = Article.new tags:   %w(foo bar),
+                      author: { name: "John Smith" }
+puts article.author.name # => "John Smith"
+puts article.tags # => ["foo", "bar"]
+```
+
 Structures speak JSON fluently, which should come handy when talking to APIs or
 handling other ephemeral data.
 
