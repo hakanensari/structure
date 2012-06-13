@@ -15,7 +15,7 @@ gem install structure
 or in your **Gemfile**
 
 ```ruby
-gem 'structure', '~> 1.0.pre'
+gem 'structure', '~> 1.0.0.pre'
 ```
 
 ## Examples
@@ -67,11 +67,11 @@ class Product < Structure
   end
 end
 
-product = Price.new "cents" => "100"
-puts product.price # => #<Money cents:10200 currency:USD>
+product = Product.new cents: "100"
+puts product.price # => #<Money cents:100 currency:USD>
 ```
 
-Attributes can optionally coerce type or otherwise format their values.
+Attributes can coerce type or otherwise format their values.
 
 ```ruby
 class Book < Structure
@@ -79,7 +79,7 @@ class Book < Structure
   attribute :created_at, String, default: lambda { Time.now.to_s }
 end
 
-book = Book.new(title: "a thousand plateaus")
+book = Book.new title: "a thousand plateaus"
 puts product.sku # => "A Thousand Plateaus"
 puts product.created_at # => "2012-01-01 12:00:00 +0000"
 ```
