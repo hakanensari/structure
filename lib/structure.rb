@@ -77,7 +77,7 @@ class Structure
     marshal_load hsh
   end
 
-  # Deletes a attribute.
+  # Deletes an attribute.
   #
   # key - The String-like key of the attribute.
   #
