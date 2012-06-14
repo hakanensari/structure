@@ -49,7 +49,8 @@ class Structure
     #
     # Returns nothing.
     def one(key)
-      attribute key, lambda { |v| v.is_a?(Structure) ? v : Structure.new(v) }
+      type = lambda { |v| v.is_a?(Structure) ? v : Structure.new(v) }
+      attribute key, type, :default => Structure.new
     end
 
     private

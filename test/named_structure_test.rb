@@ -69,13 +69,19 @@ class TestStructureWithAttributes < MiniTest::Unit::TestCase
     assert_equal [], @product.related.first.related
   end
 
-  def test_one_to_one
-    hsh = { :name => 'Manufacturer' }
+  def test_one
+    name = 'Widget Co'
+    hsh = { :name => name }
+
+    assert_kind_of Structure, @product.manufacturer
+
+    @product.manufacturer.name = name
+    assert_equal name, @product.manufacturer.name
 
     @product.manufacturer = Structure.new(hsh)
-    assert_equal 'Manufacturer', @product.manufacturer.name
+    assert_equal name, @product.manufacturer.name
 
     @product.manufacturer = hsh
-    assert_equal 'Manufacturer', @product.manufacturer.name
+    assert_equal name, @product.manufacturer.name
   end
 end
