@@ -1,3 +1,5 @@
+require 'forwardable'
+
 begin
   JSON::JSON_LOADED
 rescue NameError
@@ -6,6 +8,9 @@ end
 
 # Structure is a data structure.
 class Structure
+  extend Forwardable
+  include Enumerable
+
   class << self
     # Internal: Returns the Hash attribute definitions of the structure.
     attr_accessor :blueprint
@@ -66,6 +71,9 @@ class Structure
   attr :attributes
 
   alias to_hash attributes
+
+  # Implement enumerators.
+  def_delegator :@attributes, :each
 
   # Creates a new structure.
   #

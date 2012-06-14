@@ -159,4 +159,10 @@ class TestStructure < MiniTest::Unit::TestCase
   def test_attributes
     assert_equal({ :name => 'John' }, @person.send(:attributes))
   end
+
+  def test_enumeration
+    value = nil
+    @person.each { |k, v| value = v if k == :name }
+    assert_equal 'John', value
+  end
 end
