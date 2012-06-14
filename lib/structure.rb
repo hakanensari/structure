@@ -62,6 +62,9 @@ class Structure
 
   @blueprint = {}
 
+  # Returns the Hash attributes of the structure.
+  attr :attributes
+
   # Creates a new structure.
   #
   # hsh - A Hash of keys and values to populate the structure (default: {}).
@@ -143,10 +146,6 @@ class Structure
       { JSON.create_id => self.class.name }.merge subset
     end
   end
-
-  protected
-
-  attr :attributes
 
   private
 
