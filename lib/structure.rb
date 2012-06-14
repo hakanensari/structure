@@ -50,8 +50,7 @@ class Structure
     #
     # Returns nothing.
     def one(key)
-      type = lambda { |v| v.is_a?(Structure) ? v : Structure.new(v) }
-      attribute key, type, :default => Structure.new
+      attribute key, lambda { |v| Structure.new v }, :default => Structure.new
     end
 
     private
@@ -65,6 +64,8 @@ class Structure
 
   # Returns the Hash attributes of the structure.
   attr :attributes
+
+  alias to_hash attributes
 
   # Creates a new structure.
   #
@@ -107,9 +108,9 @@ class Structure
 
   # Provides marshalling support for use by the Marshal library.
   #
-  # hsh - A hash of keys and values to populate the structure.
+  # hsh - A Hash-like set of keys and values to populate the structure.
   def marshal_load(hsh)
-    hsh.each do |k, v|
+    hsh.to_hash.each do |k, v|
       self.send "#{new_attribute(k)}=", v
     end
   end
