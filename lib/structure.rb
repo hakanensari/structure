@@ -7,6 +7,7 @@ end
 # Structure is a data structure.
 class Structure
   class << self
+    # Internal: Returns the Hash attribute definitions of the structure.
     attr_accessor :blueprint
 
     # Builds a structure out of its JSON representation.
