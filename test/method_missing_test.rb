@@ -1,5 +1,4 @@
 require_relative 'helper'
-require 'pry'
 
 class MethodMissingTest < MiniTest::Unit::TestCase
   def setup

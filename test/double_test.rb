@@ -1,6 +1,4 @@
 require_relative 'helper'
-require 'double'
-require 'pry'
 
 class Country < Structure
   many :cities, City
