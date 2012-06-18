@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Structure : A nestable, coercible, Hash-like data structure" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Structure</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/hakanensari/structure">View on GitHub</a>
+
+          <h1 id="project_title">Structure</h1>
+          <h2 id="project_tagline">A nestable, coercible, Hash-like data structure</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/hakanensari/structure/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/hakanensari/structure/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p><img src="http://f.cl.ly/items/2u2v0e3k2I3w1A0y2e25/ruby.png" alt="structure"></p>
+
+<p>Structure is a nestable, coercible, Hash-like data structure that weighs just
+over 200 sloc.</p>
+
+<h2>Anonymous Structures</h2>
+
+<p>An anonymous structure resembles an <a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/ostruct/rdoc/OpenStruct.html">OpenStruct</a>, with the added benefit of being recursive.</p>
+
+<div class="highlight">
+<pre><span class="n">company</span> <span class="o">=</span> <span class="no">Structure</span><span class="o">.</span><span class="n">new</span> <span class="nb">name</span><span class="p">:</span> <span class="s1">'Hipster Sweatshop'</span><span class="p">,</span>
+                        <span class="n">address</span><span class="p">:</span> <span class="p">{</span>
+                          <span class="n">street</span><span class="p">:</span> <span class="s1">'87 Richardson St'</span><span class="p">,</span>
+                          <span class="n">city</span><span class="p">:</span> <span class="s1">'Brooklyn'</span>
+                          <span class="n">zip</span><span class="p">:</span>  <span class="mi">11222</span><span class="p">,</span>
+
+<span class="nb">puts</span> <span class="n">company</span><span class="o">.</span><span class="n">address</span><span class="o">.</span><span class="n">city</span> <span class="c1"># =&gt; "Brooklyn"</span>
+</pre>
+</div>
+
+
+<h2>Named Structures</h2>
+
+<p>A named Structure allows the possibility to define attributes on the class
+level and coerce their data types.</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">Structure</span>
+  <span class="n">attribute</span> <span class="ss">:name</span><span class="p">,</span> <span class="nb">String</span>
+  <span class="n">attribute</span> <span class="ss">:age</span><span class="p">,</span> <span class="nb">Integer</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Alternatively, coerce values with procs:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">Structure</span>
+  <span class="n">attribute</span> <span class="ss">:title</span><span class="p">,</span> <span class="nb">lambda</span> <span class="o">&amp;</span><span class="ss">:capitalize</span>
+  <span class="n">attribute</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span> <span class="n">title</span><span class="p">:</span> <span class="s1">'hello world'</span>
+<span class="nb">puts</span> <span class="n">post</span><span class="o">.</span><span class="n">title</span> <span class="c1"># =&gt; "Hello World"</span>
+<span class="nb">puts</span> <span class="n">post</span><span class="o">.</span><span class="n">created_at</span> <span class="c1"># =&gt; "2012-01-01 12:00:00 +0000"</span>
+</pre>
+</div>
+
+
+<p>The obligatory syntactic sugar:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">Structure</span>
+  <span class="n">one</span> <span class="ss">:publisher</span><span class="p">,</span> <span class="no">Publisher</span>
+  <span class="n">many</span> <span class="ss">:authors</span><span class="p">,</span> <span class="no">Author</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Publisher</span> <span class="o">&lt;</span> <span class="no">Structure</span>
+  <span class="n">key</span> <span class="ss">:name</span><span class="p">,</span> <span class="nb">String</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">Structure</span>
+  <span class="n">key</span> <span class="ss">:name</span><span class="p">,</span> <span class="nb">String</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Structures are meant to be ephemeral. They translate to and from JSON
+seamlessly, which means you can marshal a structure into JSON and then read it
+back into your application on another machine.</p>
+
+<p>It's a breeze to extend structures with ActiveModel modules.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Structure maintained by <a href="https://github.com/hakanensari">hakanensari</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
