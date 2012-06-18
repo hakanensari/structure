@@ -1,51 +1,58 @@
+# External dependencies.
+require 'double'
+
+# Standard library dependencies.
 require 'forwardable'
 
+# Internal dependencies.
+require 'structure/blueprint'
+require 'structure/coercion'
+
+# Load the default JSON library if nothing else is loaded.
 begin
   JSON::JSON_LOADED
 rescue NameError
   require 'json'
 end
 
-# Structure is a data structure.
+# Structure is a Hash-like data structure.
+#
+# An anonymous Structure resembles an OpenStruct, with the added benefit of
+# being recursive.
+#
+# A named Structure allows the possibility to define attributes on the class
+# level and coerce their data types.
 class Structure
+  extend Double
   extend Forwardable
   include Enumerable
 
   class << self
-    # Internal: Returns the Hash attribute definitions of the structure.
-    attr_accessor :blueprint
-
-    # Builds a structure out of its JSON representation.
+    # Defines an attribute on the class level.
     #
-    # hsh - A JSON representation translated to a Hash.
-    #
-    # Returns a Structure.
-    def json_create(hsh)
-      hsh.delete 'json_class'
-      new hsh
-    end
-
-    # Defines an attribute.
-    #
-    # key  - The String-like key of the attribute.
+    # name - The Symbol name of the attribute.
     # type - The Class to which the value should be coerced into or a
     #        Proc that formats the value (default: nil).
-    # opts - The Hash options to create the attribute with (default: {}).
-    #        :default - The default Object value.
+    # opts - The Hash options to define the attribute with (default: {}).
+    #        :default - The default value.
     #
     # Returns nothing.
-    def attribute(key, *args)
+    def attribute(name, *args)
       opts = args.last.is_a?(Hash) ? args.pop : {}
-      @blueprint[key] = { :type => args.shift, :default => opts[:default] }
+      make_accessible name, Coercion.build(args.first)
+      blueprint.add name, opts[:default]
     end
+
+    # A shorthand for `attribute`.
+    alias key attribute
 
     # Syntactic sugar to define a collection.
     #
     # key - The String-like key of the attribute.
     #
     # Returns nothing.
-    def many(key)
-      attribute key, Array, :default => []
+    def many(key, klass = Structure)
+      attribute key, ->(a) { Array(a).map { |v| klass.new v } }, default: []
     end
 
     # Syntactic sugar to define an attribute that stands in for another
@@ -54,8 +61,21 @@ class Structure
     # key - The String-like key of the attribute.
     #
     # Returns nothing.
-    def one(key)
-      attribute key, lambda { |v| Structure.new v }, :default => Structure.new
+    def one(key, klass = Structure)
+      attribute key, ->(v) { klass.new v if v }
+    end
+
+    # Internal: Returns a Blueprint of default values.
+    attr_accessor :blueprint
+
+    # Internal: Builds a structure out of a JSON representation.
+    #
+    # hsh - A Hash translation of a JSON representation.
+    #
+    # Returns a Structure.
+    def json_create(hsh)
+      hsh.delete 'json_class'
+      new hsh
     end
 
     private
@@ -63,64 +83,48 @@ class Structure
     def inherited(subclass)
       subclass.blueprint = blueprint.dup
     end
+
+    def make_accessible(key, coercion)
+      define_method(key)       { attributes[key] }
+      define_method("#{key}=") { |v| modifiable[key] = coercion[v] }
+    end
   end
 
-  @blueprint = {}
+  @blueprint = Blueprint.new
 
   # Returns the Hash attributes of the structure.
   attr :attributes
 
-  alias to_hash attributes
-
-  # Implement enumerators.
   def_delegator :@attributes, :each
 
   # Creates a new structure.
   #
   # hsh - A Hash of keys and values to populate the structure (default: {}).
   def initialize(hsh = {})
-    @attributes = self.class.blueprint.inject({}) do |a, (k, v)|
-      default = if v[:default].is_a? Proc
-                  v[:default].call
-                else
-                  v[:default].dup rescue v[:default]
-                end
-      a.merge new_attribute(k, v[:type]) => default
-    end
+    @attributes = {}
 
-    marshal_load hsh
+    blueprint
+      .merge(hsh.reduce({}) { |a, (k, v)| a.merge k.to_sym => v })
+      .each { |k, v| self.send "#{new_attribute(k)}=", v }
   end
 
-  # Deletes an attribute.
+  # Gets an attribute.
   #
-  # key - The String-like key of the attribute.
+  # key - The Symbol-like name of the attribute.
   #
-  # Returns the Object value of the deleted attribute.
-  def delete_attribute(key)
-    key = key.to_sym
-    class << self; self; end.class_eval do
-      [key, "#{key}="].each { |m| remove_method m }
-    end
-
-    @attributes.delete key
+  # Returns the value of the attribute.
+  def [](key)
+    self.send key
   end
 
-  # Provides marshalling support for use by the Marshal library.
+  # Sets an attribute.
   #
-  # Returns a Hash of the keys and values of the structure.
-  def marshal_dump
-    @attributes.inject({}) do |a, (k, v)|
-      a.merge k => recursively_dump(v)
-    end
-  end
-
-  # Provides marshalling support for use by the Marshal library.
+  # key - The Symbol-like name of the attribute.
+  # val - The value of the attribute.
   #
-  # hsh - A Hash-like set of keys and values to populate the structure.
-  def marshal_load(hsh)
-    hsh.to_hash.each do |k, v|
-      self.send "#{new_attribute(k)}=", v
-    end
+  # Returns nothing.
+  def []=(key, val)
+    self.send "#{key}=", val
   end
 
   # Returns a String JSON representation of the structure.
@@ -157,6 +161,37 @@ class Structure
     end
   end
 
+  # Internal: Returns the Hash blueprint.
+  def blueprint
+    self.class.blueprint.to_h
+  end
+
+  # Internal: Provides marshalling support for use by the Marshal library.
+  #
+  # Returns a Hash of the keys and values of the structure.
+  def marshal_dump
+    dump = ->(val) do
+      if val.respond_to? :marshal_dump
+        val.marshal_dump
+      elsif val.is_a? Array
+        val.map { |v| dump[v] }
+      else
+        val
+      end
+    end
+
+    attributes.reduce({}) { |a, (k, v)| a.merge k => dump[v] }
+  end
+
+  # Internal: Provides marshalling support for use by the Marshal library.
+  #
+  # hsh - A Hash-like set of keys and values to populate the structure.
+  #
+  # Returns nothing.
+  def marshal_load(hsh)
+    initialize hsh
+  end
+
   private
 
   def initialize_copy(orig)
@@ -165,11 +200,18 @@ class Structure
   end
 
   def method_missing(mth, *args)
-    name = mth.to_s
-    if name.chomp!('=') && mth != :[]=
-      modifiable[new_attribute(name)] = recursively_load args.first
-    elsif args.length == 0
-      @attributes[new_attribute(mth)]
+    len = args.length
+    if mth[-1] == '='
+      if methods.include? get = mth.to_s.chop.to_sym
+        raise ArgumentError, "#{get} clashes with an existing method name"
+      end
+      if len != 1
+        raise ArgumentError, "wrong number of arguments (#{len} for 1)"
+      end
+      new_attribute get
+      self.send mth, args.first
+    elsif len == 0
+      @attributes[new_attribute mth]
     else
       super
     end
@@ -177,69 +219,19 @@ class Structure
 
   def modifiable
     if frozen?
-      raise RuntimeError, "can't modify frozen #{self.class}", caller(3)
+      raise RuntimeError, "can't modify frozen #{self.class}"
     end
 
     @attributes
   end
 
-  def new_attribute(key, type = nil)
-    key = key.to_sym
-    unless self.respond_to? key
-      class << self; self; end.class_eval do
-        define_method(key) { @attributes[key] }
-
-        assignment =
-          case type
-          when nil
-            lambda { |v| modifiable[key] = recursively_load v }
-          when Proc
-            lambda { |v| modifiable[key] = type.call v }
-          when Class
-            mth = type.to_s.to_sym
-            if Kernel.respond_to? mth
-              lambda { |v|
-                modifiable[key] = v.nil? ? nil : Kernel.send(mth, v)
-              }
-            else
-              lambda { |v|
-                modifiable[key] =
-                  if v.nil? || v.is_a?(type)
-                    v
-                  else
-                    raise TypeError, "#{v} isn't a #{type}"
-                  end
-              }
-            end
-          else
-            raise TypeError, "#{type} isn't a valid type"
-          end
-
-        define_method "#{key}=", assignment
+  def new_attribute(key)
+    unless methods.include? key
+      (class << self; self; end).class_eval do
+        make_accessible key, Coercion.build
       end
     end
 
     key
-  end
-
-  def recursively_dump(val)
-    if val.respond_to? :marshal_dump
-       val.marshal_dump
-     elsif val.is_a? Array
-       val.map { |v| recursively_dump v }
-     else
-       val
-     end
-  end
-
-  def recursively_load(val)
-    case val
-    when Hash
-      self.class.new val
-    when Array
-      val.map { |v| recursively_load v }
-    else
-      val
-    end
   end
 end

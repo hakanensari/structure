@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ['code@papercavalier.com']
   s.homepage    = 'http://github.com/hakanensari/structure'
   s.summary     = 'A data structure'
-  s.description = 'Structure is a Ruby data structure.'
+  s.description = 'A nestable, coercible, Hash-like data structure'
 
   s.rubyforge_project = 'structure'
 
@@ -18,4 +18,6 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ['lib']
+
+  s.add_dependency 'double', '~> 0.1.1'
 end

@@ -1,12 +1,11 @@
-source :rubygems
+source 'http://rubygems.org'
 gemspec
-
-gem 'activesupport'
-gem 'minitest' if RUBY_VERSION.include? '1.8'
-gem 'rake'
 
 begin
   JSON::JSON_LOADED
 rescue NameError
   gem 'json'
 end
+
+gem 'activesupport'
+gem 'rake'
