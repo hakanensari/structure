@@ -30,7 +30,7 @@ company = Structure.new name: 'Hipster Sweatshop',
                           city: 'Brooklyn'
                           zip:  11222,
                           
-puts company.address.city # => "Booklyn"
+puts company.address.city # => "Brooklyn"
 ```
 
 A named Structure allows the possibility to define attributes on the class
