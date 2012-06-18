@@ -35,7 +35,7 @@ class Structure
 
     # Yields pairs of keys and their default values.
     def each
-      @table.each { |k, v| yield k, v[] }
+      @table.each { |k, v| yield [k, v[]] }
     end
 
     # Returns a hash of keys and default values.
