@@ -19,7 +19,7 @@ or in your **Gemfile**
 gem 'structure', '~> 1.0.0.pre'
 ```
 
-## Examples
+## Anonymous Structures
 
 An anonymous structure resembles an [OpenStruct][4], with the added benefit of being recursive.
 
@@ -27,11 +27,13 @@ An anonymous structure resembles an [OpenStruct][4], with the added benefit of b
 company = Structure.new name: 'Hipster Sweatshop',
                         address: {
                           street: '87 Richardson St',
-                          city: 'Brooklyn'
-                          zip:  11222,
+                          city:   'Brooklyn'
+                          zip:    11222 }
                           
 puts company.address.city # => "Brooklyn"
 ```
+
+## Named Structures
 
 A named Structure allows the possibility to define attributes on the class
 level and coerce their data types.
