@@ -2,7 +2,8 @@
 
 [![travis][1]][2]
 
-Structure is a Ruby data structure that weighs just over 200 sloc.
+Structure is a nestable, coercible, Hash-like data structure that weighs just
+over 200 sloc.
 
 ![structure][3]
 
@@ -20,88 +21,63 @@ gem 'structure', '~> 1.0.0.pre'
 
 ## Examples
 
-Anonymous structures resemble [OpenStruct][4]:
+An anonymous structure resembles an [OpenStruct][4], with the added benefit of being recursive.
 
 ```ruby
-record = Structure.new
-record.name = "John Smith"
-
-puts record.name => "John Smith"
-puts record.address => nil
+company = Structure.new name: 'Hipster Sweatshop',
+                        address: {
+                          street: '87 Richardson St',
+                          city: 'Brooklyn'
+                          zip:  11222,
+                          
+puts company.address.city # => "Booklyn"
 ```
 
-Structures are recursive:
+A named Structure allows the possibility to define attributes on the class
+level and coerce their data types.
 
 ```ruby
-hash = {
-  "name"       => "Australia",
-  "population" => "20000000",
-  "cities"     => [
-    {
-      "name"       => "Sydney",
-      "population" => "4100000"
-    },
-    {
-      "name"       => "Melbourne",
-      "population" => "4000000"
-    }
-  ]
-}
-
-country = Structure.new hash
-puts country.name              => "Australia"
-puts country.cities.first.name => "Sydney"
+class Person < Structure
+  attribute :name, String
+  attribute :age, Integer
+end
 ```
 
-Named structures can define attributes:
+Alternatively, coerce values with procs:
 
 ```ruby
-require 'money'
-
-class Product < Structure
-  attribute :cents, Integer
-  attribute :currency, String, default: "USD"
-
-  def price
-    Money.new cents, currency
-  end
+class Post < Structure
+  attribute :title, lambda &:capitalize
+  attribute :created_at, default: -> { Time.now }
 end
 
-product = Product.new cents: "100"
-puts product.price # => #<Money cents:100 currency:USD>
+post = Post.new title: 'hello world'
+puts post.title # => "Hello World"
+puts post.created_at # => "2012-01-01 12:00:00 +0000"
 ```
 
-Attributes can coerce type or otherwise format their values.
+The obligatory syntactic sugar:
 
 ```ruby
 class Book < Structure
-  attribute :title, lambda &:capitalize
-  attribute :created_at, String, default: lambda { Time.now.to_s }
+  one :publisher, Publisher
+  many :authors, Author
 end
 
-book = Book.new title: "a thousand plateaus"
-puts product.sku # => "A Thousand Plateaus"
-puts product.created_at # => "2012-01-01 12:00:00 +0000"
-```
-
-Some syntactic sugar:
-
-```ruby
-class Article < Structure
-  many :tags
-  one :author
+class Publisher < Structure
+  key :name, String
 end
 
-article = Article.new tags:   %w(foo bar),
-                      author: { name: "John Smith" }
-puts article.author.name # => "John Smith"
-puts article.tags # => ["foo", "bar"]
+class Author < Structure
+  key :name, String
+end
 ```
 
-Structures speak JSON fluently, which should come handy when talking to APIs or
-handling other ephemeral data.
+Structures are meant to be ephemeral. They translate to and from JSON
+seamlessly, which means you can marshal a structure into JSON and then read it
+back into your application on another machine.
 
-It should be a breeze to extend a Structure with ActiveModel modules.
+It's a breeze to extend structures with ActiveModel modules.
 
 [1]: https://secure.travis-ci.org/hakanensari/structure.png
 [2]: http://travis-ci.org/hakanensari/structure
