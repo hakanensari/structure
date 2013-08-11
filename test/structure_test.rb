@@ -28,4 +28,12 @@ class StructureTest < MiniTest::Test
     assert_equal 10, @location.latitude
     assert_equal 100, @location.longitude
   end
+
+  def test_class_returns_value_names
+    assert_equal [:latitude, :longitude], Location.value_names
+  end
+
+  def test_returns_values
+    assert_equal({ latitude: 10, longitude: 100 }, @location.values)
+  end
 end
