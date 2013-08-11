@@ -35,5 +35,6 @@ class StructureTest < MiniTest::Test
 
   def test_returns_values
     assert_equal({ latitude: 10, longitude: 100 }, @location.values)
+    assert_equal @location.to_h, @location.values
   end
 end

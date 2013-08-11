@@ -10,6 +10,8 @@ module Structure
     vals
   end
 
+  alias to_h values
+
   module ClassMethods
     attr :value_names
 
