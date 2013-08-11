@@ -12,6 +12,11 @@ module Structure
   end
   alias :to_h :values
 
+  def ==(other)
+    values == other.values
+  end
+  alias :eql? :==
+
   def inspect
     str = "#<#{self.class}"
 
