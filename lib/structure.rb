@@ -7,10 +7,11 @@ module Structure
   def values
     vals = {}
     self.class.value_names.each { |name| vals[name] = self.send(name) }
+
     vals
   end
+  alias :to_h :values
 
-  alias to_h values
 
   module ClassMethods
     attr :value_names
