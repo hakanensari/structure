@@ -37,4 +37,9 @@ class StructureTest < MiniTest::Test
     assert_equal({ latitude: 10, longitude: 100 }, @location.values)
     assert_equal @location.to_h, @location.values
   end
+
+  def test_pretty_inspects
+    assert_equal '#<Location latitude=10, longitude=100>', @location.inspect
+    assert_equal @location.to_s, @location.inspect
+  end
 end

@@ -12,6 +12,19 @@ module Structure
   end
   alias :to_h :values
 
+  def inspect
+    str = "#<#{self.class}"
+
+    first = true
+    values.each do |k, v|
+      str << ',' unless first
+      first = false
+      str << " #{k}=#{v.inspect}"
+    end
+
+    str << '>'
+  end
+  alias :to_s :inspect
 
   module ClassMethods
     attr :value_names
