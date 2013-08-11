@@ -1,8 +1,10 @@
 # Structure
 
-Value objects in Ruby
+Turn data (e.g. API responses) into immutable value objects in Ruby.
 
 ## Usage
+
+Mix in Structure and define values with `.value`.
 
 ```ruby
 class Location
