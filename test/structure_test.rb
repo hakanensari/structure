@@ -48,4 +48,13 @@ class StructureTest < MiniTest::Test
     assert_equal '#<Location latitude=10, longitude=100>', @location.inspect
     assert_equal @location.to_s, @location.inspect
   end
+
+  def test_subclasses
+    subclass = Class.new(Location) do
+      value(:name) { 'foo' }
+    end
+    obj = subclass.new(lat: 10, lng: 100)
+
+    assert_equal({ latitude: 10, longitude: 100, name: 'foo' }, obj.values)
+  end
 end

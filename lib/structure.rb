@@ -34,6 +34,10 @@ module Structure
   module ClassMethods
     attr :value_names
 
+    def inherited(subclass)
+      subclass.instance_variable_set(:@value_names, value_names.dup)
+    end
+
     def value(name, &blk)
       define_method(name, &blk)
       @value_names << name
