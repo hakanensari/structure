@@ -10,7 +10,10 @@ module Structure
 
     vals
   end
-  alias :to_h :values
+
+  def to_h
+    Hash[values.dup.map { |k, v| [k, v.respond_to?(:to_h) ? v.to_h : v] } ]
+  end
 
   def ==(other)
     values == other.values

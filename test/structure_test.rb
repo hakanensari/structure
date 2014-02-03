@@ -57,4 +57,27 @@ class StructureTest < MiniTest::Test
 
     assert_equal({ latitude: 10, longitude: 100, name: 'foo' }, obj.values)
   end
+
+  def test_recursively_casts_to_hash
+    city_class = Class.new do
+      include Structure
+
+      attr :res
+
+      def initialize(res)
+        @res = res
+      end
+
+      value :name do
+        res.fetch(:name)
+      end
+
+      value :location do
+        Location.new(res.fetch(:loc))
+      end
+    end
+
+    city = city_class.new(name: 'London', loc: { lat: 51.5, lng: 0.1 })
+    assert_equal({ name: 'London', location: { latitude: 51.5, longitude: 0.1 }}, city.to_h)
+  end
 end
