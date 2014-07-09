@@ -30,6 +30,14 @@ module Structure
   module ClassMethods
     attr_reader :attribute_names
 
+    def to_struct
+      Struct.new(name, *attribute_names) do
+        def initialize(data = {})
+          data.each { |k, v| self.send("#{k}=", v) }
+        end
+      end
+    end
+
     def inherited(subclass)
       subclass.instance_variable_set(:@attribute_names, attribute_names.dup)
     end

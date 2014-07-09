@@ -16,6 +16,12 @@ class StructureTest < MiniTest::Test
     assert_equal [:latitude, :longitude], Location.attribute_names
   end
 
+  def test_class_casts_to_struct
+    struct = Location.to_struct
+    assert_equal 'Struct::Location', struct.name
+    assert_equal 1, struct.new(latitude: 1).latitude
+  end
+
   def test_subclassing_does_not_have_side_effects
     subclass = Class.new(Location) do
       attribute(:name) { 'foo' }
