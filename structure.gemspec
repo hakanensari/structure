@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name    = 'structure'
-  gem.version = '1.0.0'
+  gem.version = '0.27.0'
   gem.authors = ['Hakan Ensari']
   gem.summary = 'Parses data into value objects'
   gem.files   = Dir.glob('lib/**/*') + %w(LICENSE README.md)
