@@ -1,30 +1,46 @@
 # Structure
 
-Turn data (e.g. API responses) into immutable value objects in Ruby.
+Structure is minimal glue that helps you parse data&mdash;for instance, API responses&mdash;into immutable value objects.
 
 ## Usage
 
-Mix in Structure and define values with `.value`.
+Usage is straightforward. Mix in the module and define the parser methods with `.attribute`, a naming convention I decided to stick to.
 
 ```ruby
 class Location
   include Structure
 
-  attr :res
-
-  def initialize(res)
-    @res = res
+  def initialize(data)
+    @data = data
   end
 
-  value :latitude do
-    res.fetch(:lat)
+  attribute :latitude do
+    parse(:latitude)
   end
 
-  value :longitude do
-    res.fetch(:lng)
+  attribute :longitude do
+    parse(:longitude)
+  end
+
+  private
+
+  def parse(key)
+    # Heavy-duty parsing action on @data
   end
 end
+```
 
-location = Location.new(lat: 10, lng: 100)
-location.to_h # {:latitude=>10, :longitude=>100}
+Once you have your parser defined, initialise it with some data and take it to a drive.
+
+```ruby
+location = Location.new(data)
+puts location.latitude # => Some latitude
+puts location.to_h # => All attributes as a Ruby Hash
+puts location # => Bonus: This will pretty-inspect the instance
+```
+
+When testing objects the parser collaborates in, you may benefit from a double to stand in for the real parser.
+
+```ruby
+double = Location.to_struct.new(location: 10, latitude: 10)
 ```
