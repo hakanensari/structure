@@ -2,40 +2,40 @@ module Structure
   def self.included(base)
     base
       .extend(ClassMethods)
-      .instance_variable_set(:@value_names, [])
+      .instance_variable_set(:@attribute_names, [])
   end
 
-  def values
-    self.class.value_names.reduce({}) { |ret, name|
+  def attributes
+    self.class.attribute_names.reduce({}) { |ret, name|
       ret.update(name => self.send(name))
     }
   end
 
   def ==(other)
-    values == other.values
+    attributes == other.attributes
   end
 
   def inspect
     "#<#{self.class} #{
-      values
+      attributes
         .map { |k, v| "#{k}=#{v.inspect}" }
         .join(', ')
     }>"
   end
 
-  alias_method :to_h, :values
+  alias_method :to_h, :attributes
   alias_method :eql?, :==
   alias_method :to_s, :inspect
 
   module ClassMethods
-    attr_reader :value_names
+    attr_reader :attribute_names
 
     def inherited(subclass)
-      subclass.instance_variable_set(:@value_names, value_names.dup)
+      subclass.instance_variable_set(:@attribute_names, attribute_names.dup)
     end
 
-    def value(name, &blk)
-      @value_names << define_method(name, &blk)
+    def attribute(name, &blk)
+      @attribute_names << define_method(name, &blk)
     end
   end
 end

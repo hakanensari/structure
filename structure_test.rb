@@ -4,10 +4,7 @@ require './structure'
 
 Location = Struct.new(:res) do
   include Structure
-
-  [:latitude, :longitude].each do |key|
-    value(key) { res.fetch(key) }
-  end
+  [:latitude, :longitude].each { |key| attribute(key) { res.fetch(key) } }
 end
 
 class StructureTest < MiniTest::Test
@@ -15,27 +12,26 @@ class StructureTest < MiniTest::Test
     @location = Location.new(latitude: 10, longitude: 100)
   end
 
-  def test_class_returns_value_names
-    assert_equal [:latitude, :longitude], Location.value_names
+  def test_class_returns_attribute_names
+    assert_equal [:latitude, :longitude], Location.attribute_names
   end
 
   def test_subclassing_does_not_have_side_effects
     subclass = Class.new(Location) do
-      value(:name) { 'foo' }
+      attribute(:name) { 'foo' }
     end
     obj = subclass.new(latitude: 10, longitude: 100)
-
-    assert_equal({ latitude: 10, longitude: 100, name: 'foo' }, obj.values)
+    assert_equal({ latitude: 10, longitude: 100, name: 'foo' }, obj.attributes)
   end
 
-  def test_values
+  def test_attributes
     assert_equal 10, @location.latitude
     assert_equal 100, @location.longitude
   end
 
-  def test_returns_values
-    assert_equal({ latitude: 10, longitude: 100 }, @location.values)
-    assert_equal @location.to_h, @location.values
+  def test_returns_attributes
+    assert_equal({ latitude: 10, longitude: 100 }, @location.attributes)
+    assert_equal @location.to_h, @location.attributes
   end
 
   def test_compares
