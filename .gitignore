@@ -1,6 +1,4 @@
-*.gem
 .bundle
 bin
-coverage
 pkg
 Gemfile.lock

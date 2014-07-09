@@ -1,0 +1,51 @@
+require 'minitest/autorun'
+require 'minitest/pride'
+require './structure'
+
+Location = Struct.new(:res) do
+  include Structure
+
+  [:latitude, :longitude].each do |key|
+    value(key) { res.fetch(key) }
+  end
+end
+
+class StructureTest < MiniTest::Test
+  def setup
+    @location = Location.new(latitude: 10, longitude: 100)
+  end
+
+  def test_class_returns_value_names
+    assert_equal [:latitude, :longitude], Location.value_names
+  end
+
+  def test_subclassing_does_not_have_side_effects
+    subclass = Class.new(Location) do
+      value(:name) { 'foo' }
+    end
+    obj = subclass.new(latitude: 10, longitude: 100)
+
+    assert_equal({ latitude: 10, longitude: 100, name: 'foo' }, obj.values)
+  end
+
+  def test_values
+    assert_equal 10, @location.latitude
+    assert_equal 100, @location.longitude
+  end
+
+  def test_returns_values
+    assert_equal({ latitude: 10, longitude: 100 }, @location.values)
+    assert_equal @location.to_h, @location.values
+  end
+
+  def test_compares
+    @other = Location.new(longitude: 100, latitude: 10)
+    assert @location == @other
+    assert @location.eql?(@other)
+  end
+
+  def test_pretty_inspects
+    assert_equal '#<Location latitude=10, longitude=100>', @location.inspect
+    assert_equal @location.to_s, @location.inspect
+  end
+end
