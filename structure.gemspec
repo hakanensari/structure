@@ -3,7 +3,7 @@ Gem::Specification.new do |gem|
   gem.version = '0.27.0'
   gem.authors = ['Hakan Ensari']
   gem.summary = 'Parses data into value objects'
-  gem.files   = Dir.glob('lib/**/*') + %w(LICENSE README.md)
+  gem.files   = %w(structure.rb structure_test.rb LICENSE README.md)
 
   gem.add_development_dependency 'minitest'
   gem.add_development_dependency 'rake'
