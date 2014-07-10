@@ -31,6 +31,8 @@ module Structure
     attr_reader :attribute_names
 
     def to_struct
+      return Struct.const_get(name, false) if Struct.const_defined?(name, false)
+
       Struct.new(name, *attribute_names) do
         def initialize(data = {})
           data.each { |key, val| self.send("#{key}=", val) }

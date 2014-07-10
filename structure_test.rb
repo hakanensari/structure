@@ -22,6 +22,13 @@ class StructureTest < MiniTest::Test
     assert_equal 1, struct.new(latitude: 1).latitude
   end
 
+  def test_cast_to_struct_only_once
+    out, err = capture_io do
+      2.times { Location.to_struct }
+    end
+    assert_empty err
+  end
+
   def test_subclassing_does_not_have_side_effects
     subclass = Class.new(Location) do
       attribute(:name) { 'foo' }
