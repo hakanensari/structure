@@ -51,7 +51,15 @@ module Structure
     end
 
     def attribute(name, &blk)
-      define_method(name, &blk)
+      define_method("_#{name}", blk)
+      private "_#{name}"
+
+      module_eval <<-END
+        def #{name}
+          @#{name} ||= _#{name}
+        end
+      END
+
       @attribute_names << name
     end
   end
