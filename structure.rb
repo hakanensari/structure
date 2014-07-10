@@ -18,7 +18,7 @@ module Structure
   def inspect
     "#<#{self.class} #{
       attributes
-        .map { |k, v| "#{k}=#{v.inspect}" }
+        .map { |key, val| "#{key}=#{val.inspect}" }
         .join(', ')
     }>"
   end
@@ -33,13 +33,13 @@ module Structure
     def to_struct
       Struct.new(name, *attribute_names) do
         def initialize(data = {})
-          data.each { |k, v| self.send("#{k}=", v) }
+          data.each { |key, val| self.send("#{key}=", val) }
         end
       end
     end
 
     def inherited(subclass)
-      subclass.instance_variable_set(:@attribute_names, attribute_names.dup)
+      subclass.instance_variable_set(:@attribute_names, @attribute_names.dup)
     end
 
     def attribute(name, &blk)
