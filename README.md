@@ -2,7 +2,6 @@
 
 [![Travis](https://travis-ci.org/hakanensari/structure.svg)](https://travis-ci.org/hakanensari/structure)
 
-<img src="http://f.cl.ly/items/2Y1l2H2x2G382b3d2h09/ruby.png" alt="Structure" align="right">
 Structure is minimal glue that helps you parse data into immutable value objects.
 
 ```ruby
