@@ -18,7 +18,13 @@ module Structure
   def inspect
     "#<#{self.class} #{
       attributes
-        .map { |key, val| "#{key}=#{val.inspect}" }
+        .map { |key, val|
+          if val.is_a?(Array) && val.size > 3
+            "#{key}=[#{val.take(3).map(&:inspect).join(', ')}...]"
+          else
+            "#{key}=#{val.inspect}"
+          end
+        }
         .join(', ')
     }>"
   end

@@ -57,4 +57,12 @@ class StructureTest < MiniTest::Test
     assert_equal '#<Location latitude=10, longitude=20>', @location.inspect
     assert_equal @location.to_s, @location.inspect
   end
+
+  def test_truncates_long_arrays_when_pretty_inspecting
+    klass = Class.new { include Structure }
+    klass.attribute(:ary) { ['a'] }
+    assert_includes klass.new.inspect, 'ary=["a"]'
+    klass.attribute(:ary) { ('a'..'z').to_a }
+    assert_includes klass.new.inspect, 'ary=["a", "b", "c"...]'
+  end
 end
