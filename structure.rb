@@ -45,7 +45,8 @@ module Structure
     end
 
     def attribute(name, &blk)
-      @attribute_names << define_method(name, &blk)
+      define_method(name, &blk)
+      @attribute_names << name
     end
   end
 end
