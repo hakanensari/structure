@@ -1,25 +1,20 @@
 # Structure
 
-Structure is minimal glue that helps you parse data&mdash;for instance, API responses&mdash;into immutable value objects.
+[![Travis](https://travis-ci.org/hakanensari/structure.svg)](https://travis-ci.org/hakanensari/structure)
 
-## Usage
-
-Usage is straightforward. Mix in the module and define the parser methods with `.attribute`, a naming convention I decided to stick to.
+<img src="http://f.cl.ly/items/2Y1l2H2x2G382b3d2h09/ruby.png" alt="Structure" align="right">
+Structure is minimal glue that helps you parse data into immutable value objects.
 
 ```ruby
-class Location
+class Person
   include Structure
 
   def initialize(data)
     @data = data
   end
 
-  attribute :latitude do
-    parse(:latitude)
-  end
-
-  attribute :longitude do
-    parse(:longitude)
+  attribute :name do
+    parse(:name)
   end
 
   private
@@ -28,19 +23,15 @@ class Location
     # Heavy-duty parsing action on @data
   end
 end
-```
 
-Once you have your parser defined, initialise it with some data and take it to a drive.
+person = Person.new(data)
 
-```ruby
-location = Location.new(data)
-puts location.latitude # => Some latitude
-puts location.to_h # => All attributes as a Ruby Hash
-puts location # => Bonus: This will pretty-inspect the instance
-```
+# Bonus 1: Pretty-inspects in REPL
+puts person
 
-When testing objects the parser collaborates in, you may benefit from a double to stand in for the real parser.
+# Bonus 2: Returns all attributes as a Ruby Hash
+person.attributes
 
-```ruby
-double = Location.to_struct.new(location: 10, latitude: 10)
+# Bonus 3: Builds a double for testing collaborated objects
+Person.to_struct.new(name: 'Jane')
 ```
