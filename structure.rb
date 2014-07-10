@@ -53,7 +53,7 @@ module Structure
 
       attribute_names.each do |name|
         if instance_methods(false).include?(:"#{name}?")
-          klass.module_eval "def #{name}?; #{name} end"
+          klass.module_eval "def #{name}?; #{name}; end"
         end
       end
 
