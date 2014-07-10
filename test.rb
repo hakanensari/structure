@@ -12,14 +12,15 @@ class StructureTest < MiniTest::Unit::TestCase
     @person = Person.new(name: 'Jane')
   end
 
-  def test_class_returns_attribute_names
-    assert_equal [:name], Person.attribute_names
+  def test_returns_attribute_names
+    assert_equal ['name'], Person.attribute_names
+    assert_equal ['name'], Person.new.attribute_names
   end
 
   def test_casts_itself_to_struct
     struct = Person.to_struct
     assert_equal 'Struct::Person', struct.name
-    assert_equal 'Jane', struct.new(name: 'Jane').name
+    assert_equal 'Jane', struct.new('name' => 'Jane').name
   end
 
   def test_cast_to_struct_only_once
@@ -34,7 +35,7 @@ class StructureTest < MiniTest::Unit::TestCase
       attribute(:age) { res.fetch(:age) }
     end
     obj = subclass.new(name: 'John', age: 18)
-    assert_equal({ name: 'John', age: 18 }, obj.attributes)
+    assert_equal({ 'name' => 'John', 'age' => 18 }, obj.attributes)
   end
 
   def test_attributes
@@ -42,7 +43,7 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_returns_attributes
-    assert_equal({ name: 'Jane' }, @person.attributes)
+    assert_equal({ 'name' => 'Jane' }, @person.attributes)
     assert_equal @person.to_h, @person.attributes
   end
 
@@ -71,5 +72,15 @@ class StructureTest < MiniTest::Unit::TestCase
     assert_includes klass.new.inspect, 'ary=["a"]'
     klass.attribute(:ary) { ('a'..'z').to_a }
     assert_includes klass.new.inspect, 'ary=["a", "b", "c"...]'
+  end
+
+  def test_predicate_methods
+    klass = Class.new { include Structure }
+    klass.attribute(:foo?) { true }
+    assert klass.new.foo
+    assert klass.new.foo?
+    object = klass.to_struct.new(foo: true)
+    assert object.foo?
+    assert_equal object.foo, object.foo?
   end
 end

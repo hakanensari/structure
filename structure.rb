@@ -1,14 +1,16 @@
 module Structure
   def self.included(base)
-    base
-      .extend(ClassMethods)
-      .instance_variable_set(:@attribute_names, [])
+    base.extend(ClassMethods).instance_variable_set(:@attribute_names, [])
   end
 
   def attributes
-    self.class.attribute_names.reduce({}) { |ret, name|
+    attribute_names.reduce({}) { |ret, name|
       ret.update(name => self.send(name))
     }
+  end
+
+  def attribute_names
+    self.class.attribute_names
   end
 
   def ==(other)
@@ -37,13 +39,25 @@ module Structure
     attr_reader :attribute_names
 
     def to_struct
-      return Struct.const_get(name, false) if Struct.const_defined?(name, false)
+      class_name = name || to_s.gsub(/\W/, '')
 
-      Struct.new(name, *attribute_names) do
+      if Struct.const_defined?(class_name, false)
+        return Struct.const_get(class_name, false)
+      end
+
+      klass = Struct.new(class_name, *attribute_names) do
         def initialize(data = {})
           data.each { |key, val| self.send("#{key}=", val) }
         end
       end
+
+      attribute_names.each do |name|
+        if instance_methods(false).include?(:"#{name}?")
+          klass.module_eval "def #{name}?; #{name} end"
+        end
+      end
+
+      klass
     end
 
     def inherited(subclass)
@@ -51,14 +65,11 @@ module Structure
     end
 
     def attribute(name, &blk)
+      name = name.to_s
+      module_eval "def #{name}?; #{name}; end" if name.chomp!('?')
+      module_eval "def #{name}; @#{name} ||= _#{name}; end"
       define_method("_#{name}", blk)
       private "_#{name}"
-
-      module_eval <<-END
-        def #{name}
-          @#{name} ||= _#{name}
-        end
-      END
 
       @attribute_names << name
     end
