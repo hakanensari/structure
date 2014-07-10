@@ -7,7 +7,7 @@ Location = Struct.new(:res) do
   [:latitude, :longitude].each { |key| attribute(key) { res.fetch(key) } }
 end
 
-class StructureTest < MiniTest::Test
+class StructureTest < MiniTest::Unit::TestCase
   def setup
     @location = Location.new(latitude: 10, longitude: 20)
   end
