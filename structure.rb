@@ -18,7 +18,7 @@ module Structure
   end
 
   def inspect
-    class_name = self.class.name || self.class.to_s.match(/#<(.*)>/)[1]
+    class_name = self.class.name || self.class.to_s.gsub(/[^\w:]/, '')
 
     "#<#{class_name} #{
       attributes
