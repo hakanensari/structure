@@ -40,7 +40,7 @@ module Structure
   module ClassMethods
     attr_reader :attribute_names
 
-    def to_struct
+    def to_struct(&blk)
       class_name = name || to_s.gsub(/\W/, '')
 
       if Struct.const_defined?(class_name, false)
@@ -52,6 +52,8 @@ module Structure
           data.each { |key, val| self.send("#{key}=", val) }
         end
       end
+
+      klass.module_eval(&blk) if block_given?
 
       attribute_names.each do |name|
         if instance_methods(false).include?(:"#{name}?")

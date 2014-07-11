@@ -17,19 +17,6 @@ class StructureTest < MiniTest::Unit::TestCase
     assert_equal ['name'], Person.new.attribute_names
   end
 
-  def test_casts_itself_to_struct
-    struct = Person.to_struct
-    assert_equal 'Struct::Person', struct.name
-    assert_equal 'Jane', struct.new('name' => 'Jane').name
-  end
-
-  def test_cast_to_struct_only_once
-    out, err = capture_io do
-      2.times { Person.to_struct }
-    end
-    assert_empty err
-  end
-
   def test_subclassing_does_not_have_side_effects
     subclass = Class.new(Person) do
       attribute(:age) { res.fetch(:age) }
@@ -84,5 +71,20 @@ class StructureTest < MiniTest::Unit::TestCase
     object = klass.to_struct.new(foo: true)
     assert object.foo?
     assert_equal object.foo, object.foo?
+  end
+
+  def test_casts_to_struct
+    struct = Person.to_struct
+    assert_equal 'Struct::Person', struct.name
+    assert_equal 'Jane', struct.new('name' => 'Jane').name
+    Struct.send(:remove_const, :Person) # side effect
+  end
+
+  def test_defines_custom_methods_on_struct
+    klass = Person.to_struct do
+      def foo; end
+    end
+    assert_respond_to klass.new, :foo
+    Struct.send(:remove_const, :Person) # side effect
   end
 end
