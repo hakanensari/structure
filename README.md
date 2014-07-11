@@ -25,11 +25,14 @@ end
 
 person = Person.new(data)
 
-# Bonus 1: Pretty-inspects in REPL
-puts person
+# A read-only, memoised attribute
+puts person.name # => "Jane"
 
-# Bonus 2: Returns all attributes as a Ruby Hash
-person.attributes
+# Bonus 1: Pretty-inspects in REPL
+puts person # => #<Person name="Jane">
+
+# Bonus 2: Returns all attributes as a Hash
+person.attributes # => {"name"=>"Jane"}
 
 # Bonus 3: Builds a double for testing collaborated objects
 Person.to_struct.new(name: 'Jane')
