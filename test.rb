@@ -100,6 +100,22 @@ class StructureTest < MiniTest::Unit::TestCase
     klass = Class.new do
       include Structure, m
     end
-    assert_respond_to klass.to_struct.new, :foo
+    struct = klass.to_struct
+    assert_respond_to struct.new, :foo
+    refute_includes struct, Structure
+  end
+
+  def test_the_included_edge_case!
+    m = Module.new do
+      def self.included(base)
+        unless base.name.to_s.start_with?('Struct:')
+          base.send(:include, Structure)
+        end
+      end
+    end
+    klass = Class.new do
+      include m
+    end
+    refute_includes klass.to_struct, Structure
   end
 end
