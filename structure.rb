@@ -18,7 +18,9 @@ module Structure
   end
 
   def inspect
-    "#<#{self.class} #{
+    class_name = self.class.name || self.class.to_s.match(/#<(.*)>/)[1]
+
+    "#<#{class_name} #{
       attributes
         .map { |key, val|
           if val.is_a?(Array) && val.size > 3

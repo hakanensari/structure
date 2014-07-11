@@ -64,6 +64,8 @@ class StructureTest < MiniTest::Unit::TestCase
   def test_pretty_inspects
     assert_equal '#<Person name="Jane">', @person.inspect
     assert_equal @person.to_s, @person.inspect
+    klass = Class.new { include Structure }
+    assert_match /#<Class:\w+ .*>/, klass.new.to_s
   end
 
   def test_truncates_long_arrays_when_pretty_inspecting
