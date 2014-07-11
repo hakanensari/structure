@@ -8,6 +8,12 @@ Person = Struct.new(:res) do
 end
 
 class StructureTest < MiniTest::Unit::TestCase
+  def anon_class
+    Class.new do
+      include Structure
+    end
+  end
+
   def setup
     @person = Person.new(name: 'Jane')
   end
@@ -51,12 +57,11 @@ class StructureTest < MiniTest::Unit::TestCase
   def test_pretty_inspects
     assert_equal '#<Person name="Jane">', @person.inspect
     assert_equal @person.to_s, @person.inspect
-    klass = Class.new { include Structure }
-    assert_match /#<Class:\w+ .*>/, klass.new.to_s
+    assert_match /#<Class:\w+ .*>/, anon_class.new.to_s
   end
 
   def test_truncates_long_arrays_when_pretty_inspecting
-    klass = Class.new { include Structure }
+    klass = anon_class
     klass.attribute(:ary) { ['a'] }
     assert_includes klass.new.inspect, 'ary=["a"]'
     klass.attribute(:ary) { ('a'..'z').to_a }
@@ -64,7 +69,7 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_predicate_methods
-    klass = Class.new { include Structure }
+    klass = anon_class
     klass.attribute(:foo?) { true }
     assert klass.new.foo
     assert klass.new.foo?
@@ -81,18 +86,20 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_defines_custom_methods_on_struct
-    klass = Person.to_struct do
+    klass = anon_class
+    struct = klass.to_struct do
       def foo; end
     end
-    assert_respond_to klass.new, :foo
-    Struct.send(:remove_const, :Person) # side effect
+    assert_respond_to struct.new, :foo
   end
 
-  def test_includes_modules_to_struct
+  def test_includes_modules_in_struct
     m = Module.new do
       def foo; end
     end
-    klass = Class.new { include Structure, m }
+    klass = Class.new do
+      include Structure, m
+    end
     assert_respond_to klass.to_struct.new, :foo
   end
 end
