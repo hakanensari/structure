@@ -87,4 +87,12 @@ class StructureTest < MiniTest::Unit::TestCase
     assert_respond_to klass.new, :foo
     Struct.send(:remove_const, :Person) # side effect
   end
+
+  def test_includes_modules_to_struct
+    m = Module.new do
+      def foo; end
+    end
+    klass = Class.new { include Structure, m }
+    assert_respond_to klass.to_struct.new, :foo
+  end
 end

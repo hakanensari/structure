@@ -55,6 +55,11 @@ module Structure
 
       klass.module_eval(&blk) if block_given?
 
+      included_modules.each do |m|
+        next if m == Structure
+        klass.send(:include, m) unless klass.include?(m)
+      end
+
       attribute_names.each do |name|
         if instance_methods(false).include?(:"#{name}?")
           klass.module_eval "def #{name}?; #{name}; end"
