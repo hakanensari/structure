@@ -1,4 +1,6 @@
 module Structure
+  module Doubles; end
+
   def self.included(base)
     base.extend(ClassMethods).instance_variable_set(:@attribute_names, [])
   end
@@ -40,30 +42,25 @@ module Structure
   module ClassMethods
     attr_reader :attribute_names
 
-    def to_struct(&blk)
-      class_name = name || to_s.gsub(/\W/, '')
+    def double(&blk)
+      klass = Class.new(self)
 
-      if Struct.const_defined?(class_name, false)
-        return Struct.const_get(class_name, false)
-      end
+      (private_instance_methods(false) + protected_instance_methods(false) - [:initialize])
+        .each do |mth|
+          klass.send(:undef_method, mth)
+        end
 
-      klass = Struct.new(class_name, *attribute_names) do
+      klass.module_eval do
         def initialize(data = {})
-          data.each { |key, val| self.send("#{key}=", val) }
+          data.each { |key, val| instance_variable_set(:"@#{key}", val) }
         end
-      end
 
-      klass.module_eval(&blk) if block_given?
-
-      included_modules.each do |m|
-        next if m == Structure
-        klass.send(:include, m) unless klass.include?(m)
-      end
-
-      attribute_names.each do |name|
-        if instance_methods(false).include?(:"#{name}?")
-          klass.module_eval "def #{name}?; #{name}; end"
+        attribute_names.each do |name|
+          module_eval "def _#{name}; @#{name}; end"
+          private "_#{name}"
         end
+
+        module_eval(&blk) if block_given?
       end
 
       klass
@@ -72,6 +69,8 @@ module Structure
     def inherited(subclass)
       subclass.instance_variable_set(:@attribute_names, @attribute_names.dup)
     end
+
+    private
 
     def attribute(name, &blk)
       name = name.to_s

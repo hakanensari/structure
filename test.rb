@@ -2,31 +2,45 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require './structure'
 
-Person = Struct.new(:res) do
+Person = Class.new do
   include Structure
-  attribute(:name) { res.fetch(:name) }
+
+  def initialize(data)
+    @data = data
+  end
+
+  attribute(:name) do
+    @data.fetch(:name)
+  end
 end
 
 class StructureTest < MiniTest::Unit::TestCase
-  def anon_class
-    Class.new do
-      include Structure
-    end
-  end
-
   def setup
     @person = Person.new(name: 'Jane')
   end
 
-  def test_returns_attribute_names
+  def teardown
+    # Side effect
+    ::Structure::Doubles.constants.each do |constant|
+      ::Structure::Doubles.send(:remove_const, constant)
+    end
+  end
+
+  def test_both_class_and_instance_return_attribute_names
     assert_equal ['name'], Person.attribute_names
-    assert_equal ['name'], Person.new.attribute_names
+    assert_equal ['name'], Person.new(nil).attribute_names
   end
 
   def test_subclassing_does_not_have_side_effects
     subclass = Class.new(Person) do
-      attribute(:age) { res.fetch(:age) }
+      attribute :age do
+        @data.fetch(:age)
+      end
     end
+
+    assert_equal(%w(name), Person.attribute_names)
+    assert_equal(%w(name age), subclass.attribute_names)
+
     obj = subclass.new(name: 'John', age: 18)
     assert_equal({ 'name' => 'John', 'age' => 18 }, obj.attributes)
   end
@@ -42,80 +56,106 @@ class StructureTest < MiniTest::Unit::TestCase
 
   def test_memoizes_attributes
     assert_equal 'Jane', @person.name
-    @location.instance_variable_set(:@res, { name: 'John' })
+
+    @person.instance_variable_set(:@data, { name: 'John' })
     assert_equal 'Jane', @person.name
   end
 
   def test_compares
-    @same = Person.new(name: 'Jane')
-    assert @person == @same
-    assert @person.eql?(@same)
-    @different = Person.new(name: 'John')
-    refute @person == @different
+    same = Person.new(name: 'Jane')
+    assert @person == same
+    assert @person.eql?(same)
+
+    different = Person.new(name: 'John')
+    refute @person == different
   end
 
   def test_pretty_inspects
     assert_equal '#<Person name="Jane">', @person.inspect
     assert_equal @person.to_s, @person.inspect
-    assert_match /#<Class:\w+ .*>/, anon_class.new.to_s
+    assert_match /#<Class:\w+ .*>/, build_anonymous_class.new.to_s
   end
 
   def test_truncates_long_arrays_when_pretty_inspecting
-    klass = anon_class
-    klass.attribute(:ary) { ['a'] }
+    klass = build_anonymous_class do
+      attribute(:ary) { ['a'] }
+    end
     assert_includes klass.new.inspect, 'ary=["a"]'
-    klass.attribute(:ary) { ('a'..'z').to_a }
+
+    klass.instance_eval do
+      attribute(:ary) { ('a'..'z').to_a }
+    end
     assert_includes klass.new.inspect, 'ary=["a", "b", "c"...]'
   end
 
   def test_predicate_methods
-    klass = anon_class
-    klass.attribute(:foo?) { true }
+    klass = build_anonymous_class do
+      attribute(:foo?) { true }
+    end
+
     assert klass.new.foo
     assert klass.new.foo?
-    object = klass.to_struct.new(foo: true)
+
+    object = klass.double.new(foo: true)
     assert object.foo?
     assert_equal object.foo, object.foo?
   end
 
-  def test_casts_to_struct
-    struct = Person.to_struct
-    assert_equal 'Struct::Person', struct.name
-    assert_equal 'Jane', struct.new('name' => 'Jane').name
-    Struct.send(:remove_const, :Person) # side effect
+  def test_casts_to_double
+    assert_equal 'Jane', Person.double.new('name' => 'Jane').name
   end
 
-  def test_defines_custom_methods_on_struct
-    klass = anon_class
-    struct = klass.to_struct do
-      def foo; end
-    end
-    assert_respond_to struct.new, :foo
-  end
-
-  def test_includes_modules_in_struct
-    m = Module.new do
-      def foo; end
-    end
-    klass = Class.new do
-      include Structure, m
-    end
-    struct = klass.to_struct
-    assert_respond_to struct.new, :foo
-    refute_includes struct, Structure
-  end
-
-  def test_the_included_edge_case!
-    m = Module.new do
-      def self.included(base)
-        unless base.name.to_s.start_with?('Struct:')
-          base.send(:include, Structure)
-        end
+  def test_defines_custom_methods_on_double
+    double = build_anonymous_class.double do
+      def foo
       end
     end
-    klass = Class.new do
-      include m
+
+    assert_respond_to double.new, :foo
+  end
+
+  def test_double_inherits_public_methods
+    mod = Module.new do
+      def foo
+      end
     end
-    refute_includes klass.to_struct, Structure
+
+    klass = build_anonymous_class do
+      include mod
+
+      def bar
+      end
+    end
+
+    assert_respond_to klass.double.new, :foo
+    assert_respond_to klass.double.new, :bar
+  end
+
+  def test_double_does_not_inherit_nonpublic_methods
+    klass = build_anonymous_class do
+      protected
+
+      def foo
+      end
+
+      private
+
+      def bar
+      end
+    end
+
+    double = klass.double
+    assert_raises(NoMethodError) { double.new.send(:foo) }
+    assert_raises(NoMethodError) { double.new.send(:bar) }
+  end
+
+  private
+
+  def build_anonymous_class(&blk)
+    Class.new do
+      include Structure
+
+      class_eval(&blk) if block_given?
+    end
   end
 end

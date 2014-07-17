@@ -2,10 +2,16 @@
 
 [![Travis](https://travis-ci.org/hakanensari/structure.svg)](https://travis-ci.org/hakanensari/structure)
 
-Structure is minimal glue that helps you parse data into immutable value objects.
+Structure helps you write clean parsers that behave like immutable value objects.
+
+## Usage
+
+The following example wraps a JSON string:
 
 ```ruby
-class Person
+require 'json'
+
+class User
   include Structure
 
   def initialize(data)
@@ -13,27 +19,59 @@ class Person
   end
 
   attribute :name do
-    parse(:name)
+    fetch('name')
   end
+
+  attribute :age do
+    fetch('age').to_i
+  end
+
+  attribute :admin? do
+    fetch('admin')
+  end
+
+  def adult?
+    age >= 18
+  end
+
+  # Implement heavy-duty parsing action below
 
   private
 
-  def parse(key)
-    # Heavy-duty parsing action on @data
+  def fetch(key)
+    parsed_data.fetch(key)
+  end
+
+  def parsed_data
+    @parsed_data ||= parse_data
+  end
+
+  def parse_data
+    JSON.parse(@data)
   end
 end
+```
 
-person = Person.new(data)
+Usage follows familiar idioms so should be self-explanatory:
+
+```ruby
+user = User.new('{"name":"Jane","age":18,"admin":true}')
 
 # A read-only, memoised attribute
-puts person.name # => "Jane"
+user.name # => "Jane"
 
-# Bonus 1: Pretty-inspects in REPL
-puts person # => #<Person name="Jane">
+# Cast all attributes to a Hash
+user.attributes # => {"name"=>"Jane", "admin" =>true}
 
-# Bonus 2: Returns all attributes as a Hash
-person.attributes # => {"name"=>"Jane"}
+# Bonus: Pretty-inspect in REPL
+puts user # => #<User name="Jane", admin=true>
+```
 
-# Bonus 3: Builds a double for testing collaborated objects
-Person.to_struct.new(name: 'Jane')
+To ease testing objects the parser collaborates in, I have added the class method `.double`. This casts the parser to an object that mimics the former's public interface but replaces the original parsing implementation with an initialiser that accepts a hash:
+
+```ruby
+user = User.double.new(name: 'Jane', age: 18, admin: false)
+
+user.name => "Jane"
+user.adult? => true
 ```
