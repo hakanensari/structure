@@ -19,13 +19,6 @@ class StructureTest < MiniTest::Unit::TestCase
     @person = Person.new(name: 'Jane')
   end
 
-  def teardown
-    # Side effect
-    ::Structure::Doubles.constants.each do |constant|
-      ::Structure::Doubles.send(:remove_const, constant)
-    end
-  end
-
   def test_both_class_and_instance_return_attribute_names
     assert_equal ['name'], Person.attribute_names
     assert_equal ['name'], Person.new(nil).attribute_names

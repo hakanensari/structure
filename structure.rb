@@ -1,6 +1,4 @@
 module Structure
-  module Doubles; end
-
   def self.included(base)
     base.extend(ClassMethods).instance_variable_set(:@attribute_names, [])
   end
