@@ -61,6 +61,10 @@ class StructureTest < MiniTest::Unit::TestCase
     assert_equal 'Jane', @person.name
   end
 
+  def test_freezes_attributes
+    assert @person.name.frozen?
+  end
+
   def test_compares
     same = Person.new(name: 'Jane')
     assert @person == same
@@ -102,7 +106,9 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_casts_to_double
-    assert_equal 'Jane', Person.double.new('name' => 'Jane').name
+    person = Person.double.new('name' => 'Jane')
+    assert_equal 'Jane', person.name
+    assert person.name.frozen?
   end
 
   def test_defines_custom_methods_on_double

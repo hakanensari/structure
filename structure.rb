@@ -52,7 +52,7 @@ module Structure
 
       klass.module_eval do
         def initialize(data = {})
-          data.each { |key, val| instance_variable_set(:"@#{key}", val) }
+          data.each { |key, val| instance_variable_set(:"@#{key}", val.freeze) }
         end
 
         attribute_names.each do |name|
@@ -75,7 +75,7 @@ module Structure
     def attribute(name, &blk)
       name = name.to_s
       module_eval "def #{name}?; #{name}; end" if name.chomp!('?')
-      module_eval "def #{name}; @#{name} ||= _#{name}; end"
+      module_eval "def #{name}; @#{name} ||= _#{name}.freeze; end"
       define_method("_#{name}", blk)
       private "_#{name}"
 
