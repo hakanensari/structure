@@ -65,6 +65,8 @@ class StructureTest < MiniTest::Unit::TestCase
 
     different = Person.new(name: 'John')
     refute @person == different
+
+    refute @person == Object.new
   end
 
   def test_pretty_inspects

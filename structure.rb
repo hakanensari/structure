@@ -14,6 +14,7 @@ module Structure
   end
 
   def ==(other)
+    return false unless other.respond_to?(:attributes)
     attributes == other.attributes
   end
 
