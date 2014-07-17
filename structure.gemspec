@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'structure'
-  s.version       = '0.27.8'
+  s.version       = '0.28.0'
   s.licenses      = ['MIT']
   s.summary       = 'Parses data into value objects'
   s.authors       = ['Hakan Ensari']
