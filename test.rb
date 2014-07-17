@@ -103,7 +103,6 @@ class StructureTest < MiniTest::Unit::TestCase
   def test_casts_to_double
     person = Person.double.new('name' => 'Jane')
     assert_equal 'Jane', person.name
-    assert person.name.frozen?
   end
 
   def test_defines_custom_methods_on_double

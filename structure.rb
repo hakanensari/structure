@@ -51,7 +51,7 @@ module Structure
 
       klass.module_eval do
         def initialize(data = {})
-          data.each { |key, val| instance_variable_set(:"@#{key}", val.freeze) }
+          data.each { |key, val| instance_variable_set(:"@#{key}", val) }
         end
 
         attribute_names.each do |name|
