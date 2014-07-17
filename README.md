@@ -67,7 +67,7 @@ user.attributes # => {"name"=>"Jane", "admin" =>true}
 puts user # => #<User name="Jane", admin=true>
 ```
 
-To ease testing objects the parser collaborates in, I have added the class method `.double`. This casts the parser to an object that mimics the former's public interface but replaces the original parsing implementation with an initialiser that accepts a hash:
+To ease testing objects the parser collaborates in, I have added the class method `.double`. This casts the parser to an object that mimics the former's public interface but replaces the original parsing implementation with an initialiser that accepts a hash and populates the corresponding attributes:
 
 ```ruby
 user = User.double.new(name: 'Jane', age: 18, admin: false)
