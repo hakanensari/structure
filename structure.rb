@@ -74,7 +74,7 @@ module Structure
     def attribute(name, &blk)
       name = name.to_s
       module_eval "def #{name}?; #{name}; end" if name.chomp!('?')
-      module_eval "def #{name}; @#{name} ||= _#{name}.freeze; end"
+      module_eval "def #{name}; return @#{name} if defined?(@#{name}); @#{name} = _#{name}.freeze; end"
       define_method("_#{name}", blk)
       private "_#{name}"
 
