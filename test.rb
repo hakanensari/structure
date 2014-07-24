@@ -48,6 +48,10 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_memoizes_attributes
+  def test_attribute_returns_symbol
+    assert_equal :foo, Class.new { include Structure }.send(:attribute, :foo) {}
+  end
+
     assert_equal 'Jane', @person.name
 
     @person.instance_variable_set(:@data, { name: 'John' })

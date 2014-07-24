@@ -79,6 +79,8 @@ module Structure
       private "_#{name}"
 
       @attribute_names << name
+
+      name.to_sym
     end
   end
 end
