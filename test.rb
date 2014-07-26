@@ -47,6 +47,22 @@ class StructureTest < MiniTest::Unit::TestCase
     assert_equal @person.to_h, @person.attributes
   end
 
+  def test_returns_attributes_of_nested_structures
+    klass = Class.new do
+      include Structure
+      attribute(:foo) { @foo }
+      attr_writer :foo
+    end
+
+    instance = klass.new
+    instance.foo = @person
+    assert_equal({'foo' => {'name' => 'Jane'}}, instance.attributes)
+
+    instance = klass.new
+    instance.foo = [@person]
+    assert_equal({'foo' => [{'name' => 'Jane'}]}, instance.attributes)
+  end
+
   def test_attribute_returns_symbol
     assert_equal :foo, Class.new { include Structure }.send(:attribute, :foo) {}
   end

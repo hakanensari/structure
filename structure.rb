@@ -4,8 +4,18 @@ module Structure
   end
 
   def attributes
-    attribute_names.reduce({}) { |ret, name|
-      ret.update(name => self.send(name))
+    attribute_names.reduce({}) { |ret, key|
+      val = self.send(key)
+
+      ret.update(key =>
+        if val.respond_to?(:attributes)
+          val.attributes
+        elsif val.is_a?(Array)
+          val.map { |el| el.respond_to?(:attributes) ? el.attributes : el }
+        else
+          val
+        end
+      )
     }
   end
 
