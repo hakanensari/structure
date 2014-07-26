@@ -48,8 +48,7 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_returns_attributes_of_nested_structures
-    klass = Class.new do
-      include Structure
+    klass = build_anonymous_class do
       attribute(:foo) { @foo }
       attr_writer :foo
     end
@@ -64,7 +63,7 @@ class StructureTest < MiniTest::Unit::TestCase
   end
 
   def test_attribute_returns_symbol
-    assert_equal :foo, Class.new { include Structure }.send(:attribute, :foo) {}
+    assert_equal :foo, build_anonymous_class.send(:attribute, :foo) {}
   end
 
   def test_memoises_attributes
