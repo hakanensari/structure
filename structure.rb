@@ -5,7 +5,7 @@ module Structure
 
   def attributes
     attribute_names.reduce({}) { |ret, key|
-      val = self.send(key)
+      val = send(key)
 
       ret.update(key =>
         if val.respond_to?(:attributes)
@@ -32,8 +32,9 @@ module Structure
     class_name = self.class.name || self.class.to_s.gsub(/[^\w:]/, '')
 
     "#<#{class_name} #{
-      attributes
-        .map { |key, val|
+      attribute_names
+        .map { |key|
+          val = send(key)
           if val.is_a?(Array)
             "#{key}=[#{val.take(3).map(&:inspect).join(', ')}" + (val.size > 3 ? '...' : '') + ']'
           else
