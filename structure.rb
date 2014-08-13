@@ -34,8 +34,8 @@ module Structure
     "#<#{class_name} #{
       attributes
         .map { |key, val|
-          if val.is_a?(Array) && val.size > 3
-            "#{key}=[#{val.take(3).map(&:inspect).join(', ')}...]"
+          if val.is_a?(Array)
+            "#{key}=[#{val.take(3).map(&:inspect).join(', ')}" + (val.size > 3 ? '...' : '') + ']'
           else
             "#{key}=#{val.inspect}"
           end
