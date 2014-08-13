@@ -49,17 +49,18 @@ class StructureTest < MiniTest::Unit::TestCase
 
   def test_returns_attributes_of_nested_structures
     klass = build_anonymous_class do
-      attribute(:foo) { @foo }
-      attr_writer :foo
+      def initialize(foo)
+        @foo = foo
+      end
+
+      attribute(:bar) { @foo }
     end
 
-    instance = klass.new
-    instance.foo = @person
-    assert_equal({'foo' => {'name' => 'Jane'}}, instance.attributes)
+    instance = klass.new(@person)
+    assert_equal({'bar' => {'name' => 'Jane'}}, instance.attributes)
 
-    instance = klass.new
-    instance.foo = [@person]
-    assert_equal({'foo' => [{'name' => 'Jane'}]}, instance.attributes)
+    instance = klass.new([@person])
+    assert_equal({'bar' => [{'name' => 'Jane'}]}, instance.attributes)
   end
 
   def test_attribute_returns_symbol
