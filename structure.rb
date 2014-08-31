@@ -36,7 +36,7 @@ module Structure
         .map { |key|
           val = send(key)
           if val.is_a?(Array)
-            "#{key}=[#{val.take(3).map(&:inspect).join(', ')}" + (val.size > 3 ? '...' : '') + ']'
+            "#{key}=[#{val.take(3).map(&:inspect).join(', ')}#{val.size > 3 ? '...' : ''}]"
           else
             "#{key}=#{val.inspect}"
           end
