@@ -2,76 +2,57 @@
 
 [![Travis](https://travis-ci.org/hakanensari/structure.svg)](https://travis-ci.org/hakanensari/structure)
 
-Structure helps you write clean parsers that behave like immutable value objects.
+<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Structure_Paris_les_Halles.jpg/320px-Structure_Paris_les_Halles.jpg" align="right" alt="Structure">
+
+Structure is a mixin that helps you write clean, immutable value objects when parsing data in Ruby.
+
+My typical use case is when parsing XML documents—your mileage may vary.
+
+Structure also pretty-inspects the data it stores, which really helps when working in the command line, and comes with a helper to mock when testing.
+
+It should work seamlessly with the various ActiveModel mixins out there.
 
 ## Usage
 
-The following example wraps a JSON string:
+A contrived example:
 
 ```ruby
-require 'json'
-
-class User
+class Name
   include Structure
 
-  def initialize(data)
-    @data = data
+  SEPARATOR = " "
+
+  def initialize(full)
+    @names = full.split(SEPARATOR)
   end
 
-  attribute :name do
-    fetch('name')
+  attribute :first do
+    @names.first
   end
 
-  attribute :age do
-    fetch('age').to_i
+  attribute :last do
+    @names.last
   end
 
-  attribute :admin? do
-    fetch('admin')
+  attribute :middle do
+    @names[1...-1].join(SEPARATOR)
   end
 
-  def adult?
-    age >= 18
-  end
-
-  # Implement heavy-duty parsing action below
-
-  private
-
-  def fetch(key)
-    parsed_data.fetch(key)
-  end
-
-  def parsed_data
-    @parsed_data ||= parse_data
-  end
-
-  def parse_data
-    JSON.parse(@data)
+  def full
+    [first, middle, last].join(SEPARATOR)
   end
 end
+
+name = Name.new("Johann Sebastian Bach")
+name.first # => "Johann"
+name # => #<Name first="Johann", middle="Sebastian", last="Bach">
+name.attributes # => {"first"=>"Johann", "middle"=>"Sebastian", "last"=>"Bach"}
 ```
 
-Usage follows familiar idioms so should be self-explanatory:
+To mock when testing, use `.double`. This will cast the parser to an object that mimics the former's public interface but replaces the original parsing implementation with an initializer that populates the attributes with a hash.
 
 ```ruby
-user = User.new('{"name":"Jane","age":18,"admin":true}')
-
-# A read-only, memoised attribute
-user.name # => "Jane"
-
-# Cast all attributes to a Hash
-user.attributes # => {"name"=>"Jane", "admin" =>true}
-
-# Bonus: Pretty-inspect in REPL
-puts user # => #<User name="Jane", admin=true>
-```
-
-To ease testing objects the parser collaborates in, I have added the class method `.double`. This casts the parser to an object that mimics the former's public interface but replaces the original parsing implementation with an initialiser that accepts a hash and populates the corresponding attributes:
-
-```ruby
-user = User.double.new(name: 'Jane', age: 18, admin: false)
-
-user.name => "Jane"
-user.adult? => true
+require "structure/double"
+name = Name.double.new(first: 'Johann', middle: "Sebastian", last: "Bach")
+name.first # => "Johann"
 ```
