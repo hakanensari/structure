@@ -2,19 +2,13 @@
 
 [![Travis](https://travis-ci.org/hakanensari/structure.svg)](https://travis-ci.org/hakanensari/structure)
 
-<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Structure_Paris_les_Halles.jpg/320px-Structure_Paris_les_Halles.jpg" align="right" alt="Structure">
+Structure helps you encapsulate data parsing in an immutable value object.
 
-Structure is a mixin that helps you write clean, immutable value objects when parsing data in Ruby.
-
-My typical use case is when parsing XML documents—your mileage may vary.
-
-Structure also pretty-inspects the data it stores, which really helps when working in the command line, and comes with a helper to mock when testing.
-
-It should work seamlessly with the various ActiveModel mixins out there.
+[See here](https://github.com/hakanensari/mws-orders) for how I use it.
 
 ## Usage
 
-A contrived example:
+This is a contrived example:
 
 ```ruby
 class Name
@@ -22,37 +16,48 @@ class Name
 
   SEPARATOR = " "
 
-  def initialize(full)
-    @names = full.split(SEPARATOR)
+  def initialize(data)
+    @data = data
   end
 
   attribute :first do
-    @names.first
+    @data.first
   end
 
   attribute :last do
-    @names.last
+    @data.last
   end
 
   attribute :middle do
-    @names[1...-1].join(SEPARATOR)
+    @data[1...-1].join(SEPARATOR) if @data.size > 2
   end
 
   def full
-    [first, middle, last].join(SEPARATOR)
+    [first, middle, last].compact.join(SEPARATOR)
   end
 end
 
-name = Name.new("Johann Sebastian Bach")
-name.first # => "Johann"
-name # => #<Name first="Johann", middle="Sebastian", last="Bach">
-name.attributes # => {"first"=>"Johann", "middle"=>"Sebastian", "last"=>"Bach"}
+name = Name.new(%w(Johann Sebastian Bach))
+# => #<Name first="Johann", middle="Sebastian", last="Bach">
+name.first
+# => "Johann"
+name.full
+# => "Johann Sebastian Bach"
+name.attributes
+# => {"first"=>"Johann", "middle"=>"Sebastian", "last"=>"Bach"}
 ```
 
-To mock when testing, use `.double`. This will cast the parser to an object that mimics the former's public interface but replaces the original parsing implementation with an initializer that populates the attributes with a hash.
+When testing, use `.double`. This will cast the parser to an object that mocks the public interface.
 
 ```ruby
 require "structure/double"
-name = Name.double.new(first: 'Johann', middle: "Sebastian", last: "Bach")
-name.first # => "Johann"
+
+name = Name.double.new(first: "Johann", middle: "Sebastian", last: "Bach")
+# => #<Name first="Johann", middle="Sebastian", last="Bach">
+name.first
+# => "Johann"
+name.full
+# => "Johann Sebastian Bach"
+name.attributes
+# => {"first"=>"Johann", "middle"=>"Sebastian", "last"=>"Bach"}
 ```

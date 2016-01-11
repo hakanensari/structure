@@ -13,7 +13,7 @@ class Person
   end
 end
 
-class StructureTest < Minitest::Test
+class DoubleTest < Minitest::Test
   def setup
     @person = Person.new(name: "Jane")
   end
@@ -32,7 +32,7 @@ class StructureTest < Minitest::Test
     assert_equal "Jane", person.name
   end
 
-  def test_defines_custom_methods_on_double
+  def test_defines_custom_methods
     double = build_anonymous_class.double do
       def foo
       end
@@ -41,7 +41,7 @@ class StructureTest < Minitest::Test
     assert_respond_to double.new, :foo
   end
 
-  def test_double_inherits_public_methods
+  def test_inherits_public_methods
     mod = Module.new do
       def foo
       end
@@ -58,7 +58,7 @@ class StructureTest < Minitest::Test
     assert_respond_to klass.double.new, :bar
   end
 
-  def test_double_does_not_inherit_nonpublic_methods
+  def test_does_not_inherit_nonpublic_methods
     klass = build_anonymous_class do
       protected
 
