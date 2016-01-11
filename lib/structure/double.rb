@@ -26,6 +26,10 @@ module Structure
         module_eval(&Proc.new) if block_given?
       end
 
+      class << klass
+        undef_method :double
+      end
+
       klass
     end
   end

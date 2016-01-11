@@ -75,4 +75,9 @@ class DoubleTest < Minitest::Test
     assert_raises(NoMethodError) { double.new.send(:foo) }
     assert_raises(NoMethodError) { double.new.send(:bar) }
   end
+
+  def test_undefines_builder_method
+    klass = build_anonymous_class
+    assert_raises(NoMethodError) { klass.double.send(:double) }
+  end
 end
