@@ -14,10 +14,6 @@ class Person
 end unless defined?(Person)
 
 class DoubleTest < Minitest::Test
-  def setup
-    @person = Person.new(name: "Jane")
-  end
-
   def test_predicate_methods
     klass = build_anonymous_class do
       attribute(:foo?) { false }
