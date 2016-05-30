@@ -1,0 +1,13 @@
+AbcSize:
+  Enabled: false
+Documentation:
+  Enabled: false
+MethodLength:
+  Enabled: false
+MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+NestedMethodDefinition:
+  Exclude:
+    - 'test/**/*'
+StringLiterals:
+  EnforcedStyle: double_quotes

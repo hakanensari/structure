@@ -10,7 +10,7 @@ class Person
   attribute(:name) do
     @data.fetch(:name)
   end
-end
+end unless defined?(Person)
 
 class StructureTest < Minitest::Test
   def setup
@@ -55,10 +55,10 @@ class StructureTest < Minitest::Test
     end
 
     instance = klass.new(@person)
-    assert_equal({"bar" => {"name" => "Jane"}}, instance.attributes)
+    assert_equal({ "bar" => { "name" => "Jane" } }, instance.attributes)
 
     instance = klass.new([@person])
-    assert_equal({"bar" => [{"name" => "Jane"}]}, instance.attributes)
+    assert_equal({ "bar" => [{ "name" => "Jane" }] }, instance.attributes)
   end
 
   def test_attribute_returns_symbol
@@ -68,7 +68,7 @@ class StructureTest < Minitest::Test
   def test_memoises_attributes
     assert_equal "Jane", @person.name
 
-    @person.instance_variable_set(:@data, { name: "John" })
+    @person.instance_variable_set(:@data, name: "John")
     assert_equal "Jane", @person.name
   end
 
@@ -76,7 +76,7 @@ class StructureTest < Minitest::Test
     person = Person.new(name: nil)
     assert_nil person.name
 
-    person.instance_variable_set(:@data, { name: "John" })
+    person.instance_variable_set(:@data, name: "John")
     assert_nil person.name
   end
 
@@ -98,7 +98,7 @@ class StructureTest < Minitest::Test
   def test_pretty_inspects
     assert_equal '#<Person name="Jane">', @person.inspect
     assert_equal @person.to_s, @person.inspect
-    assert_match /#<Class:\w+ .*>/, build_anonymous_class.new.to_s
+    assert_match(/#<Class:\w+ .*>/, build_anonymous_class.new.to_s)
   end
 
   def test_truncates_long_arrays_when_pretty_inspecting
@@ -107,7 +107,7 @@ class StructureTest < Minitest::Test
     end
     assert_includes klass.new.inspect, 'ary=["a"]'
 
-    klass.instance_eval do
+    klass = build_anonymous_class do
       attribute(:ary) { ("a".."z").to_a }
     end
     assert_includes klass.new.inspect, 'ary=["a", "b", "c"...]'

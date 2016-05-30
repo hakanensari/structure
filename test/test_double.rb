@@ -11,7 +11,7 @@ class Person
   attribute(:name) do
     @data.fetch(:name)
   end
-end
+end unless defined?(Person)
 
 class DoubleTest < Minitest::Test
   def setup

@@ -10,20 +10,21 @@ module Structure
   def attributes
     attribute_names.reduce({}) { |hash, key|
       value = send(key)
-      hash.update(key =>
-        if value.respond_to?(:attributes)
-          value.attributes
-        elsif value.is_a?(Array)
-          value.map { |element|
-            if element.respond_to?(:attributes)
-              element.attributes
-            else
-              element
-            end
-          }
-        else
-          value
-        end
+      hash.update(
+        key =>
+          if value.respond_to?(:attributes)
+            value.attributes
+          elsif value.is_a?(Array)
+            value.map { |element|
+              if element.respond_to?(:attributes)
+                element.attributes
+              else
+                element
+              end
+            }
+          else
+            value
+          end
       )
     }
   end
@@ -55,9 +56,9 @@ module Structure
     "#<#{name} #{values}>"
   end
 
-  alias_method :to_h, :attributes
-  alias_method :eql?, :==
-  alias_method :to_s, :inspect
+  alias to_h attributes
+  alias eql? ==
+  alias to_s inspect
 
   module ClassMethods
     attr_reader :attribute_names
