@@ -25,6 +25,11 @@ class DoubleTest < Minitest::Test
     assert_respond_to double.new, :foo
   end
 
+  def test_freezes_attributes
+    person = Person.double.new("name" => "Jane")
+    assert person.name.frozen?
+  end
+
   def test_inherits_public_methods
     mod = Module.new do
       def foo; end

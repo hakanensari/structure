@@ -15,6 +15,7 @@ module Structure
       klass.module_eval do
         def initialize(data = {})
           data.each do |key, value|
+            value.freeze unless value.is_a?(Structure)
             instance_variable_set(:"@#{key}", value)
           end
         end
