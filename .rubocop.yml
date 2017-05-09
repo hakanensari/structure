@@ -1,13 +1,12 @@
-AbcSize:
-  Enabled: false
-Documentation:
-  Enabled: false
-MethodLength:
-  Enabled: false
-MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-NestedMethodDefinition:
+Lint/NestedMethodDefinition:
   Exclude:
     - 'test/**/*'
-StringLiterals:
+Metrics/AbcSize:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Style/Documentation:
+  Exclude:
+    - 'test/**/*'
+Style/StringLiterals:
   EnforcedStyle: double_quotes

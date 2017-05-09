@@ -1,4 +1,5 @@
 module Structure
+  # ClassMethods
   module ClassMethods
     def double
       klass = Class.new(self)
@@ -13,9 +14,9 @@ module Structure
 
       klass.module_eval do
         def initialize(data = {})
-          data.each { |key, value|
+          data.each do |key, value|
             instance_variable_set(:"@#{key}", value)
-          }
+          end
         end
 
         attribute_names.each do |name|

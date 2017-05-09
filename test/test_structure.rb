@@ -1,16 +1,5 @@
 require_relative "helper"
-
-class Person
-  include Structure
-
-  def initialize(data)
-    @data = data
-  end
-
-  attribute(:name) do
-    @data.fetch(:name)
-  end
-end unless defined?(Person)
+require_relative "person"
 
 class StructureTest < Minitest::Test
   def setup
@@ -29,8 +18,8 @@ class StructureTest < Minitest::Test
       end
     end
 
-    assert_equal(%w(name), Person.attribute_names)
-    assert_equal(%w(name age), subclass.attribute_names)
+    assert_equal(%w[name], Person.attribute_names)
+    assert_equal(%w[name age], subclass.attribute_names)
 
     obj = subclass.new(name: "John", age: 18)
     assert_equal({ "name" => "John", "age" => 18 }, obj.attributes)

@@ -1,17 +1,6 @@
 require_relative "helper"
+require_relative "person"
 require_relative "../lib/structure/double"
-
-class Person
-  include Structure
-
-  def initialize(data)
-    @data = data
-  end
-
-  attribute(:name) do
-    @data.fetch(:name)
-  end
-end unless defined?(Person)
 
 class DoubleTest < Minitest::Test
   def test_predicate_methods
@@ -30,8 +19,7 @@ class DoubleTest < Minitest::Test
 
   def test_defines_custom_methods
     double = build_anonymous_class.double do
-      def foo
-      end
+      def foo; end
     end
 
     assert_respond_to double.new, :foo
@@ -39,15 +27,13 @@ class DoubleTest < Minitest::Test
 
   def test_inherits_public_methods
     mod = Module.new do
-      def foo
-      end
+      def foo; end
     end
 
     klass = build_anonymous_class do
       include mod
 
-      def bar
-      end
+      def bar; end
     end
 
     assert_respond_to klass.double.new, :foo
@@ -58,13 +44,11 @@ class DoubleTest < Minitest::Test
     klass = build_anonymous_class do
       protected
 
-      def foo
-      end
+      def foo; end
 
       private
 
-      def bar
-      end
+      def bar; end
     end
 
     double = klass.double

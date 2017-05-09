@@ -1,3 +1,4 @@
+# Structure
 module Structure
   class << self
     private
@@ -8,25 +9,25 @@ module Structure
   end
 
   def attributes
-    attribute_names.reduce({}) { |hash, key|
+    attribute_names.reduce({}) do |hash, key|
       value = send(key)
       hash.update(
         key =>
           if value.respond_to?(:attributes)
             value.attributes
           elsif value.is_a?(Array)
-            value.map { |element|
+            value.map do |element|
               if element.respond_to?(:attributes)
                 element.attributes
               else
                 element
               end
-            }
+            end
           else
             value
           end
       )
-    }
+    end
   end
 
   def attribute_names
@@ -40,17 +41,18 @@ module Structure
 
   def inspect
     name = self.class.name || self.class.to_s.gsub(/[^\w:]/, "")
-    values = attribute_names
-      .map { |key|
+    values =
+      attribute_names
+      .map do |key|
         value = send(key)
-        if (value).is_a?(Array)
+        if value.is_a?(Array)
           description = value.take(3).map(&:inspect).join(", ")
           description += "..." if value.size > 3
           "#{key}=[#{description}]"
         else
           "#{key}=#{value.inspect}"
         end
-      }
+      end
       .join(", ")
 
     "#<#{name} #{values}>"
@@ -60,6 +62,7 @@ module Structure
   alias eql? ==
   alias to_s inspect
 
+  # ClassMethods
   module ClassMethods
     attr_reader :attribute_names
 
