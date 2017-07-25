@@ -37,6 +37,15 @@ class DoubleTest < Minitest::Test
     refute person.name.frozen?
   end
 
+  def test_does_not_freeze_rspec_doubles
+    Object.const_set("RSpec", Module.new)
+    RSpec.const_set("Mocks", Module.new)
+    RSpec::Mocks.const_set("Double", Class.new)
+    person = Person.double.new("name" => RSpec::Mocks::Double.new)
+    refute person.name.frozen?
+    Object.send(:remove_const, :RSpec)
+  end
+
   def test_inherits_public_methods
     mod = Module.new do
       def foo; end
