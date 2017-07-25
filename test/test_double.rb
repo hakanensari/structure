@@ -30,6 +30,13 @@ class DoubleTest < Minitest::Test
     assert person.name.frozen?
   end
 
+  def test_does_not_freeze_structures
+    klass = Class.new(String)
+    klass.include Structure
+    person = Person.double.new("name" => klass.new)
+    refute person.name.frozen?
+  end
+
   def test_inherits_public_methods
     mod = Module.new do
       def foo; end
