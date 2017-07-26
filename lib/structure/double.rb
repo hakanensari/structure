@@ -19,7 +19,7 @@ module Structure
                    (
                       defined?(RSpec::Mocks::Double) &&
                       value.is_a?(RSpec::Mocks::Double)
-                    )
+                   )
               value.freeze
             end
 
