@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Structure
   # ClassMethods
   module ClassMethods
@@ -19,7 +21,7 @@ module Structure
                    (
                       defined?(RSpec::Mocks::Double) &&
                       value.is_a?(RSpec::Mocks::Double)
-                   )
+                    )
               value.freeze
             end
 

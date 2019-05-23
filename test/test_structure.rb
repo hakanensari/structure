@@ -1,14 +1,16 @@
-require_relative "helper"
-require_relative "person"
+# frozen_string_literal: true
+
+require_relative 'helper'
+require_relative 'person'
 
 class StructureTest < Minitest::Test
   def setup
-    @person = Person.new(name: "Jane")
+    @person = Person.new(name: 'Jane')
   end
 
   def test_both_class_and_instance_return_attribute_names
-    assert_equal ["name"], Person.attribute_names
-    assert_equal ["name"], Person.new(nil).attribute_names
+    assert_equal ['name'], Person.attribute_names
+    assert_equal ['name'], Person.new(nil).attribute_names
   end
 
   def test_subclassing_does_not_have_side_effects
@@ -21,16 +23,16 @@ class StructureTest < Minitest::Test
     assert_equal(%w[name], Person.attribute_names)
     assert_equal(%w[name age], subclass.attribute_names)
 
-    obj = subclass.new(name: "John", age: 18)
-    assert_equal({ "name" => "John", "age" => 18 }, obj.attributes)
+    obj = subclass.new(name: 'John', age: 18)
+    assert_equal({ 'name' => 'John', 'age' => 18 }, obj.attributes)
   end
 
   def test_attributes
-    assert_equal "Jane", @person.name
+    assert_equal 'Jane', @person.name
   end
 
   def test_returns_attributes
-    assert_equal({ "name" => "Jane" }, @person.attributes)
+    assert_equal({ 'name' => 'Jane' }, @person.attributes)
     assert_equal @person.to_h, @person.attributes
   end
 
@@ -44,10 +46,10 @@ class StructureTest < Minitest::Test
     end
 
     instance = klass.new(@person)
-    assert_equal({ "bar" => { "name" => "Jane" } }, instance.attributes)
+    assert_equal({ 'bar' => { 'name' => 'Jane' } }, instance.attributes)
 
     instance = klass.new([@person])
-    assert_equal({ "bar" => [{ "name" => "Jane" }] }, instance.attributes)
+    assert_equal({ 'bar' => [{ 'name' => 'Jane' }] }, instance.attributes)
   end
 
   def test_attribute_returns_symbol
@@ -55,17 +57,17 @@ class StructureTest < Minitest::Test
   end
 
   def test_memoises_attributes
-    assert_equal "Jane", @person.name
+    assert_equal 'Jane', @person.name
 
-    @person.instance_variable_set(:@data, name: "John")
-    assert_equal "Jane", @person.name
+    @person.instance_variable_set(:@data, name: 'John')
+    assert_equal 'Jane', @person.name
   end
 
   def test_attributes_memoise_nil
     person = Person.new(name: nil)
     assert_nil person.name
 
-    person.instance_variable_set(:@data, name: "John")
+    person.instance_variable_set(:@data, name: 'John')
     assert_nil person.name
   end
 
@@ -74,11 +76,11 @@ class StructureTest < Minitest::Test
   end
 
   def test_compares
-    same = Person.new(name: "Jane")
+    same = Person.new(name: 'Jane')
     assert @person == same
     assert @person.eql?(same)
 
-    different = Person.new(name: "John")
+    different = Person.new(name: 'John')
     refute @person == different
 
     refute @person == Object.new
@@ -92,12 +94,12 @@ class StructureTest < Minitest::Test
 
   def test_truncates_long_arrays_when_pretty_inspecting
     klass = build_anonymous_class do
-      attribute(:ary) { ["a"] }
+      attribute(:ary) { ['a'] }
     end
     assert_includes klass.new.inspect, 'ary=["a"]'
 
     klass = build_anonymous_class do
-      attribute(:ary) { ("a".."z").to_a }
+      attribute(:ary) { ('a'..'z').to_a }
     end
     assert_includes klass.new.inspect, 'ary=["a", "b", "c"...]'
   end

@@ -2,11 +2,11 @@ Lint/NestedMethodDefinition:
   Exclude:
     - 'test/**/*'
 Metrics/AbcSize:
-  Enabled: false
-Metrics/MethodLength:
-  Enabled: false
-Style/Documentation:
+  Max: 22.38
+Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
+Metrics/MethodLength:
+  Max: 33
+Style/AccessModifierDeclarations:
+  Enabled: false

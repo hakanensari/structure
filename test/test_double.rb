@@ -1,6 +1,8 @@
-require_relative "helper"
-require_relative "person"
-require_relative "../lib/structure/double"
+# frozen_string_literal: true
+
+require_relative 'helper'
+require_relative 'person'
+require_relative '../lib/structure/double'
 
 class DoubleTest < Minitest::Test
   def test_predicate_methods
@@ -13,8 +15,8 @@ class DoubleTest < Minitest::Test
   end
 
   def test_casts_to_double
-    person = Person.double.new("name" => "Jane")
-    assert_equal "Jane", person.name
+    person = Person.double.new('name' => 'Jane')
+    assert_equal 'Jane', person.name
   end
 
   def test_defines_custom_methods
@@ -26,22 +28,22 @@ class DoubleTest < Minitest::Test
   end
 
   def test_freezes_attributes
-    person = Person.double.new("name" => "Jane")
+    person = Person.double.new('name' => 'Jane')
     assert person.name.frozen?
   end
 
   def test_does_not_freeze_structures
     klass = Class.new(String)
     klass.include Structure
-    person = Person.double.new("name" => klass.new)
+    person = Person.double.new('name' => klass.new)
     refute person.name.frozen?
   end
 
   def test_does_not_freeze_rspec_doubles
-    Object.const_set("RSpec", Module.new)
-    RSpec.const_set("Mocks", Module.new)
-    RSpec::Mocks.const_set("Double", Class.new)
-    person = Person.double.new("name" => RSpec::Mocks::Double.new)
+    Object.const_set('RSpec', Module.new)
+    RSpec.const_set('Mocks', Module.new)
+    RSpec::Mocks.const_set('Double', Class.new)
+    person = Person.double.new('name' => RSpec::Mocks::Double.new)
     refute person.name.frozen?
     Object.send(:remove_const, :RSpec)
   end

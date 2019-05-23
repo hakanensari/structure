@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Structure
 module Structure
   class << self
@@ -15,7 +17,7 @@ module Structure
         key =>
           if value.respond_to?(:attributes)
             value.attributes
-          elsif value.is_a?(Array)
+          elsif value.is_a?(::Array)
             value.map do |element|
               if element.respond_to?(:attributes)
                 element.attributes
@@ -36,11 +38,12 @@ module Structure
 
   def ==(other)
     return false unless other.respond_to?(:attributes)
+
     attributes == other.attributes
   end
 
   def inspect
-    name = self.class.name || self.class.to_s.gsub(/[^\w:]/, "")
+    name = self.class.name || self.class.to_s.gsub(/[^\w:]/, '')
     values =
       attribute_names
       .map do |key|
@@ -48,12 +51,15 @@ module Structure
         if value.is_a?(Array)
           description = value.take(3).map(&:inspect).join(", ")
           description += "..." if value.size > 3
+        if value.is_a?(::Array)
+          description = value.take(3).map(&:inspect).join(', ')
+          description += '...' if value.size > 3
           "#{key}=[#{description}]"
         else
           "#{key}=#{value.inspect}"
         end
       end
-      .join(", ")
+      .join(', ')
 
     "#<#{name} #{values}>"
   end
@@ -69,15 +75,15 @@ module Structure
     def attribute(name)
       name = name.to_s
 
-      if name.chomp!("?")
-        module_eval(<<-EOS, __FILE__, __LINE__)
+      if name.chomp!('?')
+        module_eval(<<-CODE, __FILE__, __LINE__ + 1)
           def #{name}?
             #{name}
           end
-        EOS
+        CODE
       end
 
-      module_eval(<<-EOS, __FILE__, __LINE__)
+      module_eval(<<-CODE, __FILE__, __LINE__ + 1)
         def #{name}
           return @#{name} if defined?(@#{name})
           @#{name} = _#{name}
@@ -85,7 +91,7 @@ module Structure
 
           @#{name}
         end
-      EOS
+      CODE
 
       define_method("_#{name}", Proc.new)
       private "_#{name}"
