@@ -112,4 +112,29 @@ class StructureTest < Minitest::Test
     assert klass.new.foo
     assert klass.new.foo?
   end
+
+  def test_thread_safety
+    klass = Class.new do
+      include Structure
+
+      attribute :value do
+        sleep rand
+        rand
+      end
+    end
+
+    object = klass.new
+    threads = 10.times.map do
+      Thread.new do
+        Thread.current[:value] = object.value
+      end
+    end
+
+    values = threads.map do |thread|
+      thread.join
+      thread[:value]
+    end
+
+    assert_equal 1, values.uniq.count
+  end
 end

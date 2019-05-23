@@ -30,8 +30,10 @@ module Structure
         end
 
         attribute_names.each do |name|
-          module_eval "def _#{name}; @#{name}; end"
-          private "_#{name}"
+          module_eval(<<-CODE, __FILE__, __LINE__ + 1)
+            def __#{name}; @#{name}; end
+          CODE
+          private "__#{name}"
         end
 
         module_eval(&Proc.new) if block_given?

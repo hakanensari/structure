@@ -6,7 +6,17 @@ module Structure
     private
 
     def included(base)
-      base.extend(ClassMethods).instance_variable_set(:@attribute_names, [])
+      base.extend(ClassMethods)
+      base.__overwrite_initialize
+      base.instance_eval do
+        @attribute_names = []
+
+        def method_added(name)
+          return if name != :initialize
+
+          __overwrite_initialize
+        end
+      end
     end
   end
 
@@ -48,9 +58,6 @@ module Structure
       attribute_names
       .map do |key|
         value = send(key)
-        if value.is_a?(Array)
-          description = value.take(3).map(&:inspect).join(", ")
-          description += "..." if value.size > 3
         if value.is_a?(::Array)
           description = value.take(3).map(&:inspect).join(', ')
           description += '...' if value.size > 3
@@ -85,20 +92,39 @@ module Structure
 
       module_eval(<<-CODE, __FILE__, __LINE__ + 1)
         def #{name}
-          return @#{name} if defined?(@#{name})
-          @#{name} = _#{name}
-          @#{name}.freeze unless @#{name}.is_a?(Structure)
+          @__mutex.synchronize {
+            return @#{name} if defined?(@#{name})
 
-          @#{name}
+            @#{name} = __#{name}
+            @#{name}.freeze unless @#{name}.is_a?(Structure)
+
+            @#{name}
+          }
         end
       CODE
 
-      define_method("_#{name}", Proc.new)
-      private "_#{name}"
+      define_method("__#{name}", Proc.new)
+      private "__#{name}"
 
       @attribute_names << name
 
       name.to_sym
+    end
+
+    def __overwrite_initialize
+      class_eval do
+        unless method_defined?(:__custom_initialize)
+          define_method(:__custom_initialize) do |*args|
+            @__mutex = ::Thread::Mutex.new
+            __original_initialize(*args)
+          end
+        end
+
+        if instance_method(:initialize) != instance_method(:__custom_initialize)
+          alias_method :__original_initialize, :initialize
+          alias_method :initialize, :__custom_initialize
+        end
+      end
     end
 
     private
