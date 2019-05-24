@@ -9,9 +9,4 @@ Gem::Specification.new do |s|
   s.email         = 'me@hakanensari.com'
   s.license       = 'MIT'
   s.files         = Dir.glob('lib/**/*')
-  s.require_paths = ['lib']
-
-  s.add_development_dependency 'minitest'
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'rubocop'
 end

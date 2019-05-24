@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'helper'
-require_relative 'person'
 
 class StructureTest < Minitest::Test
   def setup
@@ -129,11 +128,7 @@ class StructureTest < Minitest::Test
         Thread.current[:value] = object.value
       end
     end
-
-    values = threads.map do |thread|
-      thread.join
-      thread[:value]
-    end
+    values = threads.map { |thread| thread.join[:value] }
 
     assert_equal 1, values.uniq.count
   end

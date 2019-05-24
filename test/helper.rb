@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 require 'minitest/autorun'
-require_relative '../lib/structure'
+require 'structure'
+require 'person'
 
 module Minitest
   class Test

@@ -10,3 +10,5 @@ Metrics/MethodLength:
   Max: 33
 Style/AccessModifierDeclarations:
   Enabled: false
+Style/Documentation:
+  Enabled: false

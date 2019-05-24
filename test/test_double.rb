@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-require_relative 'helper'
-require_relative 'person'
-require_relative '../lib/structure/double'
+require 'helper'
+require 'structure/double'
 
 class DoubleTest < Minitest::Test
   def test_predicate_methods

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Structure
-  # ClassMethods
   module ClassMethods
     def double
       klass = Class.new(self)
@@ -11,29 +10,29 @@ module Structure
         protected_instance_methods(false) -
         [:initialize]
       ).each do |name|
-        klass.send(:undef_method, name)
+        klass.send :undef_method, name
       end
 
       klass.module_eval do
         def initialize(data = {})
           data.each do |key, value|
             unless value.is_a?(Structure) ||
-                   (
-                      defined?(RSpec::Mocks::Double) &&
-                      value.is_a?(RSpec::Mocks::Double)
-                    )
+                   (defined?(::RSpec::Mocks::Double) &&
+                    value.is_a?(::RSpec::Mocks::Double))
               value.freeze
             end
 
-            instance_variable_set(:"@#{key}", value)
+            instance_variable_set :"@#{key}", value
           end
         end
 
         attribute_names.each do |name|
-          module_eval(<<-CODE, __FILE__, __LINE__ + 1)
-            def __#{name}; @#{name}; end
+          module_eval <<-CODE, __FILE__, __LINE__ + 1
+            def __#{name}__
+              @#{name}
+            end
           CODE
-          private "__#{name}"
+          private "__#{name}__"
         end
 
         module_eval(&Proc.new) if block_given?
