@@ -24,14 +24,16 @@ module Structure
 
       module_eval <<-CODE, __FILE__, __LINE__ + 1
         def #{name}
-            return @#{name} if defined?(@#{name})
           @__mutex.synchronize {
+            break if @__table.key?("#{name}")
 
-            @#{name} = __#{name}__
-            @#{name}.freeze unless @#{name}.is_a?(Structure)
+            @__table["#{name}"] = __#{name}
+            @__table["#{name}"].freeze
 
-            @#{name}
+            @__table["#{name}"]
           }
+
+          @__table["#{name}"]
         end
       CODE
 
@@ -52,6 +54,7 @@ module Structure
             @__mutex = ::Thread::Mutex.new
             @__table = {}
             __original_initialize(*arguments, &block)
+            freeze
           end
         end
 

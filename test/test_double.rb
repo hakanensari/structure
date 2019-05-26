@@ -31,22 +31,6 @@ class DoubleTest < Minitest::Test
     assert person.name.frozen?
   end
 
-  def test_does_not_freeze_structures
-    klass = Class.new(String)
-    klass.include Structure
-    person = Person.double.new('name' => klass.new)
-    refute person.name.frozen?
-  end
-
-  def test_does_not_freeze_rspec_doubles
-    Object.const_set('RSpec', Module.new)
-    RSpec.const_set('Mocks', Module.new)
-    RSpec::Mocks.const_set('Double', Class.new)
-    person = Person.double.new('name' => RSpec::Mocks::Double.new)
-    refute person.name.frozen?
-    Object.send(:remove_const, :RSpec)
-  end
-
   def test_inherits_public_methods
     mod = Module.new do
       def foo; end
@@ -78,7 +62,7 @@ class DoubleTest < Minitest::Test
     assert_raises(NoMethodError) { double.new.send(:bar) }
   end
 
-  def test_undefines_builder_method
+  def test_undefines_builder
     klass = build_anonymous_class
     assert_raises(NoMethodError) { klass.double.send(:double) }
   end

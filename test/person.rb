@@ -3,11 +3,13 @@
 class Person
   include Structure
 
+  attr_reader :data
+
   def initialize(data)
     @data = data
   end
 
   attribute(:name) do
-    @data.fetch(:name)
+    data.fetch(:name)
   end
 end

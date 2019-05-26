@@ -56,22 +56,38 @@ class StructureTest < Minitest::Test
   end
 
   def test_memoises_attributes
-    assert_equal 'Jane', @person.name
+    klass = build_anonymous_class do
+      def initialize
+        @data = [1, 2]
+      end
 
-    @person.instance_variable_set(:@data, name: 'John')
-    assert_equal 'Jane', @person.name
+      attribute(:value) { @data.pop }
+    end
+
+    object = klass.new
+    assert_equal object.value, object.value
   end
 
   def test_attributes_memoise_nil
-    person = Person.new(name: nil)
-    assert_nil person.name
+    klass = build_anonymous_class do
+      def initialize
+        @data = [1, nil]
+      end
 
-    person.instance_variable_set(:@data, name: 'John')
-    assert_nil person.name
+      attribute(:value) { @data.pop }
+    end
+
+    object = klass.new
+    assert_nil object.value
+    assert_nil object.value
   end
 
   def test_freezes_attributes
     assert @person.name.frozen?
+  end
+
+  def test_is_frozen
+    assert @person.frozen?
   end
 
   def test_compares
