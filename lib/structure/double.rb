@@ -2,31 +2,32 @@
 
 module Structure
   module ClassMethods
+    # Creates a double that mocks a value object built with Structure during a
+    # test
+    #
+    # The double has an alternative constructor that takes a hash to set values.
+    # Otherwise, it shares the public API of the mocked value object.
     def double
       klass = Class.new(self)
 
-      (
-        private_instance_methods(false) +
-        protected_instance_methods(false) -
-        [:initialize]
-      ).each do |name|
+      (private_instance_methods(false) + protected_instance_methods(false) -
+        [:initialize]).each do |name|
         klass.send :undef_method, name
       end
 
       klass.module_eval do
-        def initialize(data = {})
-          data.each do |key, value|
+        def initialize(values = {})
+          values.each do |key, value|
             instance_variable_set :"@#{key}", value
           end
         end
 
         attribute_names.each do |name|
           module_eval <<-CODE, __FILE__, __LINE__ + 1
-            def __#{name}__
+            private def __#{name}
               @#{name}
             end
           CODE
-          private "__#{name}__"
         end
 
         module_eval(&Proc.new) if block_given?

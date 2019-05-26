@@ -2,10 +2,12 @@
 
 module Structure
   module ClassMethods
+    # Returns an array of attribute names as strings
     attr_reader :attribute_names
 
     def self.extended(base)
       base.instance_variable_set :@attribute_names, []
+      base.send :__overwrite_initialize
     end
 
     def attribute(name, &block)
@@ -22,8 +24,8 @@ module Structure
 
       module_eval <<-CODE, __FILE__, __LINE__ + 1
         def #{name}
-          @__mutex__.synchronize {
             return @#{name} if defined?(@#{name})
+          @__mutex.synchronize {
 
             @#{name} = __#{name}__
             @#{name}.freeze unless @#{name}.is_a?(Structure)
@@ -33,37 +35,37 @@ module Structure
         end
       CODE
 
-      define_method "__#{name}__", block
-      private "__#{name}__"
+      define_method "__#{name}", block
+      private "__#{name}"
 
       @attribute_names << name
 
       name.to_sym
     end
 
-    def __overwrite_initialize__
+    private
+
+    def __overwrite_initialize
       class_eval do
-        unless method_defined?(:__custom_initialize__)
-          define_method :__custom_initialize__ do |*args|
-            @__mutex__ = ::Thread::Mutex.new
-            __original_initialize__(*args)
+        unless method_defined?(:__custom_initialize)
+          define_method :__custom_initialize do |*arguments, &block|
+            @__mutex = ::Thread::Mutex.new
+            @__table = {}
+            __original_initialize(*arguments, &block)
           end
         end
 
         return if instance_method(:initialize) ==
-                  instance_method(:__custom_initialize__)
+                  instance_method(:__custom_initialize)
 
-        alias_method :__original_initialize__, :initialize
-        alias_method :initialize, :__custom_initialize__
+        alias_method :__original_initialize, :initialize
+        alias_method :initialize, :__custom_initialize
+        private :__custom_initialize, :__original_initialize
       end
     end
 
-    private
-
     def method_added(name)
-      return if name != :initialize
-
-      __overwrite_initialize__
+      __overwrite_initialize if name == :initialize
     end
 
     def inherited(subclass)

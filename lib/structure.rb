@@ -28,15 +28,17 @@ module Structure
 
   def self.included(base)
     base.extend ClassMethods
-    base.__overwrite_initialize__
   end
 
+  # Returns a hash of all the attributes with their names as keys and the
+  # values of the attributes as values
   def attributes
     attribute_names.each_with_object({}) do |key, hash|
       hash[key] = Structure.serialize(send(key))
     end
   end
 
+  # Returns an array of attribute names as strings
   def attribute_names
     self.class.attribute_names
   end
