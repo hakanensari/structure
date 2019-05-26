@@ -27,7 +27,7 @@ module Structure
           @__mutex.synchronize {
             break if @__table.key?("#{name}")
 
-            @__table["#{name}"] = __#{name}
+            @__table["#{name}"] = __get_#{name}
             @__table["#{name}"].freeze
 
             @__table["#{name}"]
@@ -37,8 +37,7 @@ module Structure
         end
       CODE
 
-      define_method "__#{name}", block
-      private "__#{name}"
+      private define_method "__get_#{name}", block
 
       @attribute_names << name
 

@@ -24,7 +24,7 @@ module Structure
 
         attribute_names.each do |name|
           module_eval <<-CODE, __FILE__, __LINE__ + 1
-            private def __#{name}
+            private def __get_#{name}
               @#{name}
             end
           CODE

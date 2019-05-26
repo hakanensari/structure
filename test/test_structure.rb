@@ -86,6 +86,13 @@ class StructureTest < Minitest::Test
     assert @person.name.frozen?
   end
 
+  def test_underlying_getters_are_private
+    err = assert_raises NoMethodError do
+      @person.__get_name
+    end
+    assert err.message.include?('private method')
+  end
+
   def test_is_frozen
     assert @person.frozen?
   end
