@@ -2,12 +2,12 @@ Lint/NestedMethodDefinition:
   Exclude:
     - 'test/**/*'
 Metrics/AbcSize:
-  Max: 22.38
+  Max: 19.05
 Metrics/ClassLength:
   Exclude:
     - 'test/**/*'
 Metrics/MethodLength:
-  Max: 33
+  Max: 28
 Style/AccessModifierDeclarations:
   Enabled: false
 Style/Documentation:
