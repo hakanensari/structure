@@ -24,13 +24,11 @@ module Structure
 
       module_eval <<-CODE, __FILE__, __LINE__ + 1
         def #{name}
-          @__mutex.synchronize {
+          __exclusive {
             break if @__table.key?("#{name}")
 
             @__table["#{name}"] = __get_#{name}
             @__table["#{name}"].freeze
-
-            @__table["#{name}"]
           }
 
           @__table["#{name}"]

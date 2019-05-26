@@ -155,4 +155,21 @@ class StructureTest < Minitest::Test
 
     assert_equal 1, values.uniq.count
   end
+
+  def test_deadlock
+    klass = Class.new do
+      include Structure
+
+      attribute :foo do
+        rand
+      end
+
+      attribute :bar do
+        foo
+      end
+    end
+
+    object = klass.new
+    assert_equal object.foo, object.bar
+  end
 end

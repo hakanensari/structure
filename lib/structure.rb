@@ -61,4 +61,10 @@ module Structure
   alias to_h attributes
   alias eql? ==
   alias to_s inspect
+
+  private
+
+  def __exclusive(&block)
+    @__mutex.owned? ? block.call : @__mutex.synchronize { block.call }
+  end
 end
