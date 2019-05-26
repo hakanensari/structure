@@ -3,6 +3,11 @@
 require 'minitest/autorun'
 require 'structure'
 require 'person'
+begin
+  require 'pry'
+rescue LoadError
+  nil
+end
 
 module Minitest
   class Test
