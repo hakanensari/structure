@@ -1,9 +1,31 @@
 # frozen_string_literal: true
 
 require 'structure/class_methods'
-require 'structure/utils'
 
 module Structure
+  def self.inspect(value)
+    if value.is_a?(::Array)
+      inspection = value.take(3)
+                        .map { |subvalue| inspect(subvalue) }
+                        .join(', ')
+      inspection += '...' if value.size > 3
+
+      "[#{inspection}]"
+    else
+      value.inspect
+    end
+  end
+
+  def self.serialize(value)
+    if value.respond_to?(:attributes)
+      value.attributes
+    elsif value.is_a?(::Array)
+      value.map { |subvalue| serialize(subvalue) }
+    else
+      value
+    end
+  end
+
   def self.included(base)
     base.extend ClassMethods
     base.__overwrite_initialize__
@@ -11,7 +33,7 @@ module Structure
 
   def attributes
     attribute_names.each_with_object({}) do |key, hash|
-      hash[key] = Utils.serialize(send(key))
+      hash[key] = Structure.serialize(send(key))
     end
   end
 
@@ -27,19 +49,9 @@ module Structure
 
   def inspect
     name = self.class.name || self.class.to_s.gsub(/[^\w:]/, '')
-    values =
-      attribute_names
-      .map do |key|
-        value = send(key)
-        if value.is_a?(::Array)
-          description = value.take(3).map(&:inspect).join(', ')
-          description += '...' if value.size > 3
-          "#{key}=[#{description}]"
-        else
-          "#{key}=#{value.inspect}"
-        end
-      end
-      .join(', ')
+    values = attribute_names
+             .map { |key| "#{key}=#{Structure.inspect(send(key))}" }
+             .join(', ')
 
     "#<#{name} #{values}>"
   end
