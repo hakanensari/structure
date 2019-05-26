@@ -11,7 +11,8 @@ module Structure
     def attribute(name, &block)
       name = name.to_s
 
-      if name.chomp!('?')
+      if name.end_with?('?')
+        name = name.chop
         module_eval <<-CODE, __FILE__, __LINE__ + 1
           def #{name}?
             #{name}
