@@ -48,6 +48,17 @@ class StructureTest < Minitest::Test
     assert_equal '#<Foo key="value">', @klass.new.to_s
   end
 
+  def test_inspect
+    @klass.attribute(:key) { 'value' }
+    assert_equal @klass.new.to_s, @klass.new.inspect
+  end
+
+  def test_inspect_with_custom_to_s_defined
+    @klass.attribute(:key) { 'value' }
+    @klass.define_method(:to_s) { '123' }
+    assert_equal '#<? 123>', @klass.new.inspect
+  end
+
   def test_memoization
     @klass.attribute(:key) { rand }
     instance = @klass.new

@@ -25,7 +25,12 @@ module Structure
   alias attributes to_h
 
   def inspect
-    detail = to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(', ')
+    detail = if self.class.method_defined?(:to_s, false)
+               to_s
+             else
+               to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(', ')
+             end
+
     "#<#{self.class.name || '?'} #{detail}>"
   end
 
