@@ -48,24 +48,6 @@ class StructureTest < Minitest::Test
     assert_equal '#<Foo key=value>', @klass.new.inspect
   end
 
-  def test_nested_values
-    nested_class = Class.new do
-      include Structure
-      attribute(:key) { rand }
-    end
-    class << @klass
-      define_method(:name) { 'Foo' }
-    end
-    class << nested_class
-      define_method(:name) { 'Bar' }
-    end
-    @klass.attribute(:first) { nested_class.new }
-    @klass.attribute(:second) { 2.times.map { nested_class.new } }
-    instance = @klass.new
-    assert instance.attributes['first']['key']
-    assert instance.attributes['second'].sample['key']
-  end
-
   def test_memoization
     @klass.attribute(:key) { rand }
     instance = @klass.new

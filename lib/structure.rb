@@ -3,16 +3,6 @@
 # A tiny library for lazy parsing data with memoized attributes
 module Structure
   class << self
-    def serialize(value)
-      if value.respond_to?(:attributes)
-        value.attributes
-      elsif value.is_a?(::Array)
-        value.map { |element| serialize(element) }
-      else
-        value
-      end
-    end
-
     private
 
     def included(base)
@@ -24,20 +14,19 @@ module Structure
     self.class.attribute_names
   end
 
-  def attributes
-    attribute_names.each_with_object({}) do |key, hash|
-      hash[key] = ::Structure.serialize(send(key))
-    end
+  def to_a
+    attribute_names.map { |key| [key, send(key)] }
   end
 
   def to_h
-    attributes
+    Hash[to_a]
   end
 
   def to_s
     data = attribute_names.map { |key| "#{key}=#{send(key)}" }.join(', ')
     "#<#{[self.class.name, data].compact.join(' ')}>"
   end
+  alias attributes to_h
 
   def inspect
     to_s
