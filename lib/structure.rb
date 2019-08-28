@@ -22,15 +22,14 @@ module Structure
     Hash[to_a]
   end
 
-  def to_s
-    data = attribute_names.map { |key| "#{key}=#{send(key)}" }.join(', ')
-    "#<#{[self.class.name, data].compact.join(' ')}>"
-  end
   alias attributes to_h
 
   def inspect
-    to_s
+    detail = to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(', ')
+    "#<#{self.class.name || '?'} #{detail}>"
   end
+
+  alias to_s inspect
 
   def ==(other)
     attributes == other.attributes

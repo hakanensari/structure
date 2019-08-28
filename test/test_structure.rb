@@ -37,15 +37,15 @@ class StructureTest < Minitest::Test
 
   def test_to_s
     @klass.attribute(:key) { 'value' }
-    assert_equal '#<key=value>', @klass.new.to_s
+    assert_equal '#<? key="value">', @klass.new.to_s
   end
 
-  def test_inspect
+  def test_to_s_with_named_class
     @klass.attribute(:key) { 'value' }
     class << @klass
       define_method(:name) { 'Foo' }
     end
-    assert_equal '#<Foo key=value>', @klass.new.inspect
+    assert_equal '#<Foo key="value">', @klass.new.to_s
   end
 
   def test_memoization
