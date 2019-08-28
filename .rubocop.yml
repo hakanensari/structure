@@ -1,14 +1,5 @@
-Lint/NestedMethodDefinition:
-  Exclude:
-    - 'test/**/*'
-Metrics/AbcSize:
-  Max: 19.05
-Metrics/ClassLength:
-  Exclude:
-    - 'test/**/*'
-Metrics/MethodLength:
-  Max: 28
-Style/AccessModifierDeclarations:
-  Enabled: false
-Style/Documentation:
-  Enabled: false
+inherit_from: '.rubocop_todo.yml'
+
+AllCops:
+  DisplayCopNames: true
+  TargetRubyVersion: 2.4
