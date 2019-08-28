@@ -25,7 +25,7 @@ module Structure
   alias attributes to_h
 
   def inspect
-    detail = if self.class.method_defined?(:to_s, false)
+    detail = if public_methods(false).include?(:to_s)
                to_s
              else
                to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(', ')

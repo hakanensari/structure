@@ -55,7 +55,7 @@ class StructureTest < Minitest::Test
 
   def test_inspect_with_custom_to_s_defined
     @klass.attribute(:key) { 'value' }
-    @klass.define_method(:to_s) { '123' }
+    @klass.send(:define_method, :to_s) { '123' }
     assert_equal '#<? 123>', @klass.new.inspect
   end
 
