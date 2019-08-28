@@ -1,0 +1,11 @@
+Metrics/AbcSize:
+  Exclude:
+    - 'test/**/*'
+Metrics/ClassLength:
+  Exclude:
+    - 'test/**/*'
+Metrics/MethodLength:
+  Max: 20
+
+Style/AccessModifierDeclarations:
+  Enabled: false
