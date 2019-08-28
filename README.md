@@ -1,6 +1,6 @@
 # Structure
 
-[![Travis](https://travis-ci.org/hakanensari/structure.svg)](https://travis-ci.org/hakanensari/structure)
+[![CircleCI](https://circleci.com/gh/hakanensari/structure.svg?style=svg)](https://circleci.com/gh/hakanensari/structure)
 
 Structure helps you encapsulate data parsing in an immutable value object.
 
