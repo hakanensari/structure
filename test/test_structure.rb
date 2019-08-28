@@ -1,175 +1,129 @@
 # frozen_string_literal: true
 
 require_relative 'helper'
+require 'structure'
 
 class StructureTest < Minitest::Test
   def setup
-    @person = Person.new(name: 'Jane')
-  end
-
-  def test_both_class_and_instance_return_attribute_names
-    assert_equal ['name'], Person.attribute_names
-    assert_equal ['name'], Person.new(nil).attribute_names
-  end
-
-  def test_subclassing_does_not_have_side_effects
-    subclass = Class.new(Person) do
-      attribute :age do
-        @data.fetch(:age)
-      end
+    @klass = Class.new do
+      include Structure
     end
+  end
 
-    assert_equal(%w[name], Person.attribute_names)
-    assert_equal(%w[name age], subclass.attribute_names)
+  def test_class_level_attribute_names
+    @klass.attribute(:key) {}
+    assert_equal ['key'], @klass.attribute_names
+  end
 
-    obj = subclass.new(name: 'John', age: 18)
-    assert_equal({ 'name' => 'John', 'age' => 18 }, obj.attributes)
+  def test_instance_level_attribute_names
+    @klass.attribute(:key) {}
+    assert_equal ['key'], @klass.new.attribute_names
+  end
+
+  def test_an_attribute
+    @klass.attribute(:key) { 'value' }
+    assert_equal 'value', @klass.new.key
   end
 
   def test_attributes
-    assert_equal 'Jane', @person.name
+    @klass.attribute(:key) { 'value' }
+    assert_equal({ 'key' => 'value' }, @klass.new.attributes)
   end
 
-  def test_returns_attributes
-    assert_equal({ 'name' => 'Jane' }, @person.attributes)
-    assert_equal @person.to_h, @person.attributes
+  def test_to_h
+    @klass.attribute(:key) { 'value' }
+    assert_equal({ 'key' => 'value' }, @klass.new.to_h)
   end
 
-  def test_returns_attributes_of_nested_structures
-    klass = build_anonymous_class do
-      def initialize(foo)
-        @foo = foo
-      end
+  def test_to_s
+    @klass.attribute(:key) { 'value' }
+    assert_equal '#<key=value>', @klass.new.to_s
+  end
 
-      attribute(:bar) { @foo }
+  def test_inspect
+    @klass.attribute(:key) { 'value' }
+    class << @klass
+      define_method(:name) { 'Foo' }
     end
-
-    instance = klass.new(@person)
-    assert_equal({ 'bar' => { 'name' => 'Jane' } }, instance.attributes)
-
-    instance = klass.new([@person])
-    assert_equal({ 'bar' => [{ 'name' => 'Jane' }] }, instance.attributes)
+    assert_equal '#<Foo key=value>', @klass.new.inspect
   end
 
-  def test_attribute_returns_symbol
-    assert_equal :foo, build_anonymous_class.send(:attribute, :foo) {}
-  end
-
-  def test_memoises_attributes
-    klass = build_anonymous_class do
-      def initialize
-        @data = [1, 2]
-      end
-
-      attribute(:value) { @data.pop }
+  def test_nested_values
+    nested_class = Class.new do
+      include Structure
+      attribute(:key) { rand }
     end
-
-    object = klass.new
-    assert_equal object.value, object.value
-  end
-
-  def test_attributes_memoise_nil
-    klass = build_anonymous_class do
-      def initialize
-        @data = [1, nil]
-      end
-
-      attribute(:value) { @data.pop }
+    class << @klass
+      define_method(:name) { 'Foo' }
     end
-
-    object = klass.new
-    assert_nil object.value
-    assert_nil object.value
-  end
-
-  def test_freezes_attributes
-    assert @person.name.frozen?
-  end
-
-  def test_underlying_getters_are_private
-    err = assert_raises NoMethodError do
-      @person.__get_name
+    class << nested_class
+      define_method(:name) { 'Bar' }
     end
-    assert err.message.include?('private method')
+    @klass.attribute(:first) { nested_class.new }
+    @klass.attribute(:second) { 2.times.map { nested_class.new } }
+    instance = @klass.new
+    assert instance.attributes['first']['key']
+    assert instance.attributes['second'].sample['key']
   end
 
-  def test_is_frozen
-    assert @person.frozen?
+  def test_memoization
+    @klass.attribute(:key) { rand }
+    instance = @klass.new
+    assert_equal instance.key, instance.key
+    refute_equal @klass.new.key, instance.key
   end
 
-  def test_compares
-    same = Person.new(name: 'Jane')
-    assert @person == same
-    assert @person.eql?(same)
-
-    different = Person.new(name: 'John')
-    refute @person == different
-
-    refute @person == Object.new
+  def test_memoization_with_nil_value
+    @klass.attribute(:key) { (@values ||= [rand(80), nil]).pop }
+    instance = @klass.new
+    2.times { assert_nil instance.key }
   end
 
-  def test_pretty_inspects
-    assert_equal '#<Person name="Jane">', @person.inspect
-    assert_equal @person.to_s, @person.inspect
-    assert_match(/#<Class:\w+ .*>/, build_anonymous_class.new.to_s)
-  end
-
-  def test_truncates_long_arrays_when_pretty_inspecting
-    klass = build_anonymous_class do
-      attribute(:ary) { ['a'] }
+  def test_subclassing_has_no_side_effects
+    subclass = Class.new(@klass) do
+      attribute(:key) {}
     end
-    assert_includes klass.new.inspect, 'ary=["a"]'
-
-    klass = build_anonymous_class do
-      attribute(:ary) { ('a'..'z').to_a }
-    end
-    assert_includes klass.new.inspect, 'ary=["a", "b", "c"...]'
+    assert_includes subclass.attribute_names, 'key'
+    refute_includes @klass.attribute_names, 'key'
   end
 
-  def test_predicate_methods
-    klass = build_anonymous_class do
-      attribute(:foo?) { true }
-    end
+  def test_comparison
+    @klass.attribute(:key) { 'value' }
+    assert_equal @klass.new, @klass.new
+    assert @klass.new.eql?(@klass.new)
+    subclass = Class.new(@klass)
+    assert_equal @klass.new, @klass.new
+    refute @klass.new.eql?(subclass.new)
+  end
 
-    assert klass.new.foo
-    assert klass.new.foo?
+  def test_predicate
+    @klass.attribute(:key?) { true }
+    assert @klass.new.key
+    assert @klass.new.key?
   end
 
   def test_thread_safety
-    klass = Class.new do
-      include Structure
-
-      attribute :value do
-        sleep rand
-        rand
-      end
-    end
-
-    object = klass.new
+    @klass.attribute(:key) { rand.tap { |value| sleep value } }
+    instance = @klass.new
     threads = 10.times.map do
-      Thread.new do
-        Thread.current[:value] = object.value
-      end
+      Thread.new { Thread.current[:key] = instance.key }
     end
-    values = threads.map { |thread| thread.join[:value] }
+    values = threads.map { |thread| thread.join[:key] }
 
     assert_equal 1, values.uniq.count
   end
 
-  def test_deadlock
-    klass = Class.new do
-      include Structure
+  def test_no_deadlock
+    @klass.attribute(:foo) { 'value' }
+    @klass.attribute(:bar) { foo }
+    instance = @klass.new
+    assert_equal instance.foo, instance.bar
+  end
 
-      attribute :foo do
-        rand
-      end
-
-      attribute :bar do
-        foo
-      end
-    end
-
-    object = klass.new
-    assert_equal object.foo, object.bar
+  def test_freeze
+    @klass.attribute(:key) { rand }
+    instance = @klass.new
+    instance.freeze
+    assert instance.key
   end
 end
