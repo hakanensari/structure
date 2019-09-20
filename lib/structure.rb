@@ -6,7 +6,13 @@ module Structure
     private
 
     def included(base)
-      base.extend ClassMethods
+      if base.is_a?(Class)
+        base.extend ClassMethods
+      else
+        def base.included(base)
+          ::Structure.send(:included, base)
+        end
+      end
     end
   end
 

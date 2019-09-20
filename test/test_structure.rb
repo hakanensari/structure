@@ -119,4 +119,15 @@ class StructureTest < Minitest::Test
     instance.freeze
     assert instance.key
   end
+
+  def test_including_in_module
+    mod = Module.new do
+      include Structure
+    end
+    klass = Class.new do
+      include mod
+      attribute(:key) {}
+    end
+    assert_equal ['key'], klass.new.attribute_names
+  end
 end
