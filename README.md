@@ -14,3 +14,7 @@ class Random
   end
 end
 ```
+
+## Usage
+
+TODO: Write usage instructions here
