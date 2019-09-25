@@ -43,7 +43,11 @@ module Structure
   alias to_s inspect
 
   def ==(other)
-    attributes == other.attributes
+    if public_methods(false).include?(:<=>)
+      super
+    else
+      attributes == other.attributes
+    end
   end
 
   def eql?(other)

@@ -1,3 +1,7 @@
+Lint/UselessComparison:
+  Exclude:
+    - 'test/**/*'
+
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'

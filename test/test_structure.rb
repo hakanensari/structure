@@ -80,13 +80,19 @@ class StructureTest < Minitest::Test
     refute_includes @klass.attribute_names, 'key'
   end
 
-  def test_comparison
+  def test_equality
     @klass.attribute(:key) { 'value' }
     assert_equal @klass.new, @klass.new
     assert @klass.new.eql?(@klass.new)
     subclass = Class.new(@klass)
     assert_equal @klass.new, @klass.new
     refute @klass.new.eql?(subclass.new)
+  end
+
+  def test_equality_with_comparison
+    assert @klass.new == @klass.new
+    @klass.define_method(:<=>) { |_| 1 }
+    refute @klass.new == @klass.new
   end
 
   def test_predicate
