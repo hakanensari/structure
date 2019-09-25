@@ -91,7 +91,7 @@ class StructureTest < Minitest::Test
 
   def test_equality_with_comparison
     assert @klass.new == @klass.new
-    @klass.define_method(:<=>) { |_| 1 }
+    @klass.send(:define_method, :<=>) { |_| 1 }
     refute @klass.new == @klass.new
   end
 
