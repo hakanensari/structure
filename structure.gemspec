@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.name     = 'structure'
   gem.version  = Structure::VERSION
   gem.licenses = ['MIT']
-  gem.summary  = 'Lazy parse data into memoized attributes'
+  gem.summary  = 'Lazy-parse data into attributes in a thread-safe way'
   gem.authors  = ['Hakan Ensari']
   gem.license  = 'MIT'
   gem.files    = Dir.glob('lib/**/*')
