@@ -1,7 +1,6 @@
 Lint/UselessComparison:
   Exclude:
     - 'test/**/*'
-
 Metrics/AbcSize:
   Exclude:
     - 'test/**/*'
@@ -10,6 +9,7 @@ Metrics/ClassLength:
     - 'test/**/*'
 Metrics/MethodLength:
   Max: 20
-
+Security/MarshalLoad:
+  Enabled: false
 Style/AccessModifierDeclarations:
   Enabled: false

@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.3.0]
+
+### Added
+
+- Add marshaling support
+
 ## [2.2.0]
 
 ### Added
@@ -32,4 +38,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [2.0.0]: https://github.com/hakanensari/structure/compare/v1.2.1...v2.0.0
 [2.1.0]: https://github.com/hakanensari/structure/compare/v2.0.0...v2.1.0
 [2.2.0]: https://github.com/hakanensari/structure/compare/v2.1.0...v2.2.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v2.2.0...HEAD
+[2.3.0]: https://github.com/hakanensari/structure/compare/v2.2.0...v2.3.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v2.3.0...HEAD

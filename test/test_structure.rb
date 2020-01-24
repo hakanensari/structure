@@ -136,4 +136,14 @@ class StructureTest < Minitest::Test
     end
     assert_equal ['key'], klass.new.attribute_names
   end
+
+  def test_marshaling
+    self.class.const_set('Klass', @klass)
+    Klass.attribute(:key1) { 'value' }
+    dumped = Klass.new
+    data = Marshal.dump(dumped)
+    loaded = Marshal.load(data)
+    assert_equal dumped, loaded
+    self.class.send(:remove_const, 'Klass')
+  end
 end

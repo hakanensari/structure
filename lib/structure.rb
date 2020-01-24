@@ -61,6 +61,17 @@ module Structure
     super
   end
 
+  def marshal_dump
+    attributes.values
+  end
+
+  def marshal_load(data)
+    @mutex = ::Thread::Mutex.new
+    attribute_names.zip(data).each do |key, val|
+      instance_variable_set(:"@#{key}", val)
+    end
+  end
+
   private
 
   def with_mutex(&block)
