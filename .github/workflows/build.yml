@@ -1,0 +1,27 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:2.7
+    steps:
+    - uses: actions/checkout@v2
+    - run: gem install bundler
+    - run: bundle install
+    - run: bundle exec rake rubocop
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: [2.4, 2.5, 2.6, 2.7]
+    container:
+      image: ruby:${{ matrix.ruby }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: gem install bundler
+    - run: bundle install
+    - run: bundle exec rake test
