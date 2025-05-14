@@ -16,5 +16,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rubocop'
 
-  gem.required_ruby_version = '>= 2.4'
+  gem.required_ruby_version = ">= 3.2"
 end
