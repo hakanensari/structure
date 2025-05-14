@@ -7,7 +7,7 @@ module Structure
 
     def included(base)
       if base.is_a?(Class)
-        base.extend ClassMethods
+        base.extend(ClassMethods)
       else
         def base.included(base)
           ::Structure.send(:included, base)
@@ -28,19 +28,19 @@ module Structure
     Hash[to_a]
   end
 
-  alias attributes to_h
+  alias_method :attributes, :to_h
 
   def inspect
     detail = if public_methods(false).include?(:to_s)
-               to_s
-             else
-               to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(', ')
-             end
+      to_s
+    else
+      to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(", ")
+    end
 
-    "#<#{self.class.name || '?'} #{detail}>"
+    "#<#{self.class.name || "?"} #{detail}>"
   end
 
-  alias to_s inspect
+  alias_method :to_s, :inspect
 
   def ==(other)
     if public_methods(false).include?(:<=>)
@@ -84,8 +84,8 @@ module Structure
 
     class << self
       def extended(base)
-        base.instance_variable_set :@attribute_names, []
-        base.send :override_initialize
+        base.instance_variable_set(:@attribute_names, [])
+        base.send(:override_initialize)
       end
 
       private :extended
@@ -94,16 +94,16 @@ module Structure
     def attribute(name, &block)
       name = name.to_s
 
-      if name.end_with?('?')
+      if name.end_with?("?")
         name = name.chop
-        module_eval <<-CODE, __FILE__, __LINE__ + 1
+        module_eval(<<-CODE, __FILE__, __LINE__ + 1)
           def #{name}?
             #{name}
           end
         CODE
       end
 
-      module_eval <<-CODE, __FILE__, __LINE__ + 1
+      module_eval(<<-CODE, __FILE__, __LINE__ + 1)
         def #{name}
           with_mutex do
             break if defined?(@#{name})
@@ -114,7 +114,7 @@ module Structure
           @#{name}
         end
       CODE
-      private define_method "unmemoized_#{name}", block
+      private(define_method("unmemoized_#{name}", block))
       @attribute_names << name
 
       name.to_sym
@@ -125,27 +125,29 @@ module Structure
     def override_initialize
       class_eval do
         unless method_defined?(:overriding_initialize)
-          define_method :overriding_initialize do |*arguments, &block|
+          define_method(:overriding_initialize) do |*arguments, &block|
             @mutex = ::Thread::Mutex.new
             original_initialize(*arguments, &block)
           end
         end
 
         return if instance_method(:initialize) ==
-                  instance_method(:overriding_initialize)
+          instance_method(:overriding_initialize)
 
-        alias_method :original_initialize, :initialize
-        alias_method :initialize, :overriding_initialize
-        private :overriding_initialize, :original_initialize
+        alias_method(:original_initialize, :initialize)
+        alias_method(:initialize, :overriding_initialize)
+        private(:overriding_initialize, :original_initialize)
       end
     end
 
     def method_added(name)
+      super
       override_initialize if name == :initialize
     end
 
     def inherited(subclass)
-      subclass.instance_variable_set :@attribute_names, attribute_names.dup
+      super
+      subclass.instance_variable_set(:@attribute_names, attribute_names.dup)
     end
   end
 end
