@@ -11,6 +11,7 @@ module Structure
     private_constant :BOOLEAN_TRUTHY
 
     # Boolean conversion
+    # Memoized so predicate method detection works via object identity comparison
     def boolean
       @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
     end
