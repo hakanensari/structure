@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "types"
+require "structure/types"
 
 module Structure
   # Builder class for accumulating attribute definitions
