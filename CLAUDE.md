@@ -5,27 +5,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 **Install dependencies:**
+
 ```bash
 bundle install
 ```
 
 **Run tests:**
+
 ```bash
 rake test
-# Or run the default task which includes both linting and tests:
-rake
 ```
 
 **Lint code:**
+
 ```bash
-rake rubocop
-# Or auto-correct issues:
+# Auto-correct issues:
 rubocop -A
 ```
 
 **Single test file:**
+
 ```bash
-ruby -Itest test/test_structure.rb
+ruby -Ilib:test test/test_structure.rb
 ```
 
 ## Project Architecture
@@ -55,6 +56,7 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 ### Testing Approach
 
 Uses Minitest with comprehensive tests covering:
+
 - DSL attribute definition and type coercion
 - Data object generation and `.parse` method functionality
 - Type system with various data types (String, Integer, Boolean, Time, Money, etc.)
@@ -74,6 +76,7 @@ Uses Minitest with comprehensive tests covering:
 Structure is being developed primarily for the [Peddler gem](https://github.com/hakanensari/peddler) to generate typed response models for Amazon's SP-API. Structure.define is used to generate models for complex API responses like orders, catalog items, financial transactions, etc.
 
 Example usage:
+
 ```ruby
 Order = Structure.define do
   attribute :amazon_order_id, String, from: 'AmazonOrderId'
@@ -98,7 +101,12 @@ order = Order.parse(api_response_data)
 
 ### Testing
 
-- **Use Test-Driven Development (TDD)** - Write failing tests first, then implement
+- **Use Test-Driven Development (TDD):**
+  1. Write a minimal failing test
+  2. Implement the feature
+  3. Make sure existing tests still pass
+  4. Lint code
+  5. Continue with more TDD cycles as needed
 - Test behavior, not implementation (don't test private methods directly)
 - Use descriptive test names that clearly indicate what is being tested
 - Cover edge cases and error conditions
