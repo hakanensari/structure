@@ -100,12 +100,12 @@ person.active? # => true
 Handle missing data:
 
 ```ruby
-ConfigClass = Structure.new do
+Config = Structure.new do
   attribute(:timeout, Integer, default: 30)
   attribute(:debug, :boolean, default: false)
 end
 
-config = ConfigClass.parse({})  # Empty data
+config = Config.parse({})  # Empty data
 
 config.timeout # => 30
 config.debug   # => false
@@ -116,13 +116,13 @@ config.debug   # => false
 Arrays with automatic element coercion:
 
 ```ruby
-OrderClass = Structure.new do
+Order = Structure.new do
   attribute(:items, [String])
   attribute(:quantities, [Integer])
   attribute(:flags, [:boolean])
 end
 
-order = OrderClass.parse({
+order = Order.parse({
   "items" => [123, 456, "hello"],
   "quantities" => ["1", "2", 3.5],
   "flags" => ["true", 0, 1, "false"]
@@ -138,14 +138,14 @@ order.flags      # => [true, false, true, false]
 Compose structures for complex data:
 
 ```ruby
-AddressClass = Structure.new do
+Address = Structure.new do
   attribute(:street, String)
   attribute(:city, String)
 end
 
 User = Structure.new do
   attribute(:name, String)
-  attribute(:address, AddressClass)
+  attribute(:address, Address)
 end
 
 user = User.parse({
@@ -166,14 +166,14 @@ user.address.city   # => "Boston"
 Combine array syntax with nested objects:
 
 ```ruby
-TagClass = Structure.new do
+Tag = Structure.new do
   attribute(:name, String)
   attribute(:color, String)
 end
 
 Product = Structure.new do
   attribute(:title, String)
-  attribute(:tags, [TagClass])
+  attribute(:tags, [Tag])
 end
 
 product = Product.parse({
@@ -193,7 +193,7 @@ product.tags.first.name # => "electronics"
 When you need custom logic:
 
 ```ruby
-OrderClass = Structure.new do
+Order = Structure.new do
   attribute(:total, from: "OrderTotal") do |data|
     amount = data["Amount"]
     currency = data["CurrencyCode"]
@@ -201,7 +201,7 @@ OrderClass = Structure.new do
   end
 end
 
-order = OrderClass.parse({
+order = Order.parse({
   "OrderTotal" => { "Amount" => "29.99", "CurrencyCode" => "USD" }
 })
 
