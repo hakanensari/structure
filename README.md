@@ -1,6 +1,6 @@
 # Structure
 
-[![Build](https://github.com/hakanensari/structure/workflows/build/badge.svg)](https://github.com/hakanensari/structure/actions)
+[![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
 
 **📦 Structure your data!**
 
