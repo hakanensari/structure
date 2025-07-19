@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "structure/builder"
+require "structure/builder"
 
 # A library for parsing data into immutable Ruby Data objects with type coercion
 module Structure
@@ -11,13 +11,6 @@ module Structure
 
       data_class = Data.define(*builder.attributes)
 
-      # Store builder data on the class
-      data_class.define_singleton_method(:__structure_mappings) { builder.mappings }
-      data_class.define_singleton_method(:__structure_types) { builder.types }
-      data_class.define_singleton_method(:__structure_attributes) { builder.attributes }
-      data_class.define_singleton_method(:__structure_predicate_methods) { builder.predicate_methods }
-      data_class.define_singleton_method(:__structure_defaults) { builder.defaults }
-
       # Generate predicate methods
       builder.predicate_methods.each do |predicate_name, attribute_name|
         data_class.define_method(predicate_name) do
@@ -25,10 +18,16 @@ module Structure
         end
       end
 
+      # Capture builder data in closure for parse method
+      mappings = builder.mappings
+      types = builder.types
+      defaults = builder.defaults
+      attributes = builder.attributes
+
       data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
         final_kwargs = {}
-        __structure_attributes.each do |attr|
-          source_key = __structure_mappings[attr]
+        attributes.each do |attr|
+          source_key = mappings[attr]
           value = if kwargs.key?(attr)
             kwargs[attr]
           elsif data.key?(source_key)
@@ -37,13 +36,13 @@ module Structure
             data[attr.to_s]
           elsif data.key?(attr)
             data[attr]
-          elsif __structure_defaults.key?(attr)
-            __structure_defaults[attr]
+          elsif defaults.key?(attr)
+            defaults[attr]
           end
 
           # Apply type coercion or transformation
-          if __structure_types[attr] && !value.nil?
-            value = __structure_types[attr].call(value)
+          if types[attr] && !value.nil?
+            value = types[attr].call(value)
           end
 
           final_kwargs[attr] = value
