@@ -5,12 +5,14 @@ module Structure
   module Types
     extend self
 
-    # Rails-style boolean conversion
-    # TRUE: true, 1, '1', 't', 'T', 'true', 'TRUE', 'on', 'ON'
-    # FALSE: everything else (false, 0, '0', 'f', 'F', 'false', 'FALSE', 'off', 'OFF', '', etc.)
+    # Rails-style boolean truthy values
     # Reference: https://api.rubyonrails.org/classes/ActiveModel/Type/Boolean.html
+    BOOLEAN_TRUTHY = [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].freeze
+    private_constant :BOOLEAN_TRUTHY
+
+    # Boolean conversion
     def boolean
-      @boolean ||= ->(val) { [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].include?(val) }
+      @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
     end
 
     # Generic handler for classes with kernel methods (String, Integer, Float, etc.)
