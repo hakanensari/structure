@@ -36,6 +36,16 @@ class CoreStructureTest < Minitest::Test
     assert_equal("John", person.name)
   end
 
+  def test_kwargs_override_data
+    person_class = Structure.new do
+      attribute(:name, String)
+    end
+
+    person = person_class.parse({ "name" => "Data Value" }, name: "Kwargs Override")
+
+    assert_equal("Kwargs Override", person.name)
+  end
+
   def test_parse_method_accepts_hash_data
     person_class = Structure.new do
       attribute(:name)
@@ -106,5 +116,20 @@ class CoreStructureTest < Minitest::Test
     product = product_class.parse(available: "true")
 
     assert(product.available)
+  end
+
+  def test_custom_mapping_with_symbol_keys
+    person_class = Structure.new do
+      attribute(:name, String, from: "full_name")
+    end
+
+    # Pass data with symbol keys - this is the edge case
+    person = person_class.parse({
+      full_name: "Alice", # This should be found (source_key.to_sym)
+      name: "Bob", # This should be IGNORED (wrong key)
+    })
+
+    # Should get "Alice" not "Bob" - old logic would have incorrectly returned "Bob"
+    assert_equal("Alice", person.name)
   end
 end

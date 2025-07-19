@@ -25,17 +25,18 @@ module Structure
       attributes = builder.attributes
 
       data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
+        # Merge kwargs into data - kwargs take priority as overrides
+        # Convert kwargs symbol keys to strings to match source_key lookups
+        string_kwargs = kwargs.transform_keys(&:to_s)
+        data = data.merge(string_kwargs)
+
         final_kwargs = {}
         attributes.each do |attr|
           source_key = mappings[attr]
-          value = if kwargs.key?(attr)
-            kwargs[attr]
-          elsif data.key?(source_key)
+          value = if data.key?(source_key)
             data[source_key]
-          elsif data.key?(attr.to_s)
-            data[attr.to_s]
-          elsif data.key?(attr)
-            data[attr]
+          elsif data.key?(source_key.to_sym)
+            data[source_key.to_sym]
           elsif defaults.key?(attr)
             defaults[attr]
           end
