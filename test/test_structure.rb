@@ -164,7 +164,6 @@ class StructureTest < Minitest::Test
     assert_equal(["123", "456", "hello"], product.tags)
   end
 
-
   def test_array_type_syntax_with_booleans
     settings_class = Structure.new do
       attribute(:flags, [:boolean])
