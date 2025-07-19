@@ -279,4 +279,54 @@ class StructureTest < Minitest::Test
 
     assert_nil(product.tags)
   end
+
+  def test_array_type_syntax_with_integers
+    data_class = Structure.new do
+      attribute(:numbers, [Integer])
+    end
+
+    data = data_class.parse(numbers: ["1", "2", 3.5, "4"])
+
+    assert_equal([1, 2, 3, 4], data.numbers)
+  end
+
+  def test_array_type_syntax_with_nil_attribute
+    data_class = Structure.new do
+      attribute(:tags, [String])
+    end
+
+    data = data_class.parse(tags: nil)
+
+    assert_nil(data.tags)
+  end
+
+  def test_array_type_with_default_value
+    config_class = Structure.new do
+      attribute(:tags, [String], default: [])
+    end
+
+    config = config_class.parse({})
+
+    assert_empty(config.tags)
+  end
+
+  def test_array_type_with_empty_array
+    data_class = Structure.new do
+      attribute(:tags, [String])
+    end
+
+    data = data_class.parse(tags: [])
+
+    assert_empty(data.tags)
+  end
+
+  def test_array_type_syntax_with_floats
+    data_class = Structure.new do
+      attribute(:prices, [Float])
+    end
+
+    data = data_class.parse(prices: ["19.99", 25, "30.50"])
+
+    assert_equal([19.99, 25.0, 30.5], data.prices)
+  end
 end
