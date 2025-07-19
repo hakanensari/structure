@@ -1,151 +1,57 @@
 # frozen_string_literal: true
 
-# A tiny library for lazy parsing data with memoized attributes
+require "structure/builder"
+
+# A library for parsing data into immutable Ruby Data objects with type coercion
 module Structure
   class << self
-    private
+    def new(&block)
+      builder = Builder.new
+      builder.instance_eval(&block) if block
 
-    def included(base)
-      if base.is_a?(Class)
-        base.extend ClassMethods
-      else
-        def base.included(base)
-          ::Structure.send(:included, base)
+      data_class = Data.define(*builder.attributes)
+
+      # Generate predicate methods
+      builder.predicate_methods.each do |predicate_name, attribute_name|
+        data_class.define_method(predicate_name) do
+          send(attribute_name)
         end
       end
-    end
-  end
 
-  def attribute_names
-    self.class.attribute_names
-  end
+      # Capture builder data in closure for parse method
+      mappings = builder.mappings
+      types = builder.types
+      defaults = builder.defaults
+      attributes = builder.attributes
 
-  def to_a
-    attribute_names.map { |key| [key, send(key)] }
-  end
+      data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
+        # Merge kwargs into data - kwargs take priority as overrides
+        # Convert kwargs symbol keys to strings to match source_key lookups
+        string_kwargs = kwargs.transform_keys(&:to_s)
+        data = data.merge(string_kwargs)
 
-  def to_h
-    Hash[to_a]
-  end
-
-  alias attributes to_h
-
-  def inspect
-    detail = if public_methods(false).include?(:to_s)
-               to_s
-             else
-               to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(', ')
-             end
-
-    "#<#{self.class.name || '?'} #{detail}>"
-  end
-
-  alias to_s inspect
-
-  def ==(other)
-    if public_methods(false).include?(:<=>)
-      super
-    else
-      attributes == other.attributes
-    end
-  end
-
-  def eql?(other)
-    return false if other.class != self.class
-
-    self == other
-  end
-
-  def freeze
-    attribute_names.each { |key| send(key) }
-    super
-  end
-
-  def marshal_dump
-    attributes.values
-  end
-
-  def marshal_load(data)
-    @mutex = ::Thread::Mutex.new
-    attribute_names.zip(data).each do |key, val|
-      instance_variable_set(:"@#{key}", val)
-    end
-  end
-
-  private
-
-  def with_mutex(&block)
-    @mutex.owned? ? block.call : @mutex.synchronize { block.call }
-  end
-
-  # The class interface
-  module ClassMethods
-    attr_reader :attribute_names
-
-    class << self
-      def extended(base)
-        base.instance_variable_set :@attribute_names, []
-        base.send :override_initialize
-      end
-
-      private :extended
-    end
-
-    def attribute(name, &block)
-      name = name.to_s
-
-      if name.end_with?('?')
-        name = name.chop
-        module_eval <<-CODE, __FILE__, __LINE__ + 1
-          def #{name}?
-            #{name}
-          end
-        CODE
-      end
-
-      module_eval <<-CODE, __FILE__, __LINE__ + 1
-        def #{name}
-          with_mutex do
-            break if defined?(@#{name})
-
-            @#{name} = unmemoized_#{name}
+        final_kwargs = {}
+        attributes.each do |attr|
+          source_key = mappings[attr]
+          value = if data.key?(source_key)
+            data[source_key]
+          elsif data.key?(source_key.to_sym)
+            data[source_key.to_sym]
+          elsif defaults.key?(attr)
+            defaults[attr]
           end
 
-          @#{name}
+          # Apply type coercion or transformation
+          if types[attr] && !value.nil?
+            value = types[attr].call(value)
+          end
+
+          final_kwargs[attr] = value
         end
-      CODE
-      private define_method "unmemoized_#{name}", block
-      @attribute_names << name
-
-      name.to_sym
-    end
-
-    private
-
-    def override_initialize
-      class_eval do
-        unless method_defined?(:overriding_initialize)
-          define_method :overriding_initialize do |*arguments, &block|
-            @mutex = ::Thread::Mutex.new
-            original_initialize(*arguments, &block)
-          end
-        end
-
-        return if instance_method(:initialize) ==
-                  instance_method(:overriding_initialize)
-
-        alias_method :original_initialize, :initialize
-        alias_method :initialize, :overriding_initialize
-        private :overriding_initialize, :original_initialize
+        new(**final_kwargs)
       end
-    end
 
-    def method_added(name)
-      override_initialize if name == :initialize
-    end
-
-    def inherited(subclass)
-      subclass.instance_variable_set :@attribute_names, attribute_names.dup
+      data_class
     end
   end
 end
