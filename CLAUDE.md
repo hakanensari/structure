@@ -117,3 +117,4 @@ order = Order.parse(api_response_data)
 - Use descriptive branch names (e.g., `feature/lazy-loading`, `fix/thread-safety`)
 - Use conventional commit messages (e.g., "feat: add new feature", "fix: resolve bug")
 - **NEVER use `git add .`** - always stage files explicitly by name
+- **ALWAYS update CHANGELOG.md when bumping versions** - document breaking changes, new features, and fixes
