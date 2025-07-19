@@ -35,7 +35,7 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 
 ### Core Components
 
-- **`lib/structure.rb`** - Main module that provides the `Structure.define` DSL
+- **`lib/structure.rb`** - Main module that provides the `Structure.new` DSL
 - **`lib/structure/version.rb`** - Version constant
 - **`test/test_structure.rb`** - Complete test suite using Minitest
 
@@ -45,7 +45,7 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 
 **DSL-Based Configuration:** Clean `attribute` method for defining transformations and type coercion.
 
-**Type System:** Built-in support for common types (`String`, `Integer`, `Boolean`, `Time`, `Money`) and nested objects.
+**Type System:** Built-in support for Ruby kernel types (`String`, `Integer`, `Float`, `Rational`, `Complex`) plus `:boolean` and nested objects.
 
 **API Integration Focus:** Designed for parsing API responses with automatic data transformation and nil safety.
 
@@ -73,17 +73,17 @@ Uses Minitest with comprehensive tests covering:
 
 ## Primary Use Case
 
-Structure is being developed primarily for the [Peddler gem](https://github.com/hakanensari/peddler) to generate typed response models for Amazon's SP-API. Structure.define is used to generate models for complex API responses like orders, catalog items, financial transactions, etc.
+Structure is being developed primarily for the [Peddler gem](https://github.com/hakanensari/peddler) to generate typed response models for Amazon's SP-API. Structure.new is used to generate models for complex API responses like orders, catalog items, financial transactions, etc.
 
 Example usage:
 
 ```ruby
-Order = Structure.define do
+Order = Structure.new do
   attribute :amazon_order_id, String, from: 'AmazonOrderId'
-  attribute :total_amount, Money, from: 'OrderTotal' do |data|
+  attribute :total_amount, from: 'OrderTotal' do |data|
     Money.new(data['Amount'], data['CurrencyCode']) if data
   end
-  attribute :is_prime, Boolean, from: 'IsPrime'
+  attribute :is_prime, :boolean, from: 'IsPrime'
 end
 
 order = Order.parse(api_response_data)

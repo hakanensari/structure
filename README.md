@@ -2,40 +2,23 @@
 
 [![Build](https://github.com/hakanensari/structure/workflows/build/badge.svg)](https://github.com/hakanensari/structure/actions)
 
-Structure is a lightweight Ruby library that helps you transform raw data into clean objects with thread-safe, lazily evaluated attributes.
+**📦 Structure your data!**
 
-## Why Use Structure?
-
-When working with external APIs, you often get back complex nested hashes that are cumbersome to work with directly:
+Turn unruly hashes into clean, immutable Ruby Data objects with type coercion.
 
 ```ruby
-# Without Structure - messy and repetitive
-product_title = response_data["Items"]["Item"]["ItemAttributes"]["Title"]
-product_price = Money.new(response_data["Items"]["Item"]["Price"]["Amount"].to_f * 100, response_data["Items"]["Item"]["Price"]["CurrencyCode"])
-if response_data["Items"]["Item"]["IsEligibleForPrime"] == "1"
-  # Do something...
-end
+# Before: Hash drilling
+user_name = response["user"]["name"]
+user_age = response["user"]["age"].to_i
+user_active = response["user"]["is_active"] == "true"
+
+# After: Clean, typed objects
+user.name     # => "Alice" (String)
+user.age      # => 25 (Integer)
+user.active?  # => true
 ```
 
-Structure provides a cleaner, more object-oriented approach:
-
-```ruby
-# With Structure - clean and maintainable
-product.title
-product.price
-if product.prime_eligible?
-  # Do something...
-end
-```
-
-## Key Features
-
-- **Lazy Evaluation** - Attributes are computed only when accessed
-- **Thread Safety** - All attribute access is synchronized with a mutex
-- **Immutability Support** - Works well with frozen objects
-- **Minimal Overhead** - Zero runtime dependencies
-- **Simple API** - Easy to understand and use
-- **Marshaling Support** - Fully compatible with Ruby's Marshal
+Built on the Ruby Data class for immutability, pattern matching, and all the other good stuff. Zero dependencies.
 
 ## Installation
 
@@ -45,175 +28,216 @@ Add to your Gemfile:
 gem "structure"
 ```
 
-Or install directly:
+## Usage
 
-```
-$ gem install structure
-```
-
-## Basic Usage
-
-### Defining a Structure
+### The Basics
 
 ```ruby
-class Product
-  include Structure
+User = Structure.new do
+  attribute(:name, String)
+  attribute(:age, Integer)
+  attribute(:active, :boolean)
+end
 
-  attribute(:id) { data["id"] }
-  attribute(:name) { data["name"] }
-  attribute(:price) { BigDecimal(data["price_cents"]) / 100 }
-  attribute(:available?) { data["in_stock"] }
+user = User.parse({
+  "name" => "Alice",
+  "age" => "25",
+  "active" => "true"
+})
 
-  private
+user.name     # => "Alice" (String)
+user.age      # => 25 (Integer)
+user.active   # => true (TrueClass)
+user.active?  # => true (predicate method)
+```
 
-  attr_reader :data
+### Type Coercion
 
-  def initialize(data)
-    @data = data
+Uses Ruby's built-in coercion methods to convert data:
+
+```ruby
+Product = Structure.new do
+  attribute(:title, String)      # Uses String(val)
+  attribute(:price, Float)       # Uses Float(val)
+  attribute(:quantity, Integer)  # Uses Integer(val)
+  attribute(:available, :boolean) # Custom boolean logic
+end
+
+product = Product.parse({
+  "title" => 123,
+  "price" => "19.99",
+  "quantity" => "5",
+  "available" => "1"
+})
+
+product.title     # => "123"
+product.price     # => 19.99
+product.quantity  # => 5
+product.available # => true
+```
+
+### Key Mapping
+
+Clean up gnarly keys:
+
+```ruby
+Person = Structure.new do
+  attribute(:name, String, from: "full_name")
+  attribute(:active, :boolean, from: "is_active")
+end
+
+person = Person.parse({
+  "full_name" => "Bob Smith",
+  "is_active" => "true"
+})
+
+person.name    # => "Bob Smith"
+person.active? # => true
+```
+
+### Default Values
+
+Handle missing data:
+
+```ruby
+ConfigClass = Structure.new do
+  attribute(:timeout, Integer, default: 30)
+  attribute(:debug, :boolean, default: false)
+end
+
+config = ConfigClass.parse({})  # Empty data
+
+config.timeout # => 30
+config.debug   # => false
+```
+
+### Array Types
+
+Arrays with automatic element coercion:
+
+```ruby
+OrderClass = Structure.new do
+  attribute(:items, [String])
+  attribute(:quantities, [Integer])
+  attribute(:flags, [:boolean])
+end
+
+order = OrderClass.parse({
+  "items" => [123, 456, "hello"],
+  "quantities" => ["1", "2", 3.5],
+  "flags" => ["true", 0, 1, "false"]
+})
+
+order.items      # => ["123", "456", "hello"]
+order.quantities # => [1, 2, 3]
+order.flags      # => [true, false, true, false]
+```
+
+### Nested Objects
+
+Compose structures for complex data:
+
+```ruby
+AddressClass = Structure.new do
+  attribute(:street, String)
+  attribute(:city, String)
+end
+
+User = Structure.new do
+  attribute(:name, String)
+  attribute(:address, AddressClass)
+end
+
+user = User.parse({
+  "name" => "Alice",
+  "address" => {
+    "street" => "123 Main St",
+    "city" => "Boston"
+  }
+})
+
+user.name           # => "Alice"
+user.address.street # => "123 Main St"
+user.address.city   # => "Boston"
+```
+
+### Arrays of Objects
+
+Combine array syntax with nested objects:
+
+```ruby
+TagClass = Structure.new do
+  attribute(:name, String)
+  attribute(:color, String)
+end
+
+Product = Structure.new do
+  attribute(:title, String)
+  attribute(:tags, [TagClass])
+end
+
+product = Product.parse({
+  "title" => "Laptop",
+  "tags" => [
+    { "name" => "electronics", "color" => "blue" },
+    { "name" => "computers", "color" => "green" }
+  ]
+})
+
+product.title           # => "Laptop"
+product.tags.first.name # => "electronics"
+```
+
+### Custom Transformations
+
+When you need custom logic:
+
+```ruby
+OrderClass = Structure.new do
+  attribute(:total, from: "OrderTotal") do |data|
+    amount = data["Amount"]
+    currency = data["CurrencyCode"]
+    "#{amount} #{currency}"
   end
 end
 
-# Usage
-product = Product.new({ "id" => "123", "name" => "Ruby Mug", "price_cents" => "1295", "in_stock" => true })
-product.name        # => "Ruby Mug"
-product.price       # => 12.95
-product.available?  # => true
+order = OrderClass.parse({
+  "OrderTotal" => { "Amount" => "29.99", "CurrencyCode" => "USD" }
+})
+
+order.total # => "29.99 USD"
 ```
 
-### Real-World Example: Amazon Selling Partner API
+### Boolean Conversion
+
+Structure follows Rails-style boolean conversion:
+
+**Truthy values:** `true`, `1`, `"1"`, `"t"`, `"T"`, `"true"`, `"TRUE"`, `"on"`, `"ON"`
+**Falsy values:** Everything else (including `false`, `0`, `"0"`, `"false"`, `""`, `nil`)
 
 ```ruby
-class AmazonProduct
-  include Structure
-
-  attribute(:asin) { data['identifiers']['marketplaceASIN']['ASIN'] }
-  attribute(:marketplace_id) { data['identifiers']['marketplaceASIN']['MarketplaceId'] }
-  attribute(:title) { attributes_data['title'] }
-  attribute(:brand) { attributes_data['brand'] }
-
-  # Complex nested data parsing
-  attribute(:price) do
-    raw = summaries_data.dig('price', 'amount', 'amount')
-    raw ? BigDecimal(raw) : nil
-  end
-
-  attribute(:currency) do
-    summaries_data.dig('price', 'amount', 'currencyCode')
-  end
-
-  # Computed property combining multiple attributes
-  attribute(:offer_url) do
-    "https://#{marketplace_url}/dp/#{asin}"
-  end
-
-  private
-
-  attr_reader :data
-
-  def initialize(item_data)
-    @data = item_data
-  end
-
-  def attributes_data
-    @attributes_data ||= data['attributes'] || {}
-  end
-
-  def summaries_data
-    @summaries_data ||= data['summaries'] || {}
-  end
-
-  def marketplace_url
-    case marketplace_id
-    when 'ATVPDKIKX0DER' then 'amazon.com'
-    when 'A1F83G8C2ARO7P' then 'amazon.co.uk'
-    else "amazon.com"
-    end
-  end
-end
-```
-
-## Advanced Features
-
-### Thread Safety
-
-All attribute access is protected by a mutex, making Structure objects safe to use in multi-threaded environments:
-
-```ruby
-# This is safe across multiple threads
-threads = 10.times.map do
-  Thread.new { product.price }
-end
-```
-
-### Serialization
-
-Convert your objects back to hash representations:
-
-```ruby
-product.to_h  # => {"id"=>"123", "name"=>"Ruby Mug", "price"=>12.95, "available"=>true}
-```
-
-### Working with Collections
-
-Use with collections of items:
-
-```ruby
-class SearchResults
-  include Structure
-
-  attribute(:total_count) { data['meta']['total_count'] }
-  attribute(:page) { data['meta']['page'] }
-
-  attribute(:products) do
-    data['items'].map { |item_data| Product.new(item_data) }
-  end
-
-  private
-
-  attr_reader :data
-
-  def initialize(data)
-    @data = data
-  end
+User = Structure.new do
+  attribute(:active, :boolean)
 end
 
-# Usage
-results = SearchResults.new(api_response)
-results.total_count  # => 243
-results.products.each do |product|
-  puts "#{product.name}: #{product.price}"
-end
+User.parse(active: "true").active   # => true
+User.parse(active: "1").active      # => true
+User.parse(active: "false").active  # => false
+User.parse(active: "0").active      # => false
+User.parse(active: "").active       # => false
 ```
 
-### Inheritance
+### Supported Types
 
-Structure works well with class inheritance:
+Structure supports Ruby's kernel coercion methods like `String(val)`, `Integer(val)`, `Float(val)`, etc., plus:
 
-```ruby
-class Book < Product
-  attribute(:author) { data['author'] }
-  attribute(:pages) { data['page_count'].to_i }
-end
-```
-
-## Comparison with Alternatives
-
-| Feature         | Structure | OpenStruct | Dry::Struct | Plain Hash |
-| --------------- | --------- | ---------- | ----------- | ---------- |
-| Lazy Evaluation | ✅        | ❌         | ❌          | ❌         |
-| Thread Safety   | ✅        | ❌         | ❌          | ❌         |
-| Type Coercion   | Manual    | ❌         | ✅          | ❌         |
-| Performance     | Good      | Poor       | Good        | Excellent  |
-| Dependencies    | None      | stdlib     | Multiple    | None       |
-| Immutability    | ✅        | Limited    | ✅          | Limited    |
+- `:boolean` - Custom Rails-style boolean conversion
+- `[Type]` - Arrays with element coercion
+- Custom classes with `.parse` method
 
 ## Development
 
-```
+```bash
 $ bundle install
 $ rake test
 ```
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

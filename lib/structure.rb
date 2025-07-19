@@ -3,151 +3,108 @@
 # A tiny library for lazy parsing data with memoized attributes
 module Structure
   class << self
-    private
+    def new(&block)
+      builder = Builder.new
+      builder.instance_eval(&block) if block
 
-    def included(base)
-      if base.is_a?(Class)
-        base.extend(ClassMethods)
-      else
-        def base.included(base)
-          ::Structure.send(:included, base)
+      data_class = Data.define(*builder.attributes)
+
+      # Store builder data on the class
+      data_class.define_singleton_method(:__structure_mappings) { builder.mappings }
+      data_class.define_singleton_method(:__structure_types) { builder.types }
+      data_class.define_singleton_method(:__structure_attributes) { builder.attributes }
+      data_class.define_singleton_method(:__structure_predicate_methods) { builder.predicate_methods }
+      data_class.define_singleton_method(:__structure_defaults) { builder.defaults }
+
+      # Generate predicate methods
+      builder.predicate_methods.each do |predicate_name, attribute_name|
+        data_class.define_method(predicate_name) do
+          send(attribute_name)
         end
       end
-    end
-  end
 
-  def attribute_names
-    self.class.attribute_names
-  end
-
-  def to_a
-    attribute_names.map { |key| [key, send(key)] }
-  end
-
-  def to_h
-    Hash[to_a]
-  end
-
-  alias_method :attributes, :to_h
-
-  def inspect
-    detail = if public_methods(false).include?(:to_s)
-      to_s
-    else
-      to_a.map { |key, val| "#{key}=#{val.inspect}" }.join(", ")
-    end
-
-    "#<#{self.class.name || "?"} #{detail}>"
-  end
-
-  alias_method :to_s, :inspect
-
-  def ==(other)
-    if public_methods(false).include?(:<=>)
-      super
-    else
-      attributes == other.attributes
-    end
-  end
-
-  def eql?(other)
-    return false if other.class != self.class
-
-    self == other
-  end
-
-  def freeze
-    attribute_names.each { |key| send(key) }
-    super
-  end
-
-  def marshal_dump
-    attributes.values
-  end
-
-  def marshal_load(data)
-    @mutex = ::Thread::Mutex.new
-    attribute_names.zip(data).each do |key, val|
-      instance_variable_set(:"@#{key}", val)
-    end
-  end
-
-  private
-
-  def with_mutex(&block)
-    @mutex.owned? ? block.call : @mutex.synchronize { block.call }
-  end
-
-  # The class interface
-  module ClassMethods
-    attr_reader :attribute_names
-
-    class << self
-      def extended(base)
-        base.instance_variable_set(:@attribute_names, [])
-        base.send(:override_initialize)
-      end
-
-      private :extended
-    end
-
-    def attribute(name, &block)
-      name = name.to_s
-
-      if name.end_with?("?")
-        name = name.chop
-        module_eval(<<-CODE, __FILE__, __LINE__ + 1)
-          def #{name}?
-            #{name}
-          end
-        CODE
-      end
-
-      module_eval(<<-CODE, __FILE__, __LINE__ + 1)
-        def #{name}
-          with_mutex do
-            break if defined?(@#{name})
-
-            @#{name} = unmemoized_#{name}
+      data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
+        final_kwargs = {}
+        __structure_attributes.each do |attr|
+          source_key = __structure_mappings[attr] || attr.to_s
+          value = if kwargs.key?(attr)
+            kwargs[attr]
+          elsif data.key?(source_key)
+            data[source_key]
+          elsif data.key?(attr.to_s)
+            data[attr.to_s]
+          elsif data.key?(attr)
+            data[attr]
+          elsif __structure_defaults.key?(attr)
+            __structure_defaults[attr]
           end
 
-          @#{name}
+          # Apply type coercion or transformation
+          if __structure_types[attr] && !value.nil?
+            value = __structure_types[attr].call(value)
+          end
+
+          final_kwargs[attr] = value
         end
-      CODE
-      private(define_method("unmemoized_#{name}", block))
-      @attribute_names << name
-
-      name.to_sym
-    end
-
-    private
-
-    def override_initialize
-      class_eval do
-        unless method_defined?(:overriding_initialize)
-          define_method(:overriding_initialize) do |*arguments, &block|
-            @mutex = ::Thread::Mutex.new
-            original_initialize(*arguments, &block)
-          end
-        end
-
-        return if instance_method(:initialize) ==
-          instance_method(:overriding_initialize)
-
-        alias_method(:original_initialize, :initialize)
-        alias_method(:initialize, :overriding_initialize)
-        private(:overriding_initialize, :original_initialize)
+        new(**final_kwargs)
       end
+
+      data_class
+    end
+  end
+
+  class Builder
+    attr_reader :attributes, :mappings, :types, :predicate_methods, :defaults
+
+    def initialize
+      @attributes = []
+      @mappings = {}
+      @types = {}
+      @predicate_methods = {}
+      @defaults = {}
     end
 
-    def method_added(name)
-      super
-      override_initialize if name == :initialize
-    end
+    def attribute(name, type = nil, from: nil, default: nil, &block)
+      @attributes << name
+      @mappings[name] = from if from
+      @defaults[name] = default unless default.nil?
 
-    def inherited(subclass)
-      super
-      subclass.instance_variable_set(:@attribute_names, attribute_names.dup)
+      if type && block
+        raise ArgumentError, "Cannot specify both type and block for :#{name}"
+      elsif block
+        @types[name] = block
+      elsif type
+        @types[name] = if type == :boolean
+          # Generate predicate method for any boolean attribute
+          predicate_name = "#{name}?"
+          @predicate_methods[predicate_name.to_sym] = name
+          # Rails-style boolean conversion
+          # TRUE: true, 1, '1', 't', 'T', 'true', 'TRUE', 'on', 'ON'
+          # FALSE: everything else (false, 0, '0', 'f', 'F', 'false', 'FALSE', 'off', 'OFF', '', etc.)
+          ->(val) { [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].include?(val) }
+        elsif type.is_a?(Class) && type.name && Kernel.respond_to?(type.name)
+          # Generic handler for classes with kernel methods (String, Integer, Float, etc.)
+          ->(val) { Kernel.send(type.name, val) }
+        elsif type.is_a?(Array) && type.length == 1
+          # Handle Array[Type] syntax
+          element_type = type.first
+          element_coercer = if element_type == :boolean
+            ->(val) { [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].include?(val) }
+          elsif element_type.is_a?(Class) && element_type.name && Kernel.respond_to?(element_type.name)
+            ->(val) { Kernel.send(element_type.name, val) }
+          elsif element_type.is_a?(Class) && element_type.respond_to?(:parse)
+            ->(val) { element_type.parse(val) }
+          else
+            element_type
+          end
+          ->(array) { array.map { |element| element_coercer.call(element) } }
+        elsif type.is_a?(Class) && type.respond_to?(:parse)
+          # Handle nested Structure classes
+          ->(val) { type.parse(val) }
+        else
+          type
+        end
+      end
     end
   end
 end
