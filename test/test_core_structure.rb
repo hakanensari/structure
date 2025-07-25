@@ -3,7 +3,7 @@
 require_relative "helper"
 require "structure"
 
-class CoreStructureTest < Minitest::Test
+class TestCoreStructure < Minitest::Test
   def test_new_returns_data_class
     klass = Structure.new
 

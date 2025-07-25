@@ -3,7 +3,7 @@
 require_relative "helper"
 require "structure"
 
-class BooleanPredicatesTest < Minitest::Test
+class TestBooleanPredicates < Minitest::Test
   def test_generates_predicate_methods
     product_class = Structure.new do
       attribute(:is_available, :boolean)

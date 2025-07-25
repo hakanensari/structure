@@ -3,7 +3,7 @@
 require_relative "helper"
 require "structure"
 
-class TypeCoercionsTest < Minitest::Test
+class TestTypeCoercions < Minitest::Test
   def test_string_coercion
     person_class = Structure.new do
       attribute(:name, String)

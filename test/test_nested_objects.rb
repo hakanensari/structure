@@ -3,7 +3,7 @@
 require_relative "helper"
 require "structure"
 
-class NestedObjectsTest < Minitest::Test
+class TestNestedObjects < Minitest::Test
   def test_nested_object_parsing
     address_class = Structure.new do
       attribute(:street, String)
