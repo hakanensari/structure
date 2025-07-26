@@ -37,7 +37,7 @@ module Structure
       case type
       when :boolean
         boolean
-      when Class
+      when Class, Module
         if type.name && Kernel.respond_to?(type.name)
           kernel(type)
         elsif type.respond_to?(:parse)
