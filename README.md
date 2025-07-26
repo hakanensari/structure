@@ -1,5 +1,7 @@
 # Structure
 
+<img src="https://raw.githubusercontent.com/hakanensari/structure/refs/heads/master/images/ruby.png" alt="Ruby" width="180" />
+
 [![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
 
 **🧩 Structure your data**
