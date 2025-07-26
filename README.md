@@ -2,7 +2,7 @@
 
 [![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
 
-**📦 Structure your data!**
+**🧩 Structure your data**
 
 Turn unruly hashes into clean, immutable Ruby Data objects with type coercion.
 

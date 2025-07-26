@@ -7,8 +7,9 @@ Gem::Specification.new do |gem|
   gem.name     = "structure"
   gem.version  = Structure::VERSION
   gem.licenses = ["MIT"]
-  gem.summary     = "Structure your data!"
-  gem.description = "Parse data into immutable Ruby Data objects with type coercion"
+  gem.summary     = "Structure your data"
+  gem.description = "Provides a DSL for generating immutable Ruby Data objects with type coercion and data " \
+    "transformation capabilities."
   gem.authors  = ["Hakan Ensari"]
   gem.license  = "MIT"
   gem.files    = Dir.glob("lib/**/*")
