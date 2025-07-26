@@ -18,17 +18,6 @@ class TestStdlibTypes < Minitest::Test
     assert_equal(Date.new(2024, 12, 25), event.event_date)
   end
 
-  def test_datetime_coercion
-    event_class = Structure.new do
-      attribute(:starts_at, DateTime)
-    end
-
-    event = event_class.parse(starts_at: "2024-12-25T10:30:00+00:00")
-
-    assert_instance_of(DateTime, event.starts_at)
-    assert_equal(DateTime.new(2024, 12, 25, 10, 30, 0, "+00:00"), event.starts_at)
-  end
-
   def test_time_coercion
     event_class = Structure.new do
       attribute(:created_at, Time)

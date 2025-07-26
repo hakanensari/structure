@@ -236,7 +236,6 @@ Structure supports Ruby's kernel coercion methods like `String(val)`, `Integer(v
 - Custom classes with `.parse` method
 - Ruby standard library classes with `.parse`:
   - `Date` - Parses date strings
-  - `DateTime` - Parses ISO 8601 datetime strings
   - `Time` - Parses various time formats
   - `URI` - Parses URLs into URI objects
 
@@ -244,8 +243,7 @@ Structure supports Ruby's kernel coercion methods like `String(val)`, `Integer(v
 Event = Structure.new do
   attribute(:name, String)
   attribute(:date, Date)
-  attribute(:starts_at, DateTime)
-  attribute(:created_at, Time)
+  attribute(:starts_at, Time)
   attribute(:website, URI)
 end
 
@@ -253,14 +251,12 @@ event = Event.parse({
   "name" => "RubyConf",
   "date" => "2024-12-25",
   "starts_at" => "2024-12-25T09:00:00-05:00",
-  "created_at" => "2024-01-15 10:30:00",
   "website" => "https://rubyconf.org"
 })
 
-event.date       # => #<Date: 2024-12-25>
-event.starts_at  # => #<DateTime: 2024-12-25T09:00:00-05:00>
-event.created_at # => 2024-01-15 10:30:00 +0100
-event.website    # => #<URI::HTTPS https://rubyconf.org>
+event.date      # => #<Date: 2024-12-25>
+event.starts_at # => 2024-12-25 09:00:00 -0500
+event.website   # => #<URI::HTTPS https://rubyconf.org>
 ```
 
 ## Development
