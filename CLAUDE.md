@@ -36,8 +36,18 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 ### Core Components
 
 - **`lib/structure.rb`** - Main module that provides the `Structure.new` DSL
+- **`lib/structure/builder.rb`** - Builder class that accumulates attribute definitions and generates Data classes
+- **`lib/structure/types.rb`** - Type coercion module with support for various type conversions
 - **`lib/structure/version.rb`** - Version constant
-- **`test/test_structure.rb`** - Complete test suite using Minitest
+
+### Test Suite
+
+- **`test/test_core_structure.rb`** - Core DSL and data parsing functionality tests
+- **`test/test_type_coercions.rb`** - Type coercion and conversion tests
+- **`test/test_stdlib_types.rb`** - Standard library type support tests (Date, Time, URI)
+- **`test/test_nested_objects.rb`** - Nested Structure object parsing tests
+- **`test/test_boolean_predicates.rb`** - Boolean predicate method generation tests
+- **`test/helper.rb`** - Test helper setup
 
 ### Key Design Patterns
 
@@ -45,7 +55,7 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 
 **DSL-Based Configuration:** Clean `attribute` method for defining transformations and type coercion.
 
-**Type System:** Built-in support for Ruby kernel types (`String`, `Integer`, `Float`, `Rational`, `Complex`) plus `:boolean` and nested objects.
+**Type System:** Built-in support for Ruby kernel types (`String`, `Integer`, `Float`, `Rational`, `Complex`), `:boolean`, stdlib types with parse methods (`Date`, `Time`, `URI`), and nested Structure objects.
 
 **API Integration Focus:** Designed for parsing API responses with automatic data transformation and nil safety.
 
@@ -59,11 +69,16 @@ Uses Minitest with comprehensive tests covering:
 
 - DSL attribute definition and type coercion
 - Data object generation and `.parse` method functionality
-- Type system with various data types (String, Integer, Boolean, Time, Money, etc.)
+- Type system with various data types:
+  - Kernel types: String, Integer, Float, Rational, Complex
+  - Boolean type with Rails-style truthy values
+  - Stdlib types with parse methods: Date, Time, URI
+  - Custom types with parse methods (e.g., Money)
 - Nested object parsing and Array[Type] syntax
 - Transformation blocks and custom data processing
 - Nil safety and error handling
 - Edge cases (malformed data, missing fields, type conversion errors)
+- Boolean predicate methods for :boolean attributes
 
 ## Ruby Version Requirements
 
