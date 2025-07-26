@@ -21,8 +21,8 @@ module Structure
       ->(val) { Kernel.send(type.name, val) }
     end
 
-    # Handler for nested Structure classes
-    def structure(type)
+    # Handler for classes with parse methods (e.g., Date, Time, URI, nested Structure classes)
+    def parseable(type)
       ->(val) { type.parse(val) }
     end
 
@@ -41,7 +41,7 @@ module Structure
         if type.name && Kernel.respond_to?(type.name)
           kernel(type)
         elsif type.respond_to?(:parse)
-          structure(type)
+          parseable(type)
         else
           type
         end
