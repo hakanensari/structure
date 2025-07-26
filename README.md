@@ -236,7 +236,7 @@ Structure supports Ruby's kernel coercion methods like `String(val)`, `Integer(v
 - `:boolean` - Custom Rails-style boolean conversion
 - `[Type]` - Arrays with element coercion
 - Custom classes with `.parse` method
-- Ruby standard library classes with `.parse`:
+- Ruby standard library classes with `.parse`, including:
   - `Date` - Parses date strings
   - `Time` - Parses various time formats
   - `URI` - Parses URLs into URI objects
