@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.1.0] - 2025-01-29
+
 ### Added
 
 - `after_parse` callback hook for validation and post-processing logic
@@ -70,4 +72,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [2.2.0]: https://github.com/hakanensari/structure/compare/v2.1.0...v2.2.0
 [2.3.0]: https://github.com/hakanensari/structure/compare/v2.2.0...v2.3.0
 [3.0.0]: https://github.com/hakanensari/structure/compare/v2.3.0...v3.0.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.0.0...HEAD
+[3.1.0]: https://github.com/hakanensari/structure/compare/v3.0.0...v3.1.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.1.0...HEAD
