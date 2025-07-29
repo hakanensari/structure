@@ -23,6 +23,7 @@ module Structure
       types = builder.types
       defaults = builder.defaults
       attributes = builder.attributes
+      after_parse_callback = builder.after_parse_callback
 
       data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
         # Merge kwargs into data - kwargs take priority as overrides
@@ -48,7 +49,10 @@ module Structure
 
           final_kwargs[attr] = value
         end
-        new(**final_kwargs)
+
+        instance = new(**final_kwargs)
+        after_parse_callback&.call(instance)
+        instance
       end
 
       data_class

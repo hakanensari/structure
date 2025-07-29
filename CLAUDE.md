@@ -47,6 +47,7 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 - **`test/test_stdlib_types.rb`** - Standard library type support tests (Date, Time, URI)
 - **`test/test_nested_objects.rb`** - Nested Structure object parsing tests
 - **`test/test_boolean_predicates.rb`** - Boolean predicate method generation tests
+- **`test/test_after_parse.rb`** - After parse callback functionality tests
 - **`test/helper.rb`** - Test helper setup
 
 ### Key Design Patterns
@@ -62,6 +63,8 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 **Immutability:** All generated objects are immutable Data objects with pattern matching support.
 
 **Type Coercion:** Automatic conversion between types with graceful error handling.
+
+**After Parse Callbacks:** Optional `after_parse` hook for validation or post-processing logic.
 
 ### Testing Approach
 
@@ -99,6 +102,10 @@ Order = Structure.new do
     Money.new(data['Amount'], data['CurrencyCode']) if data
   end
   attribute :is_prime, :boolean, from: 'IsPrime'
+  
+  after_parse do |order|
+    raise "Order ID is required" if order.amazon_order_id.nil?
+  end
 end
 
 order = Order.parse(api_response_data)

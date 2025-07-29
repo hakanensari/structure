@@ -5,7 +5,7 @@ require "structure/types"
 module Structure
   # Builder class for accumulating attribute definitions
   class Builder
-    attr_reader :mappings, :types, :defaults
+    attr_reader :mappings, :types, :defaults, :after_parse_callback
 
     def initialize
       @mappings = {}
@@ -40,6 +40,10 @@ module Structure
           [predicate_name.to_sym, name]
         end
       end.to_h
+    end
+
+    def after_parse(&block)
+      @after_parse_callback = block
     end
   end
 end

@@ -261,6 +261,31 @@ event.starts_at # => 2024-12-25 09:00:00 -0500
 event.website   # => #<URI::HTTPS https://rubyconf.org>
 ```
 
+### After Parse Callbacks
+
+Add validation or post-processing logic that runs after parsing:
+
+```ruby
+Order = Structure.new do
+  attribute(:order_id, String)
+  attribute(:total, Float)
+  
+  after_parse do |order|
+    raise "Order ID is required" if order.order_id.nil?
+    raise "Total must be positive" if order.total && order.total <= 0
+  end
+end
+
+# Raises error for invalid data
+Order.parse(total: -10)  # => RuntimeError: Total must be positive
+
+# Works fine with valid data
+order = Order.parse(order_id: "123", total: 99.99)
+order.order_id  # => "123"
+```
+
+The `after_parse` callback receives the parsed instance and runs after all attributes have been coerced. Any exception raised prevents the instance from being returned.
+
 ## Development
 
 ```bash

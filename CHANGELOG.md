@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `after_parse` callback hook for validation and post-processing logic
+
 ## [3.0.0]
 
 ### Changed
