@@ -1,6 +1,6 @@
 # Structure
 
-<img src="https://raw.githubusercontent.com/hakanensari/structure/refs/heads/main/images/ruby.png" alt="Ruby" width="180" />
+![Ruby](https://raw.githubusercontent.com/hakanensari/structure/refs/heads/main/images/ruby.png)
 
 [![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
 
@@ -196,18 +196,16 @@ When you need custom logic:
 
 ```ruby
 Order = Structure.new do
-  attribute(:total, from: "OrderTotal") do |data|
-    amount = data["Amount"]
-    currency = data["CurrencyCode"]
-    "#{amount} #{currency}"
+  attribute :price do |value|
+    Money.new(value["amount"], value["currency"])
   end
 end
 
 order = Order.parse({
-  "OrderTotal" => { "Amount" => "29.99", "CurrencyCode" => "USD" }
+  "price" => { "amount" => "29.99", "currency" => "USD" }
 })
 
-order.total # => "29.99 USD"
+order.price # => #<Money:0x... @amount="29.99", @currency="USD">
 ```
 
 ### Boolean Conversion

@@ -5,6 +5,20 @@ require "structure/builder"
 # A library for parsing data into immutable Ruby Data objects with type coercion
 module Structure
   class << self
+    # Creates a new Data class with attribute definitions and type coercion
+    #
+    # @yield [Builder] Block for defining attributes using the DSL
+    # @return [Class] A Data class with a parse method
+    #
+    # @example Basic usage
+    #   Person = Structure.new do
+    #     attribute :name, String
+    #     attribute :age, Integer
+    #   end
+    #
+    #   person = Person.parse(name: "Alice", age: "30")
+    #   person.name # => "Alice"
+    #   person.age  # => 30
     def new(&block)
       builder = Builder.new
       builder.instance_eval(&block) if block

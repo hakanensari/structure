@@ -10,29 +10,26 @@ module Structure
     BOOLEAN_TRUTHY = [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].freeze
     private_constant :BOOLEAN_TRUTHY
 
-    # Boolean conversion
-    # Memoized so predicate method detection works via object identity comparison
     def boolean
       @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
     end
 
-    # Generic handler for classes with kernel methods (String, Integer, Float, etc.)
-    def kernel(type)
-      ->(val) { Kernel.send(type.name, val) }
-    end
-
-    # Handler for classes with parse methods (e.g., Date, Time, URI, nested Structure classes)
-    def parseable(type)
-      ->(val) { type.parse(val) }
-    end
-
-    # Create coercer for array elements
-    def array(element_type)
-      element_coercer = coerce(element_type)
-      ->(array) { array.map { |element| element_coercer.call(element) } }
-    end
-
     # Main factory method for creating type coercers
+    #
+    # @param type [Class, Symbol, Array] Type specification
+    # @return [Proc, Object] Coercion proc or the type itself if no coercion available
+    #
+    # @example Boolean type
+    #   coerce(:boolean) # => boolean proc
+    #
+    # @example Kernel types
+    #   coerce(Integer) # => proc that calls Kernel.Integer
+    #
+    # @example Parseable types
+    #   coerce(Date) # => proc that calls Date.parse
+    #
+    # @example Array types
+    #   coerce([String]) # => proc that coerces array elements to String
     def coerce(type)
       case type
       when :boolean
@@ -54,6 +51,21 @@ module Structure
       else
         type
       end
+    end
+
+    private
+
+    def kernel(type)
+      ->(val) { Kernel.send(type.name, val) }
+    end
+
+    def parseable(type)
+      ->(val) { type.parse(val) }
+    end
+
+    def array(element_type)
+      element_coercer = coerce(element_type)
+      ->(array) { array.map { |element| element_coercer.call(element) } }
     end
   end
 end

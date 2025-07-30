@@ -13,6 +13,25 @@ module Structure
       @defaults = {}
     end
 
+    # DSL method for defining attributes with optional type coercion
+    #
+    # @param name [Symbol] The attribute name
+    # @param type [Class, Symbol, Array, nil] Type for coercion (e.g., String, :boolean, [String])
+    # @param from [String, nil] Source key in the data hash (defaults to name.to_s)
+    # @param default [Object, nil] Default value if attribute is missing
+    # @yield [value] Block for custom transformation
+    # @raise [ArgumentError] If both type and block are provided
+    #
+    # @example With type coercion
+    #   attribute :age, Integer
+    #
+    # @example With custom source key
+    #   attribute :created_at, Time, from: "CreatedAt"
+    #
+    # @example With transformation block
+    #   attribute :price do |value|
+    #     Money.new(value["amount"], value["currency"])
+    #   end
     def attribute(name, type = nil, from: nil, default: nil, &block)
       # Always store in mappings - use attribute name as default source
       @mappings[name] = from || name.to_s
@@ -27,12 +46,23 @@ module Structure
       end
     end
 
-    # Deduced from mappings - maintains order of definition
+    # Defines a callback to run after parsing
+    #
+    # @yield [instance] Block that receives the parsed instance
+    # @return [void]
+    #
+    # @example Validation
+    #   after_parse do |order|
+    #     raise "Invalid order" if order.total < 0
+    #   end
+    def after_parse(&block)
+      @after_parse_callback = block
+    end
+
     def attributes
       @mappings.keys
     end
 
-    # Deduced from types that are boolean
     def predicate_methods
       @types.filter_map do |name, type_lambda|
         if type_lambda == Types.boolean
@@ -40,10 +70,6 @@ module Structure
           [predicate_name.to_sym, name]
         end
       end.to_h
-    end
-
-    def after_parse(&block)
-      @after_parse_callback = block
     end
   end
 end
