@@ -4,7 +4,7 @@
 
 [![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
 
-**🧩 Structure your data**
+**Structure your data**
 
 Turn unruly hashes into clean, immutable Ruby Data objects with type coercion.
 
@@ -20,7 +20,7 @@ user.age      # => 25 (Integer)
 user.active?  # => true
 ```
 
-Built on the Ruby Data class for immutability, pattern matching, and all the other good stuff. Zero dependencies.
+Built on the [Ruby Data class](https://docs.ruby-lang.org/en//3.4/Data.html) for immutability, pattern matching, and all the other good stuff. Zero dependencies.
 
 ## Installation
 
@@ -267,7 +267,7 @@ Add validation or post-processing logic that runs after parsing:
 Order = Structure.new do
   attribute(:order_id, String)
   attribute(:total, Float)
-  
+
   after_parse do |order|
     raise "Order ID is required" if order.order_id.nil?
     raise "Total must be positive" if order.total && order.total <= 0
