@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Skip predicate method generation for boolean attributes ending with `?` to avoid awkward `??` methods
+
 ## [3.1.0] - 2025-01-29
 
 ### Added

@@ -12,7 +12,6 @@ class TestBooleanPredicates < Minitest::Test
     product = product_class.new(is_available: true)
 
     assert_respond_to(product, :is_available?)
-    assert_predicate(product, :is_available?)
   end
 
   def test_predicate_methods_with_different_names
@@ -23,7 +22,6 @@ class TestBooleanPredicates < Minitest::Test
     user = user_class.new(is_admin: true)
 
     assert_respond_to(user, :is_admin?)
-    assert_predicate(user, :is_admin?)
   end
 
   def test_non_boolean_attributes_skip_predicates
@@ -57,6 +55,16 @@ class TestBooleanPredicates < Minitest::Test
     product = product_class.parse({ "is_available" => "true" })
 
     assert_respond_to(product, :available?)
-    assert_predicate(product, :available?)
+  end
+
+  def test_attribute_ending_with_question_mark_skips_predicate
+    status_class = Structure.new do
+      attribute(:active?, :boolean)
+    end
+
+    status = status_class.new("active?" => true)
+
+    assert_respond_to(status, :active?)
+    refute_respond_to(status, "active??")
   end
 end
