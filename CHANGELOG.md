@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.1.1] - 2025-09-03
+
 ### Fixed
 
 - Skip predicate method generation for boolean attributes ending with `?` to avoid awkward `??` methods
@@ -77,4 +79,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [2.3.0]: https://github.com/hakanensari/structure/compare/v2.2.0...v2.3.0
 [3.0.0]: https://github.com/hakanensari/structure/compare/v2.3.0...v3.0.0
 [3.1.0]: https://github.com/hakanensari/structure/compare/v3.0.0...v3.1.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.1.0...HEAD
+[3.1.1]: https://github.com/hakanensari/structure/compare/v3.1.0...v3.1.1
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.1.1...HEAD
