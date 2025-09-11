@@ -1,8 +1,8 @@
 # Structure
 
-![Ruby](https://raw.githubusercontent.com/hakanensari/structure/refs/heads/main/images/ruby.png)
-
 [![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
+
+![Ruby](https://raw.githubusercontent.com/hakanensari/structure/refs/heads/main/images/ruby.png)
 
 **Structure your data**
 
@@ -274,11 +274,11 @@ class Money
     amount = data.is_a?(Hash) ? data['amount'] : data
     new(amount.to_f)
   end
-  
+
   def initialize(amount)
     @amount = amount
   end
-  
+
   attr_reader :amount
 end
 
