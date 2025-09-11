@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.2.0] - 2025-09-11
+
 ### Added
 
 - Self-referential type support with `:self` and `[:self]` markers for building tree structures and other recursive data types
@@ -84,4 +86,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.0.0]: https://github.com/hakanensari/structure/compare/v2.3.0...v3.0.0
 [3.1.0]: https://github.com/hakanensari/structure/compare/v3.0.0...v3.1.0
 [3.1.1]: https://github.com/hakanensari/structure/compare/v3.1.0...v3.1.1
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.1.1...HEAD
+[3.2.0]: https://github.com/hakanensari/structure/compare/v3.1.1...v3.2.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.2.0...HEAD
