@@ -10,8 +10,8 @@ module Structure
     BOOLEAN_TRUTHY = [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].freeze
     private_constant :BOOLEAN_TRUTHY
 
-    def boolean
-      @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
+    def boolean?(type)
+      type == boolean
     end
 
     # Main factory method for creating type coercers
@@ -55,6 +55,10 @@ module Structure
     end
 
     private
+
+    def boolean
+      @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
+    end
 
     def self_referential
       proc { |val| parse(val) }
