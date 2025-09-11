@@ -128,6 +128,12 @@ order = Order.parse(api_response_data)
 - Organize code into clear modules and classes. Avoid monolithic files
 - Wrap code and comments at 120 characters
 
+### Writing Style
+
+- **Avoid hyphens and em dashes to connect sentences.** Use periods instead for clearer, more direct prose
+- Keep documentation concise and to the point
+- Use active voice when possible
+
 ### Testing
 
 - **Use Test-Driven Development (TDD):**
@@ -149,5 +155,7 @@ order = Order.parse(api_response_data)
   - Subject line: max 50 characters, imperative mood
   - Blank line between subject and body
   - Body: wrap at 72 characters, explain what and why (not how)
+- **ALWAYS add co-authorship** when working with Claude:
+  - Add `Co-authored-by: Claude <claude@anthropic.com>` to commit messages
 - **NEVER use `git add .`** - always stage files explicitly by name
 - **ALWAYS update CHANGELOG.md when bumping versions** - document breaking changes, new features, and fixes
