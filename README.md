@@ -259,6 +259,43 @@ event.starts_at # => 2024-12-25 09:00:00 -0500
 event.website   # => #<URI::HTTPS https://rubyconf.org>
 ```
 
+### Custom Types
+
+The type system is flexible. Any object that responds to `.call` (procs, lambdas) or `.parse` (classes) can be used as a type:
+
+```ruby
+# Using a lambda for simple transformations
+UppercaseString = ->(val) { val.to_s.upcase }
+
+# Using a class with .parse for complex types
+class Money
+  def self.parse(data)
+    return nil unless data
+    amount = data.is_a?(Hash) ? data['amount'] : data
+    new(amount.to_f)
+  end
+  
+  def initialize(amount)
+    @amount = amount
+  end
+  
+  attr_reader :amount
+end
+
+Product = Structure.new do
+  attribute :name, UppercaseString
+  attribute :price, Money
+end
+
+product = Product.parse({
+  "name" => "widget",
+  "price" => { "amount" => "19.99" }
+})
+
+product.name  # => "WIDGET"
+product.price.amount # => 19.99
+```
+
 ### Self-Referential Types
 
 Build tree structures and other self-referential data:
