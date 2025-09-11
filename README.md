@@ -259,6 +259,34 @@ event.starts_at # => 2024-12-25 09:00:00 -0500
 event.website   # => #<URI::HTTPS https://rubyconf.org>
 ```
 
+### Self-Referential Types
+
+Build tree structures and other self-referential data:
+
+```ruby
+TreeNode = Structure.new do
+  attribute(:value, String)
+  attribute(:children, [:self], default: [])
+  attribute(:parent, :self)
+end
+
+tree = TreeNode.parse({
+  "value" => "root",
+  "children" => [
+    { "value" => "child1" },
+    { "value" => "child2", "children" => [
+      { "value" => "grandchild" }
+    ]}
+  ]
+})
+
+tree.value                     # => "root"
+tree.children.first.value      # => "child1"
+tree.children[1].children.first.value # => "grandchild"
+```
+
+Use `:self` for single references or `[:self]` for arrays of self-references. Perfect for modeling hierarchical data like navigation menus, comment threads, or organizational charts.
+
 ### After Parse Callbacks
 
 Add validation or post-processing logic that runs after parsing:

@@ -34,14 +34,8 @@ module Structure
       case type
       when :boolean
         boolean
-      when Class, Module
-        if type.name && Kernel.respond_to?(type.name)
-          kernel(type)
-        elsif type.respond_to?(:parse)
-          parseable(type)
-        else
-          type
-        end
+      when :self
+        self_referential
       when Array
         if type.length == 1
           array(type.first)
@@ -49,11 +43,22 @@ module Structure
           type
         end
       else
-        type
+        # Handle Class, Module, and any other types
+        if type.respond_to?(:parse)
+          parseable(type)
+        elsif type.respond_to?(:name) && type.name && Kernel.respond_to?(type.name)
+          kernel(type)
+        else
+          type
+        end
       end
     end
 
     private
+
+    def self_referential
+      proc { |val| parse(val) }
+    end
 
     def kernel(type)
       ->(val) { Kernel.send(type.name, val) }
@@ -64,8 +69,12 @@ module Structure
     end
 
     def array(element_type)
-      element_coercer = coerce(element_type)
-      ->(array) { array.map { |element| element_coercer.call(element) } }
+      if element_type == :self
+        proc { |array| array.map { |element| parse(element) } }
+      else
+        element_coercer = coerce(element_type)
+        ->(array) { array.map { |element| element_coercer.call(element) } }
+      end
     end
   end
 end

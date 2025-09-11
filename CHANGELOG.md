@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Self-referential type support with `:self` and `[:self]` markers for building tree structures and other recursive data types
+
 ## [3.1.1] - 2025-09-03
 
 ### Fixed

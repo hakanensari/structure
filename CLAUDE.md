@@ -48,6 +48,7 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 - **`test/test_nested_objects.rb`** - Nested Structure object parsing tests
 - **`test/test_boolean_predicates.rb`** - Boolean predicate method generation tests
 - **`test/test_after_parse.rb`** - After parse callback functionality tests
+- **`test/test_self_referential.rb`** - Self-referential type tests (trees, linked lists, graphs)
 - **`test/helper.rb`** - Test helper setup
 
 ### Key Design Patterns
@@ -56,7 +57,12 @@ This is a Ruby gem called **Structure** that provides a DSL for generating immut
 
 **DSL-Based Configuration:** Clean `attribute` method for defining transformations and type coercion.
 
-**Type System:** Built-in support for Ruby kernel types (`String`, `Integer`, `Float`, `Rational`, `Complex`), `:boolean`, stdlib types with parse methods (`Date`, `Time`, `URI`), and nested Structure objects.
+**Type System:** Built-in support for:
+- Ruby kernel types (`String`, `Integer`, `Float`, `Rational`, `Complex`)
+- `:boolean` type with Rails-style truthy values
+- Stdlib types with parse methods (`Date`, `Time`, `URI`)
+- Nested Structure objects
+- **Self-referential types** (`:self` and `[:self]`) for recursive structures like trees and graphs
 
 **API Integration Focus:** Designed for parsing API responses with automatic data transformation and nil safety.
 
@@ -77,6 +83,7 @@ Uses Minitest with comprehensive tests covering:
   - Boolean type with Rails-style truthy values
   - Stdlib types with parse methods: Date, Time, URI
   - Custom types with parse methods (e.g., Money)
+  - Self-referential types for recursive structures (trees, linked lists, graphs)
 - Nested object parsing and Array[Type] syntax
 - Transformation blocks and custom data processing
 - Nil safety and error handling
@@ -138,5 +145,9 @@ order = Order.parse(api_response_data)
 - Work on feature branches, never directly on main
 - Use descriptive branch names (e.g., `feature/lazy-loading`, `fix/thread-safety`)
 - Use conventional commit messages (e.g., "feat: add new feature", "fix: resolve bug")
+- **Follow the 50/72 rule for commit messages:**
+  - Subject line: max 50 characters, imperative mood
+  - Blank line between subject and body
+  - Body: wrap at 72 characters, explain what and why (not how)
 - **NEVER use `git add .`** - always stage files explicitly by name
 - **ALWAYS update CHANGELOG.md when bumping versions** - document breaking changes, new features, and fixes

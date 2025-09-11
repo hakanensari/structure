@@ -58,7 +58,13 @@ module Structure
 
           # Apply type coercion or transformation
           if types[attr] && !value.nil?
-            value = types[attr].call(value)
+            type_or_proc = types[attr]
+            # Use instance_exec for non-lambda procs (self-referential types)
+            value = if type_or_proc.is_a?(Proc) && !type_or_proc.lambda?
+              instance_exec(value, &type_or_proc)
+            else
+              type_or_proc.call(value)
+            end
           end
 
           final_kwargs[attr] = value
