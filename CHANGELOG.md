@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Override `to_h` to recursively convert nested Data objects and custom objects with `to_h` methods to plain hashes
+
 ## [3.2.0] - 2025-09-11
 
 ### Added

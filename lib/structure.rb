@@ -39,6 +39,25 @@ module Structure
       attributes = builder.attributes
       after_parse_callback = builder.after_parse_callback
 
+      # Override to_h to recursively convert nested objects with to_h
+      data_class.define_method(:to_h) do
+        result = {}
+        self.class.members.each do |member|
+          value = send(member)
+          result[member] = case value
+          when Array
+            value.map { |item| item.respond_to?(:to_h) && item ? item.to_h : item }
+          when Hash
+            value
+          when ->(v) { v.respond_to?(:to_h) && v }
+            value.to_h
+          else
+            value
+          end
+        end
+        result
+      end
+
       data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
         # Merge kwargs into data - kwargs take priority as overrides
         # Convert kwargs symbol keys to strings to match source_key lookups
