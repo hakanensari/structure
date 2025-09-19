@@ -349,6 +349,28 @@ order.order_id  # => "123"
 
 The `after_parse` callback receives the parsed instance and runs after all attributes have been coerced. Any exception raised prevents the instance from being returned.
 
+## Typing Your Structure Classes
+
+Structure generates classes that inherit from Ruby's Data class. To add type checking in your project:
+
+```rbs
+# sig/models.rbs
+class User < Data
+  # The parse method added by Structure
+  def self.parse: (Hash[String | Symbol, untyped] data, **untyped) -> User
+  
+  # Your attributes
+  attr_reader name: String
+  attr_reader age: Integer  
+  attr_reader active: bool
+  
+  # Predicate method generated for boolean attributes
+  def active?: () -> bool
+end
+```
+
+That's it! The `to_h`, `members`, and other Data methods are already typed by Ruby's stdlib.
+
 ## Development
 
 ```bash
