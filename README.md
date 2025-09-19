@@ -357,7 +357,7 @@ Structure generates classes that inherit from Ruby's Data class. To add type che
 # sig/models.rbs
 class User < Data
   # The parse method added by Structure
-  def self.parse: (Hash[String | Symbol, untyped] data, **untyped) -> User
+  def self.parse: (Hash[String | Symbol, untyped] data, **untyped) -> self
   
   # Your attributes
   attr_reader name: String
