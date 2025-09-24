@@ -23,6 +23,7 @@ module Structure
       builder = Builder.new
       builder.instance_eval(&block) if block
 
+      # @type var klass: untyped
       klass = Data.define(*builder.attributes)
 
       # capture metadata and attach to class
@@ -47,7 +48,9 @@ module Structure
 
       # recursive to_h
       klass.define_method(:to_h) do
-        self.class.members.each_with_object({}) do |m, h|
+        # @type var h: Hash[Symbol, untyped]
+        h = {}
+        klass.members.each do |m|
           v = public_send(m)
           h[m] =
             case v
@@ -56,24 +59,34 @@ module Structure
             else v
             end
         end
+        h
       end
 
       # parse accepts JSON-ish hashes + kwargs override
       klass.define_singleton_method(:parse) do |data = {}, **kwargs|
         return data if data.is_a?(self)
 
+        # @type var kwargs: Hash[Symbol, untyped]
         string_kwargs = kwargs.transform_keys(&:to_s)
-        data = data.merge(string_kwargs)
-
+        data.merge!(string_kwargs)
+        # @type self: singleton(Data) & _StructuredDataClass
+        # @type var final: Hash[Symbol, untyped]
         final = {}
+
+        # TODO: `__structure_meta__` exists but seems not to return the types it defines, so going untyped for now
+        #
+        # @type var meta: untyped
         meta = __structure_meta__
 
-        meta[:attributes].each do |attr|
+        attributes = meta.fetch(:attributes)
+        defaults = meta.fetch(:defaults)
+
+        attributes.each do |attr|
           source = mappings[attr] || attr.to_s
           value =
             if data.key?(source)            then data[source]
             elsif data.key?(source.to_sym)  then data[source.to_sym]
-            elsif meta[:defaults].key?(attr) then meta[:defaults][attr]
+            elsif defaults.key?(attr) then defaults[attr]
             end
 
           coercion = coercions[attr]
@@ -81,7 +94,7 @@ module Structure
             # self-referential types need class context to call parse
             value =
               if coercion.is_a?(Proc) && !coercion.lambda?
-                instance_exec(value, &coercion)
+                instance_exec(value, &coercion) # steep:ignore
               else
                 coercion.call(value)
               end

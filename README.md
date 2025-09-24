@@ -301,25 +301,26 @@ product.price.amount # => 19.99
 Build tree structures and other self-referential data:
 
 ```ruby
-TreeNode = Structure.new do
-  attribute(:value, String)
+Tree = Structure.new do
+  attribute(:id, Integer)
+  attribute(:name, String)
   attribute(:children, [:self], default: [])
-  attribute(:parent, :self)
 end
 
-tree = TreeNode.parse({
-  "value" => "root",
+tree = Tree.parse({
+  "id" => 1,
+  "name" => "Electronics",
   "children" => [
-    { "value" => "child1" },
-    { "value" => "child2", "children" => [
-      { "value" => "grandchild" }
+    { "id" => 2, "name" => "Computers" },
+    { "id" => 3, "name" => "Phones", "children" => [
+      { "id" => 4, "name" => "Smartphones" }
     ]}
   ]
 })
 
-tree.value                     # => "root"
-tree.children.first.value      # => "child1"
-tree.children[1].children.first.value # => "grandchild"
+tree.name                           # => "Electronics"
+tree.children.first.name            # => "Computers"
+tree.children[1].children.first.name # => "Smartphones"
 ```
 
 Use `:self` for single references or `[:self]` for arrays of self-references. Perfect for modeling hierarchical data like navigation menus, comment threads, or organizational charts.
@@ -367,7 +368,6 @@ puts Structure::RBS.emit(User)
 # Output:
 # class User < Data
 #   extend Structure::ClassMethods
-#   include Structure::InstanceMethods
 #
 #   attr_reader name: String?
 #   attr_reader age: Integer?
@@ -381,5 +381,5 @@ Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
 
 ```bash
 $ bundle install
-$ rake test
+$ bundle exec rake
 ```

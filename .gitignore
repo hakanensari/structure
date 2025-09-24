@@ -2,3 +2,4 @@ Gemfile.lock
 pkg
 .yardoc
 doc
+.gem_rbs_collection

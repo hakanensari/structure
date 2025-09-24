@@ -1,0 +1,52 @@
+---
+path: ".gem_rbs_collection"
+gems:
+- name: fileutils
+  version: '0'
+  source:
+    type: stdlib
+- name: logger
+  version: '0'
+  source:
+    type: stdlib
+- name: minitest
+  version: '5.25'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: fdacf4febfd1a10797f2340410e0876a9811cdf2
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: monitor
+  version: '0'
+  source:
+    type: stdlib
+- name: optparse
+  version: '0'
+  source:
+    type: stdlib
+- name: rake
+  version: '13.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: fdacf4febfd1a10797f2340410e0876a9811cdf2
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: rdoc
+  version: '0'
+  source:
+    type: stdlib
+- name: ripper
+  version: '0'
+  source:
+    type: stdlib
+- name: yard
+  version: '0.9'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: fdacf4febfd1a10797f2340410e0876a9811cdf2
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+gemfile_lock_path: Gemfile.lock

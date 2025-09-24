@@ -1,5 +1,4 @@
 class Measure < Data
-  include Structure::InstanceMethods
 
   def self.new: (amount: untyped, unit: untyped) -> instance
               | (untyped, untyped) -> instance

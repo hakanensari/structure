@@ -12,12 +12,13 @@ module Structure
         class_name = klass.name
         return unless class_name
 
+        # @type var meta: Hash[Symbol, untyped]
         meta = klass.respond_to?(:__structure_meta__) ? klass.__structure_meta__ : {}
 
         emit_rbs_content(
           class_name: class_name,
           attributes: meta.fetch(:attributes, klass.members),
-          types: meta.fetch(:types, {}),
+          types: meta.fetch(:types, {}), # steep:ignore
           has_structure_modules: meta.any?,
         )
       end
@@ -35,19 +36,19 @@ module Structure
         dir_path = dir_path.join(*path_segments) unless path_segments.empty?
         FileUtils.mkdir_p(dir_path)
 
-        file_path = dir_path.join(filename)
+        file_path = dir_path.join(filename).to_s
         File.write(file_path, rbs_content)
 
-        file_path.to_s
+        file_path
       end
 
       private
 
       def emit_rbs_content(class_name:, attributes:, types:, has_structure_modules:)
+        # @type var lines: Array[String]
         lines = []
         lines << "class #{class_name} < Data"
         lines << "  extend Structure::ClassMethods" if has_structure_modules
-        lines << "  include Structure::InstanceMethods"
         lines << ""
 
         unless attributes.empty?

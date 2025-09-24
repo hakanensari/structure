@@ -33,15 +33,13 @@ module Structure
     #     Money.new(value["amount"], value["currency"])
     #   end
     def attribute(name, type = nil, from: nil, default: nil, &block)
-      @mappings[name] = from || name.to_s
-      @defaults[name] = default unless default.nil?
+      mappings[name] = from || name.to_s
+      defaults[name] = default unless default.nil?
 
       if type && block
         raise ArgumentError, "Cannot specify both type and block for :#{name}"
-      elsif block
-        @types[name] = block
-      elsif type
-        @types[name] = type
+      else
+        types[name] = type || block
       end
     end
 

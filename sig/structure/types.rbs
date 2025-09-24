@@ -2,15 +2,15 @@ module Structure
   module Types
     BOOLEAN_TRUTHY: Array[untyped]
 
-    def self.coerce: (untyped type) -> Proc
+    self.@boolean: Proc
 
-    private
+    def self.coerce: (untyped type) -> untyped
 
-    def self.boolean: () -> Proc
-    def self.self_referential: () -> Proc
-    def self.array: (untyped element_type) -> Proc
-    def self.parseable: (Class type) -> Proc
-    def self.kernel: (Class type) -> Proc
-    def self.parse: (untyped val) -> untyped
+    private def self.boolean: () -> Proc
+    private def self.self_referential: () -> Proc
+    private def self.array: (untyped type) -> Proc
+    private def self.parseable: (untyped type) -> Proc
+    private def self.kernel: (Class type) -> Proc
+    private def self.parse: (untyped val) -> untyped
   end
 end
