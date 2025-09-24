@@ -12,10 +12,10 @@ This is a Ruby gem called Structure that provides a DSL for creating immutable v
 
 ## Commands
 
-- Default (tests + lint): `rake`
-- Run tests: `rake test`
-- Lint with autocorrect: `rubocop -A`
-- Single test file: `ruby -Ilib:test test/test_structure.rb`
+- Default (tests + lint): `bundle exec rake`
+- Run tests: `bundle exec rake test`
+- Lint with autocorrect: `bundle exec rubocop -A`
+- Single test file: `bundle exec ruby -Ilib:test test/test_structure.rb`
 
 ## Tech Stack
 
@@ -59,7 +59,7 @@ Developed for the Peddler gem to parse Amazon SP-API responses into typed models
 - Test behavior, not implementation
 - Use descriptive test names
 - Cover edge cases and error conditions
-- Run `rake test` before completing work
+- Run `bundle exec rake test` before completing work
 
 ### Git & Pull Requests
 - Work on feature branches, never directly on main
