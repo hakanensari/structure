@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.4.0] - 2025-09-24
+
 ### Added
 
 - RBS type signature generation with `Structure::RBS.emit` and `Structure::RBS.write`
@@ -98,4 +100,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.1.1]: https://github.com/hakanensari/structure/compare/v3.1.0...v3.1.1
 [3.2.0]: https://github.com/hakanensari/structure/compare/v3.1.1...v3.2.0
 [3.3.0]: https://github.com/hakanensari/structure/compare/v3.2.0...v3.3.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.3.0...HEAD
+[3.4.0]: https://github.com/hakanensari/structure/compare/v3.3.0...v3.4.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.4.0...HEAD
