@@ -39,7 +39,6 @@ module Structure
           type
         end
       else
-        # Handle Class, Module, and any other types
         if type.respond_to?(:parse)
           parseable(type)
         elsif type.respond_to?(:name) && type.name && Kernel.respond_to?(type.name)

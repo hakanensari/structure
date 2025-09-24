@@ -47,7 +47,6 @@ module Structure
 
       # recursive to_h
       klass.define_method(:to_h) do
-        #: Hash[Symbol, untyped]
         self.class.members.each_with_object({}) do |m, h|
           v = public_send(m)
           h[m] =
@@ -64,7 +63,6 @@ module Structure
         string_kwargs = kwargs.transform_keys(&:to_s)
         data = data.merge(string_kwargs)
 
-        #: Hash[Symbol, untyped]
         final = {}
         meta = __structure_meta__
 
@@ -90,7 +88,6 @@ module Structure
           final[attr] = value
         end
 
-        #: untyped
         obj = new(**final)
         after&.call(obj)
         obj

@@ -33,7 +33,6 @@ module Structure
     #     Money.new(value["amount"], value["currency"])
     #   end
     def attribute(name, type = nil, from: nil, default: nil, &block)
-      # Always store in mappings - use attribute name as default source
       @mappings[name] = from || name.to_s
       @defaults[name] = default unless default.nil?
 
