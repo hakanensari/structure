@@ -1,0 +1,16 @@
+module Structure
+  module Types
+    BOOLEAN_TRUTHY: Array[untyped]
+
+    def self.coerce: (untyped type) -> Proc
+
+    private
+
+    def self.boolean: () -> Proc
+    def self.self_referential: () -> Proc
+    def self.array: (untyped element_type) -> Proc
+    def self.parseable: (Class type) -> Proc
+    def self.kernel: (Class type) -> Proc
+    def self.parse: (untyped val) -> untyped
+  end
+end

@@ -5,12 +5,13 @@ module Structure
 
     def after_parse: () { (Data) -> void } -> void
 
-    # (The factory reads these after the block)
-    #def attributes: () -> Array[Symbol]
-    #def mappings: () -> Hash[Symbol, String]
-    #def types: () -> Hash[Symbol, untyped]
-    #def defaults: () -> Hash[Symbol, untyped]
-    #def predicate_methods: () -> Hash[Symbol, Symbol]
-    #def after_parse_callback: () -> (Proc | nil)
+    # Methods used by the factory after the block
+    def attributes: () -> Array[Symbol]
+    def mappings: () -> Hash[Symbol, String]
+    def types: () -> Hash[Symbol, untyped]
+    def defaults: () -> Hash[Symbol, untyped]
+    def coercions: () -> Hash[Symbol, Proc]
+    def predicate_methods: () -> Hash[Symbol, Symbol]
+    def after_parse_callback: () -> (Proc | nil)
   end
 end

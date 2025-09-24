@@ -8,6 +8,8 @@ target :lib do
 
   library "pathname"
   library "fileutils"
+
+  configure_code_diagnostics(D::Ruby.silent)
 end
 
 target :fixtures do
