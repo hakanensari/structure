@@ -65,10 +65,7 @@ module Structure
 
     def predicate_methods
       @types.filter_map do |name, type_lambda|
-        if Types.boolean?(type_lambda) && !name.to_s.end_with?("?")
-          predicate_name = "#{name}?"
-          [predicate_name.to_sym, name]
-        end
+        ["#{name}?".to_sym, name] if Types.boolean?(type_lambda) && !name.to_s.end_with?("?")
       end.to_h
     end
   end

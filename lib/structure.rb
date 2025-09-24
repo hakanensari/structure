@@ -23,78 +23,66 @@ module Structure
       builder = Builder.new
       builder.instance_eval(&block) if block
 
-      data_class = Data.define(*builder.attributes)
+      klass = Data.define(*builder.attributes)
 
-      # Generate predicate methods
-      builder.predicate_methods.each do |predicate_name, attribute_name|
-        data_class.define_method(predicate_name) do
-          send(attribute_name)
-        end
-      end
-
-      # Capture builder data in closure for parse method
+      # capture builder state
       mappings = builder.mappings
-      types = builder.types
+      types    = builder.types
       defaults = builder.defaults
-      attributes = builder.attributes
-      after_parse_callback = builder.after_parse_callback
+      attrs    = builder.attributes
+      after    = builder.after_parse_callback
 
-      # Override to_h to recursively convert nested objects with to_h
-      data_class.define_method(:to_h) do
-        result = {}
-        self.class.members.each do |member|
-          value = send(member)
-          result[member] = case value
-          when Array
-            value.map { |item| item.respond_to?(:to_h) && item ? item.to_h : item }
-          when Hash
-            value
-          when ->(v) { v.respond_to?(:to_h) && v }
-            value.to_h
-          else
-            value
-          end
-        end
-        result
+      # optional predicate methods
+      builder.predicate_methods.each do |pred, attr|
+        klass.define_method(pred) { public_send(attr) }
       end
 
-      data_class.define_singleton_method(:parse) do |data = {}, **kwargs|
-        # Merge kwargs into data - kwargs take priority as overrides
-        # Convert kwargs symbol keys to strings to match source_key lookups
+      # recursive to_h
+      klass.define_method(:to_h) do
+        self.class.members.each_with_object({}) do |m, h|
+          v = public_send(m)
+          h[m] =
+            case v
+            when Array then v.map { |x| x.respond_to?(:to_h) && x ? x.to_h : x }
+            when ->(x) { x.respond_to?(:to_h) && x } then v.to_h
+            else v
+            end
+        end
+      end
+
+      # parse accepts JSON-ish hashes + kwargs override
+      klass.define_singleton_method(:parse) do |data = {}, **kwargs|
         string_kwargs = kwargs.transform_keys(&:to_s)
         data = data.merge(string_kwargs)
 
-        final_kwargs = {}
-        attributes.each do |attr|
-          source_key = mappings[attr]
-          value = if data.key?(source_key)
-            data[source_key]
-          elsif data.key?(source_key.to_sym)
-            data[source_key.to_sym]
-          elsif defaults.key?(attr)
-            defaults[attr]
-          end
-
-          # Apply type coercion or transformation
-          if types[attr] && !value.nil?
-            type_or_proc = types[attr]
-            # Use instance_exec for non-lambda procs (self-referential types)
-            value = if type_or_proc.is_a?(Proc) && !type_or_proc.lambda?
-              instance_exec(value, &type_or_proc)
-            else
-              type_or_proc.call(value)
+        final = {}
+        attrs.each do |attr|
+          source = mappings[attr]
+          value =
+            if data.key?(source)            then data[source]
+            elsif data.key?(source.to_sym)  then data[source.to_sym]
+            elsif defaults.key?(attr)       then defaults[attr]
             end
+
+          coercer = types[attr]
+          if coercer && !value.nil?
+            value =
+              if coercer.is_a?(Proc) && !coercer.lambda?
+                instance_exec(value, &coercer)
+              else
+                coercer.call(value)
+              end
           end
 
-          final_kwargs[attr] = value
+          final[attr] = value
         end
 
-        instance = new(**final_kwargs)
-        after_parse_callback&.call(instance)
-        instance
+        obj = new(**final)
+        after&.call(obj)
+        obj
       end
 
-      data_class
+      klass
     end
   end
 end
