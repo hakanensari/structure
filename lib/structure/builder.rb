@@ -42,7 +42,7 @@ module Structure
       elsif block
         @types[name] = block
       elsif type
-        @types[name] = Types.coerce(type)
+        @types[name] = type
       end
     end
 
@@ -63,10 +63,16 @@ module Structure
       @mappings.keys
     end
 
+    def coercions
+      @types.transform_values { |type| Types.coerce(type) }
+    end
+
     def predicate_methods
-      @types.filter_map do |name, type_lambda|
-        ["#{name}?".to_sym, name] if Types.boolean?(type_lambda) && !name.to_s.end_with?("?")
-      end.to_h
+      @types.filter_map do |name, type|
+        if type == :boolean
+          ["#{name}?".to_sym, name] unless name.to_s.end_with?("?")
+        end
+      end.compact.to_h
     end
   end
 end

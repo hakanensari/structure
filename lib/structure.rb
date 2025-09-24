@@ -30,15 +30,18 @@ module Structure
         attributes: builder.attributes.freeze,
         types: builder.types.freeze,
         defaults: builder.defaults.freeze,
-        mappings: builder.mappings.freeze,
-        predicates: builder.predicate_methods.freeze,
-        after: builder.after_parse_callback,
       }.freeze
       klass.instance_variable_set(:@__structure_meta__, meta)
-      klass.define_singleton_method(:__structure_meta__) { @__structure_meta__ }
+      klass.singleton_class.attr_reader(:__structure_meta__)
 
-      # optional predicate methods
-      meta[:predicates].each do |pred, attr|
+      # capture locals for method generation
+      mappings = builder.mappings
+      coercions = builder.coercions
+      predicates = builder.predicate_methods
+      after = builder.after_parse_callback
+
+      # Define predicate methods
+      predicates.each do |pred, attr|
         klass.define_method(pred) { public_send(attr) }
       end
 
@@ -57,26 +60,28 @@ module Structure
 
       # parse accepts JSON-ish hashes + kwargs override
       klass.define_singleton_method(:parse) do |data = {}, **kwargs|
-        meta = __structure_meta__
         string_kwargs = kwargs.transform_keys(&:to_s)
         data = data.merge(string_kwargs)
 
         final = {}
+        meta = __structure_meta__
+
         meta[:attributes].each do |attr|
-          source = meta[:mappings][attr]
+          source = mappings[attr] || attr.to_s
           value =
             if data.key?(source)            then data[source]
             elsif data.key?(source.to_sym)  then data[source.to_sym]
             elsif meta[:defaults].key?(attr) then meta[:defaults][attr]
             end
 
-          coercer = meta[:types][attr]
-          if coercer && !value.nil?
+          coercion = coercions[attr]
+          if coercion && !value.nil?
+            # self-referential types need class context to call parse
             value =
-              if coercer.is_a?(Proc) && !coercer.lambda?
-                instance_exec(value, &coercer)
+              if coercion.is_a?(Proc) && !coercion.lambda?
+                instance_exec(value, &coercion)
               else
-                coercer.call(value)
+                coercion.call(value)
               end
           end
 
@@ -84,7 +89,7 @@ module Structure
         end
 
         obj = new(**final)
-        meta[:after]&.call(obj)
+        after&.call(obj)
         obj
       end
 

@@ -10,10 +10,6 @@ module Structure
     BOOLEAN_TRUTHY = [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].freeze
     private_constant :BOOLEAN_TRUTHY
 
-    def boolean?(type)
-      type == boolean
-    end
-
     # Main factory method for creating type coercers
     #
     # @param type [Class, Symbol, Array] Type specification
