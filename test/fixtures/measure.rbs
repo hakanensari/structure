@@ -1,0 +1,11 @@
+class Measure < Data
+  include Structure::InstanceMethods
+
+  def self.new: (amount: untyped, unit: untyped) -> instance
+              | (untyped, untyped) -> instance
+
+  attr_reader amount: untyped
+  attr_reader unit: untyped
+
+  def to_h: () -> { amount: untyped, unit: untyped }
+end

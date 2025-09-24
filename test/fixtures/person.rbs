@@ -1,0 +1,15 @@
+class Person < Data
+  extend Structure::ClassMethods
+  include Structure::InstanceMethods
+
+  def self.new: (name: String?, age: Integer?, active: bool?, email: String?) -> instance
+              | (String?, Integer?, bool?, String?) -> instance
+
+  attr_reader name: String?
+  attr_reader age: Integer?
+  attr_reader active: bool?
+  attr_reader email: String?
+
+  def active?: () -> bool
+  def to_h: () -> { name: String?, age: Integer?, active: bool?, email: String? }
+end

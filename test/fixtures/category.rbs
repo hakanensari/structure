@@ -1,0 +1,14 @@
+class Category < Data
+  extend Structure::ClassMethods
+  include Structure::InstanceMethods
+
+  def self.new: (id: Integer?, name: String?, parent: Category?, children: Array[Category]?) -> instance
+              | (Integer?, String?, Category?, Array[Category]?) -> instance
+
+  attr_reader id: Integer?
+  attr_reader name: String?
+  attr_reader parent: Category?
+  attr_reader children: Array[Category]?
+
+  def to_h: () -> { id: Integer?, name: String?, parent: Category?, children: Array[Category]? }
+end
