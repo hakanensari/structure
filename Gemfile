@@ -7,8 +7,8 @@ gemspec
 gem "minitest"
 gem "rake"
 gem "rdoc"
-gem "rubocop"
-gem "rubocop-minitest"
-gem "rubocop-rake"
-gem "rubocop-shopify"
+gem "rubocop", require: false
+gem "rubocop-minitest", require: false
+gem "rubocop-rake", require: false
+gem "rubocop-shopify", require: false
 gem "yard"
