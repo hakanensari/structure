@@ -208,6 +208,26 @@ class TestSelfReferential < Minitest::Test
     assert_empty(leaf.children)
   end
 
+  def test_passing_parsed_instances_in_self_referential_arrays
+    # Test that already-parsed instances can be passed in arrays
+    node = Structure.new do
+      attribute(:value, String)
+      attribute(:children, [:self], default: [])
+    end
+
+    # Create child instances first
+    child1 = node.parse(value: "child1")
+    child2 = node.parse(value: "child2")
+
+    # Pass the instances directly in the children array
+    parent = node.parse(value: "parent", children: [child1, child2])
+
+    assert_equal("parent", parent.value)
+    assert_equal(2, parent.children.length)
+    assert_equal(child1, parent.children[0])
+    assert_equal(child2, parent.children[1])
+  end
+
   def test_mixed_types_with_self_reference
     # Test a more complex structure with multiple types including self-reference
     file_system = Structure.new do

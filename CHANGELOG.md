@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed passing parsed instances in self-referential arrays
+
 ## [3.4.0] - 2025-09-24
 
 ### Added
