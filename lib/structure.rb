@@ -25,15 +25,20 @@ module Structure
 
       klass = Data.define(*builder.attributes)
 
-      # capture builder state
-      mappings = builder.mappings
-      types    = builder.types
-      defaults = builder.defaults
-      attrs    = builder.attributes
-      after    = builder.after_parse_callback
+      # capture metadata and attach to class
+      meta = {
+        attributes: builder.attributes.freeze,
+        types: builder.types.freeze,
+        defaults: builder.defaults.freeze,
+        mappings: builder.mappings.freeze,
+        predicates: builder.predicate_methods.freeze,
+        after: builder.after_parse_callback,
+      }.freeze
+      klass.instance_variable_set(:@__structure_meta__, meta)
+      klass.define_singleton_method(:__structure_meta__) { @__structure_meta__ }
 
       # optional predicate methods
-      builder.predicate_methods.each do |pred, attr|
+      meta[:predicates].each do |pred, attr|
         klass.define_method(pred) { public_send(attr) }
       end
 
@@ -52,19 +57,20 @@ module Structure
 
       # parse accepts JSON-ish hashes + kwargs override
       klass.define_singleton_method(:parse) do |data = {}, **kwargs|
+        meta = __structure_meta__
         string_kwargs = kwargs.transform_keys(&:to_s)
         data = data.merge(string_kwargs)
 
         final = {}
-        attrs.each do |attr|
-          source = mappings[attr]
+        meta[:attributes].each do |attr|
+          source = meta[:mappings][attr]
           value =
             if data.key?(source)            then data[source]
             elsif data.key?(source.to_sym)  then data[source.to_sym]
-            elsif defaults.key?(attr)       then defaults[attr]
+            elsif meta[:defaults].key?(attr) then meta[:defaults][attr]
             end
 
-          coercer = types[attr]
+          coercer = meta[:types][attr]
           if coercer && !value.nil?
             value =
               if coercer.is_a?(Proc) && !coercer.lambda?
@@ -78,7 +84,7 @@ module Structure
         end
 
         obj = new(**final)
-        after&.call(obj)
+        meta[:after]&.call(obj)
         obj
       end
 
