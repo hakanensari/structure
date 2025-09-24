@@ -1,19 +1,15 @@
 module Structure
-  def self.new: () ?{ (Structure::Builder) -> void } -> singleton(Data)
+  def self.new: () ?{ () [self: Structure::Builder] -> void } -> singleton(Data)
 
-  interface _StructureMeta
+  module ClassMethods
+    def parse: (?(Hash[String | Symbol, untyped] | nil) data, **untyped kwargs) -> instance
+    def members: () -> Array[Symbol]
     def __structure_meta__: () -> {
       attributes: Array[Symbol],
       types: Hash[Symbol, untyped],
       defaults: Hash[Symbol, untyped],
       from: Hash[Symbol, String]
     }
-  end
-
-  module ClassMethods
-    include _StructureMeta
-    def parse: (?(Hash[String | Symbol, untyped] | nil) data, **untyped kwargs) -> instance
-    def members: () -> Array[Symbol]
   end
 
   module InstanceMethods

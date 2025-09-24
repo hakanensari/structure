@@ -12,7 +12,7 @@ Gem::Specification.new do |gem|
     "transformation capabilities."
   gem.authors  = ["Hakan Ensari"]
   gem.license  = "MIT"
-  gem.files    = Dir.glob("lib/**/*")
+  gem.files    = Dir.glob("lib/**/*") + Dir.glob("sig/**/*")
 
   gem.required_ruby_version = ">= 3.2"
   gem.metadata["rubygems_mfa_required"] = "true"

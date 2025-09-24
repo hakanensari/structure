@@ -369,22 +369,13 @@ puts Structure::RBS.emit(User)
 #   extend Structure::ClassMethods
 #   include Structure::InstanceMethods
 #
-#   def self.new: (name: String?, age: Integer?, active: bool?) -> instance
-#               | (String?, Integer?, bool?) -> instance
-#
 #   attr_reader name: String?
 #   attr_reader age: Integer?
-#   attr_reader active: bool?
-#
-#   def active?: () -> bool
-#   def to_h: () -> { name: String?, age: Integer?, active: bool? }
-# end
+#   ...
 
 # Write RBS to file
 Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
 ```
-
-Structure types are nullable by default (`String?`) since they handle nil gracefully. Plain Data classes get `untyped` signatures.
 
 ## Development
 

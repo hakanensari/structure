@@ -9,7 +9,7 @@ target :lib do
   library "pathname"
   library "fileutils"
 
-  configure_code_diagnostics(D::Ruby.silent)
+  configure_code_diagnostics(D::Ruby.lenient)
 end
 
 target :fixtures do
