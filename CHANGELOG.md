@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- RBS type signature generation with `Structure::RBS.emit` and `Structure::RBS.write`
+
 ## [3.3.0] - 2025-09-12
 
 ### Added

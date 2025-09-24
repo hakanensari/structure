@@ -349,6 +349,43 @@ order.order_id  # => "123"
 
 The `after_parse` callback receives the parsed instance and runs after all attributes have been coerced. Any exception raised prevents the instance from being returned.
 
+### RBS Type Signatures
+
+Generate RBS type signatures for your Structure classes:
+
+```ruby
+require 'structure/rbs'
+
+User = Structure.new do
+  attribute(:name, String)
+  attribute(:age, Integer)
+  attribute(:active, :boolean)
+end
+
+# Generate RBS content
+puts Structure::RBS.emit(User)
+# Output:
+# class User < Data
+#   extend Structure::ClassMethods
+#   include Structure::InstanceMethods
+#
+#   def self.new: (name: String?, age: Integer?, active: bool?) -> instance
+#               | (String?, Integer?, bool?) -> instance
+#
+#   attr_reader name: String?
+#   attr_reader age: Integer?
+#   attr_reader active: bool?
+#
+#   def active?: () -> bool
+#   def to_h: () -> { name: String?, age: Integer?, active: bool? }
+# end
+
+# Write RBS to file
+Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
+```
+
+Structure types are nullable by default (`String?`) since they handle nil gracefully. Plain Data classes get `untyped` signatures.
+
 ## Development
 
 ```bash
