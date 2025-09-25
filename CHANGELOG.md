@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Support for string class names in attribute declarations for lazy resolution and circular dependencies
+
 ## [3.5.0] - 2025-09-25
 
 ### Added

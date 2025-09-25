@@ -4,11 +4,13 @@ module Structure
 
     self.@boolean: Proc
 
-    def self.coerce: (untyped type) -> untyped
+    def self.coerce: (untyped type, ?untyped? context_class) -> untyped
+    def self.resolve_class: (String class_name, untyped? context_class) -> untyped
 
     private def self.boolean: () -> Proc
     private def self.self_referential: () -> Proc
-    private def self.array: (untyped type) -> Proc
+    private def self.string_class: (String class_name, untyped? context_class) -> Proc
+    private def self.array: (untyped element_type, ?untyped? context_class) -> Proc
     private def self.parseable: (untyped type) -> Proc
     private def self.kernel: (Class type) -> Proc
     private def self.parse: (untyped val) -> untyped

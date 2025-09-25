@@ -11,7 +11,7 @@ module Structure
 
       # Main factory method for creating type coercers
       #
-      # @param type [Class, Symbol, Array] Type specification
+      # @param type [Class, Symbol, Array, String] Type specification
       # @return [Proc, Object] Coercion proc or the type itself if no coercion available
       #
       # @example Boolean type
@@ -25,15 +25,20 @@ module Structure
       #
       # @example Array types
       #   coerce([String]) # => proc that coerces array elements to String
-      def coerce(type)
+      #
+      # @example String class name (lazy resolved)
+      #   coerce("MyClass") # => proc that resolves and coerces to MyClass
+      def coerce(type, context_class = nil)
         case type
         when :boolean
           boolean
         when :self
           self_referential
+        when String
+          string_class(type, context_class)
         when Array
           if type.length == 1
-            array(type.first)
+            array(type.first, context_class)
           else
             type
           end
@@ -46,6 +51,25 @@ module Structure
             type
           end
         end
+      end
+
+      def resolve_class(class_name, context_class)
+        if context_class && defined?(context_class.name)
+          namespace = context_class.name.to_s.split("::")[0...-1]
+          if namespace.any?
+            begin
+              namespace.reduce(Object) { |mod, name| mod.const_get(name) }.const_get(class_name)
+            rescue NameError
+              Object.const_get(class_name)
+            end
+          else
+            Object.const_get(class_name)
+          end
+        else
+          Object.const_get(class_name)
+        end
+      rescue NameError => e
+        raise NameError, "Unable to resolve class '#{class_name}': #{e.message}"
       end
 
       private
@@ -66,7 +90,19 @@ module Structure
         ->(val) { type.parse(val) }
       end
 
-      def array(element_type)
+      def string_class(class_name, context_class)
+        resolved_class = nil
+        proc do |value|
+          resolved_class ||= Structure::Types.resolve_class(class_name, context_class)
+          if resolved_class.respond_to?(:parse)
+            resolved_class.parse(value) # steep:ignore
+          else
+            value
+          end
+        end
+      end
+
+      def array(element_type, context_class = nil)
         if element_type == :self
           proc do |value|
             unless value.respond_to?(:map)
@@ -75,8 +111,23 @@ module Structure
 
             value.map { |element| parse(element) }
           end
+        elsif element_type.is_a?(String)
+          proc do |value|
+            unless value.respond_to?(:map)
+              raise TypeError, "can't convert #{value.class} into Array"
+            end
+
+            resolved_class = Structure::Types.resolve_class(element_type, context_class)
+            value.map do |element|
+              if resolved_class.respond_to?(:parse)
+                resolved_class.parse(element)
+              else
+                element
+              end
+            end
+          end
         else
-          element_coercer = coerce(element_type)
+          element_coercer = coerce(element_type, context_class)
           lambda do |value|
             unless value.respond_to?(:map)
               raise TypeError, "can't convert #{value.class} into Array"
