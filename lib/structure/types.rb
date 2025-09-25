@@ -54,13 +54,7 @@ module Structure
       end
 
       def resolve_class(class_name, context_class)
-        if context_class&.respond_to?(:module_parent)
-          begin
-            context_class.module_parent.const_get(class_name)
-          rescue NameError
-            Object.const_get(class_name)
-          end
-        elsif context_class && defined?(context_class.name)
+        if context_class && defined?(context_class.name)
           namespace = context_class.name.to_s.split("::")[0...-1]
           if namespace.any?
             begin
