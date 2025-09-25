@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.6.0] - 2025-09-25
+
 ### Added
 
 - Support for string class names in attribute declarations for lazy resolution and circular dependencies
@@ -119,4 +121,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.3.0]: https://github.com/hakanensari/structure/compare/v3.2.0...v3.3.0
 [3.4.0]: https://github.com/hakanensari/structure/compare/v3.3.0...v3.4.0
 [3.5.0]: https://github.com/hakanensari/structure/compare/v3.4.0...v3.5.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.5.0...HEAD
+[3.6.0]: https://github.com/hakanensari/structure/compare/v3.5.0...v3.6.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.6.0...HEAD
