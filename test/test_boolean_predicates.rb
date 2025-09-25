@@ -67,4 +67,17 @@ class TestBooleanPredicates < Minitest::Test
     assert_respond_to(status, :active?)
     refute_respond_to(status, "active??")
   end
+
+  def test_predicate_returns_false_when_value_is_nil
+    user_class = Structure.new do
+      attribute(:is_active, :boolean)
+    end
+
+    user = user_class.new(is_active: nil)
+
+    # rubocop:disable Minitest/RefuteFalse
+    # We specifically test that predicates return false (not nil) when value is nil
+    assert_equal(false, user.is_active?)
+    # rubocop:enable Minitest/RefuteFalse
+  end
 end

@@ -43,7 +43,7 @@ module Structure
 
       # Define predicate methods
       predicates.each do |pred, attr|
-        klass.define_method(pred) { public_send(attr) }
+        klass.define_method(pred) { !!public_send(attr) }
       end
 
       # recursive to_h
