@@ -60,8 +60,8 @@ module Structure
       @mappings.keys
     end
 
-    def coercions
-      @types.transform_values { |type| Types.coerce(type) }
+    def coercions(context_class = nil)
+      @types.transform_values { |type| Types.coerce(type, context_class) }
     end
 
     def predicate_methods

@@ -37,7 +37,7 @@ module Structure
 
       # capture locals for method generation
       mappings = builder.mappings
-      coercions = builder.coercions
+      coercions = builder.coercions(klass)
       predicates = builder.predicate_methods
       after = builder.after_parse_callback
 

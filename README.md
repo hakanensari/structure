@@ -190,6 +190,40 @@ product.title           # => "Laptop"
 product.tags.first.name # => "electronics"
 ```
 
+### String Class Names (Lazy Resolution)
+
+To handle circular dependencies between classes, you can use string class names that are resolved lazily:
+
+```ruby
+module MyApp
+  Order = Structure.new do
+    attribute(:id, String)
+    attribute(:items, ["OrderItem"])  # String resolved lazily
+    attribute(:customer, "Customer")  # String resolved lazily
+  end
+
+  OrderItem = Structure.new do
+    attribute(:name, String)
+    attribute(:order, "Order")  # Circular reference back to Order
+  end
+
+  Customer = Structure.new do
+    attribute(:name, String)
+    attribute(:orders, ["Order"])  # Circular reference to Order
+  end
+end
+
+# Works despite circular dependencies
+order = MyApp::Order.parse({
+  "id" => "123",
+  "customer" => { "name" => "Alice" },
+  "items" => [{ "name" => "Widget" }]
+})
+
+order.customer.name      # => "Alice"
+order.items.first.name   # => "Widget"
+```
+
 ### Custom Transformations
 
 When you need custom logic:
