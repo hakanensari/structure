@@ -360,18 +360,19 @@ require 'structure/rbs'
 User = Structure.new do
   attribute(:name, String)
   attribute(:age, Integer)
-  attribute(:active, :boolean)
+  attribute(:tags, [String])
 end
 
 # Generate RBS content
-puts Structure::RBS.emit(User)
-# Output:
-# class User < Data
-#   extend Structure::ClassMethods
-#
-#   attr_reader name: String?
-#   attr_reader age: Integer?
-#   ...
+Structure::RBS.emit(User)
+# => class User < Data
+#      def self.new: (name: String?, age: Integer?, tags: Array[String]?) -> instance
+#      def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> instance
+#      attr_reader name: String?
+#      attr_reader age: Integer?
+#      attr_reader tags: Array[String]?
+#      ...
+#    end
 
 # Write RBS to file
 Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
