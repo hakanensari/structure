@@ -5,14 +5,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.5.0] - 2025-09-25
+
 ### Added
 
-- Generate type-safe rbs signatures for parse method
+- Generate proper RBS type signatures for array attributes
+- Generate type-safe `parse_data` types in RBS for self-referential structures
+- Improve type validation with TypeError for non-array values passed to array attributes
 
 ### Fixed
 
 - Fixed passing parsed instances in self-referential arrays
-- Raise TypeError when non-array values are passed to array attributes
+- Fixed RuboCop block nesting offense in RBS module
 
 ## [3.4.0] - 2025-09-24
 
@@ -110,4 +114,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.2.0]: https://github.com/hakanensari/structure/compare/v3.1.1...v3.2.0
 [3.3.0]: https://github.com/hakanensari/structure/compare/v3.2.0...v3.3.0
 [3.4.0]: https://github.com/hakanensari/structure/compare/v3.3.0...v3.4.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.4.0...HEAD
+[3.5.0]: https://github.com/hakanensari/structure/compare/v3.4.0...v3.5.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.5.0...HEAD
