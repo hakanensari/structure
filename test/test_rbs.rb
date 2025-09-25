@@ -87,4 +87,49 @@ class TestRBS < Minitest::Test
       assert(Dir.empty?(dir))
     end
   end
+
+  def test_emit_rbs_with_array_types
+    # Create a named class constant
+    self.class.const_set(:TestArrayClass, Structure.new do
+      attribute(:tags, [String])
+      attribute(:numbers, [Integer])
+      attribute(:flags, [:boolean])
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestArrayClass)
+
+    assert_match(/attr_reader tags: Array\[String\]\?/, rbs)
+    assert_match(/attr_reader numbers: Array\[Integer\]\?/, rbs)
+    assert_match(/attr_reader flags: Array\[bool\]\?/, rbs)
+
+    # Arrays without self-referential types don't generate parse_data
+    # They use the basic parse signature with Hash[String | Symbol, untyped]
+    assert_match(/def self\.parse: \(\?\(Hash\[String \| Symbol, untyped\]\), \*\*untyped\) -> instance/, rbs)
+    refute_match(/type parse_data/, rbs)
+  ensure
+    self.class.send(:remove_const, :TestArrayClass) if self.class.const_defined?(:TestArrayClass)
+  end
+
+  def test_emit_rbs_mixed_array_and_self_referential
+    # Create a named class constant
+    self.class.const_set(:TestMixedClass, Structure.new do
+      attribute(:name, String)
+      attribute(:tags, [String])
+      attribute(:children, [:self])
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestMixedClass)
+
+    # Check attribute readers
+    assert_match(/attr_reader name: String\?/, rbs)
+    assert_match(/attr_reader tags: Array\[String\]\?/, rbs)
+    assert_match(/attr_reader children: Array\[TestRBS::TestMixedClass\]\?/, rbs)
+
+    # Check parse_data
+    assert_match(/\?name: untyped/, rbs)
+    assert_match(/\?tags: Array\[untyped\]/, rbs)
+    assert_match(/\?children: Array\[TestRBS::TestMixedClass \| parse_data\]/, rbs)
+  ensure
+    self.class.send(:remove_const, :TestMixedClass) if self.class.const_defined?(:TestMixedClass)
+  end
 end

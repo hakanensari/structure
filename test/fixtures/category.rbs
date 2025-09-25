@@ -1,12 +1,17 @@
 class Category < Data
-  extend Structure::ClassMethods
+  def self.new: (name: String?, children: Array[Category]?) -> instance
+              | (String?, Array[Category]?) -> instance
 
-  def self.new: (id: Integer?, name: String?, children: Array[Category]?) -> instance
-              | (Integer?, String?, Array[Category]?) -> instance
+  type parse_data = {
+    ?name: untyped,
+    ?children: Array[Category | parse_data]
+  }
 
-  attr_reader id: Integer?
+  def self.parse: (?parse_data data) -> instance
+                | (?Hash[String, untyped] data) -> instance
+
   attr_reader name: String?
   attr_reader children: Array[Category]?
 
-  def to_h: () -> { id: Integer?, name: String?, children: Array[Category]? }
+  def to_h: () -> { name: String?, children: Array[Category]? }
 end

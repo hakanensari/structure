@@ -48,8 +48,6 @@ module Structure
         # @type var lines: Array[String]
         lines = []
         lines << "class #{class_name} < Data"
-        lines << "  extend Structure::ClassMethods" if has_structure_modules
-        lines << ""
 
         unless attributes.empty?
           # map types to rbs
@@ -65,6 +63,28 @@ module Structure
 
           lines << "  def self.new: (#{keyword_params}) -> instance"
           lines << "              | (#{positional_params}) -> instance"
+          lines << ""
+
+          needs_parse_data = types.any? do |_attr, type|
+            type == :self || type == [:self] || (type.is_a?(Array) && type.first == :array)
+          end
+
+          if needs_parse_data
+            lines << "  type parse_data = {"
+            attributes.each do |attr|
+              type = types.fetch(attr, nil)
+              parse_type = parse_data_type(type, class_name)
+              lines << "    ?#{attr}: #{parse_type},"
+            end
+            lines[-1] = lines[-1].chomp(",")
+            lines << "  }"
+            lines << ""
+            lines << "  def self.parse: (?parse_data data) -> instance"
+            lines << "                | (?Hash[String, untyped] data) -> instance"
+          else
+            # For structures without special types, just use Hash
+            lines << "  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> instance"
+          end
           lines << ""
 
           attributes.each do |attr|
@@ -86,6 +106,33 @@ module Structure
         lines.join("\n")
       end
 
+      def parse_data_type(type, class_name)
+        case type
+        when [:self]
+          "Array[#{class_name} | parse_data]"
+        when Array
+          if type.first == :array && type.last == :self
+            "Array[#{class_name} | parse_data]"
+          elsif type.first == :array
+            # For [:array, SomeType] format, use Array[untyped] since we coerce
+            "Array[untyped]"
+          elsif type.size == 1 && type.first == :self
+            # [:self] is handled above, this shouldn't happen
+            "Array[#{class_name} | parse_data]"
+          elsif type.size == 1
+            # Regular array type like [String], [Integer], etc.
+            # Use Array[untyped] since we coerce values
+            "Array[untyped]"
+          else
+            "untyped"
+          end
+        when :self
+          "#{class_name} | parse_data"
+        else
+          "untyped"
+        end
+      end
+
       def map_type_to_rbs(type, class_name)
         case type
         when Class
@@ -98,8 +145,10 @@ module Structure
           if type.size == 2 && type.first == :array
             element_type = map_type_to_rbs(type.last, class_name)
             "Array[#{element_type}]"
-          elsif type == [:self]
-            "Array[#{class_name || "untyped"}]"
+          elsif type.size == 1
+            # Single element array means array of that type
+            element_type = map_type_to_rbs(type.first, class_name)
+            "Array[#{element_type}]"
           else
             "untyped"
           end

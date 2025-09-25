@@ -5,9 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Generate type-safe rbs signatures for parse method
+
 ### Fixed
 
 - Fixed passing parsed instances in self-referential arrays
+- Raise TypeError when non-array values are passed to array attributes
 
 ## [3.4.0] - 2025-09-24
 

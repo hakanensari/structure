@@ -96,4 +96,15 @@ class TestTypeCoercions < Minitest::Test
 
     assert_empty(data.tags)
   end
+
+  def test_single_value_to_array_raises_error
+    data_class = Structure.new do
+      attribute(:tags, [String])
+    end
+
+    error = assert_raises(TypeError) do
+      data_class.parse(tags: "electronics")
+    end
+    assert_equal("can't convert String into Array", error.message)
+  end
 end

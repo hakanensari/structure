@@ -8,9 +8,5 @@ module Structure
     def parse: (?Hash[String | Symbol, untyped] data, **untyped kwargs) -> instance
   end
 
-  module ClassMethods
-    def parse: (?Hash[String | Symbol, untyped] data, **untyped kwargs) -> instance
-  end
-
   def self.new: () ?{ (Structure::Builder) [self: Structure::Builder] -> void } -> untyped
 end

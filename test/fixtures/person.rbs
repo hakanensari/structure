@@ -1,8 +1,8 @@
 class Person < Data
-  extend Structure::ClassMethods
-
   def self.new: (name: String?, age: Integer?, active: bool?, email: String?) -> instance
               | (String?, Integer?, bool?, String?) -> instance
+
+  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> instance
 
   attr_reader name: String?
   attr_reader age: Integer?

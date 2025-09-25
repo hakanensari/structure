@@ -66,6 +66,10 @@ module Structure
       klass.define_singleton_method(:parse) do |data = {}, **kwargs|
         return data if data.is_a?(self)
 
+        unless data.respond_to?(:merge!)
+          raise TypeError, "can't convert #{data.class} into #{self}"
+        end
+
         # @type var kwargs: Hash[Symbol, untyped]
         string_kwargs = kwargs.transform_keys(&:to_s)
         data.merge!(string_kwargs)

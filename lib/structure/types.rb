@@ -68,10 +68,22 @@ module Structure
 
       def array(element_type)
         if element_type == :self
-          proc { |array| array.map { |element| parse(element) } }
+          proc do |value|
+            unless value.respond_to?(:map)
+              raise TypeError, "can't convert #{value.class} into Array"
+            end
+
+            value.map { |element| parse(element) }
+          end
         else
           element_coercer = coerce(element_type)
-          ->(array) { array.map { |element| element_coercer.call(element) } }
+          lambda do |value|
+            unless value.respond_to?(:map)
+              raise TypeError, "can't convert #{value.class} into Array"
+            end
+
+            value.map { |element| element_coercer.call(element) }
+          end
         end
       end
     end

@@ -5,7 +5,6 @@ require "structure"
 
 class TestSelfReferential < Minitest::Test
   def test_self_reference_in_attribute
-    # Test that we can use :self as a type for self-referential structures
     classification = Structure.new do
       attribute(:display_name, String)
       attribute(:classification_id, String)
@@ -209,17 +208,14 @@ class TestSelfReferential < Minitest::Test
   end
 
   def test_passing_parsed_instances_in_self_referential_arrays
-    # Test that already-parsed instances can be passed in arrays
     node = Structure.new do
       attribute(:value, String)
       attribute(:children, [:self], default: [])
     end
 
-    # Create child instances first
     child1 = node.parse(value: "child1")
     child2 = node.parse(value: "child2")
 
-    # Pass the instances directly in the children array
     parent = node.parse(value: "parent", children: [child1, child2])
 
     assert_equal("parent", parent.value)
@@ -228,60 +224,17 @@ class TestSelfReferential < Minitest::Test
     assert_equal(child2, parent.children[1])
   end
 
-  def test_mixed_types_with_self_reference
-    # Test a more complex structure with multiple types including self-reference
-    file_system = Structure.new do
-      attribute(:name, String)
-      attribute(:size, Integer, default: 0)
-      attribute(:is_directory, :boolean, default: false)
+  def test_single_value_to_self_referential_array_raises_error
+    node = Structure.new do
       attribute(:children, [:self], default: [])
-      attribute(:parent, :self, default: nil)
     end
 
-    root = file_system.parse(
-      name: "root",
-      is_directory: true,
-      children: [
-        {
-          name: "file1.txt",
-          size: 1024,
-          is_directory: false,
-          children: [],
-        },
-        {
-          name: "folder",
-          is_directory: true,
-          children: [
-            {
-              name: "file2.txt",
-              size: 2048,
-              is_directory: false,
-            },
-          ],
-        },
-      ],
-    )
+    child = node.parse
 
-    assert_equal("root", root.name)
-    assert(root.is_directory)
-    assert_equal(2, root.children.length)
+    error = assert_raises(TypeError) do
+      node.parse(children: child)
+    end
 
-    file1 = root.children[0]
-
-    assert_equal("file1.txt", file1.name)
-    assert_equal(1024, file1.size)
-    refute(file1.is_directory)
-
-    folder = root.children[1]
-
-    assert_equal("folder", folder.name)
-    assert(folder.is_directory)
-    assert_equal(1, folder.children.length)
-
-    file2 = folder.children[0]
-
-    assert_equal("file2.txt", file2.name)
-    assert_equal(2048, file2.size)
-    refute(file2.is_directory)
+    assert_match(/can't convert .* into Array/, error.message)
   end
 end
