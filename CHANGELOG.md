@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Add thread safety to string class resolution using mutex for concurrent parsing
+
 ## [3.6.1] - 2025-09-26
 
 ### Added
