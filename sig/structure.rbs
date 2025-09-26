@@ -9,7 +9,6 @@ module Structure
       predicates: Hash[Symbol, Symbol],
       after: untyped
     }
-    def parse: (?Hash[String | Symbol, untyped] data, **untyped kwargs) -> instance
   end
 
   def self.new: () ?{ (Structure::Builder) [self: Structure::Builder] -> void } -> untyped
