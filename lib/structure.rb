@@ -65,59 +65,57 @@ module Structure
         h
       end
 
-      # parse accepts JSON-ish hashes + kwargs override - using string eval to avoid closure capture
-      klass.singleton_class.class_eval(<<~RUBY)
-        def parse(data = {}, **kwargs)
-          return data if data.is_a?(self)
+      # parse accepts JSON-ish hashes + kwargs override
+      klass.singleton_class.define_method(:parse) do |data = {}, **kwargs|
+        return data if data.is_a?(self)
 
-          unless data.respond_to?(:merge!)
-            raise TypeError, "can't convert \#{data.class} into \#{self}"
-          end
+        unless data.respond_to?(:merge!)
+          raise TypeError, "can't convert #{data.class} into #{self}"
+        end
 
-          # @type var kwargs: Hash[Symbol, untyped]
-          string_kwargs = kwargs.transform_keys(&:to_s)
-          data.merge!(string_kwargs)
-          # @type self: singleton(Data) & _StructuredDataClass
-          # @type var final: Hash[Symbol, untyped]
-          final = {}
+        # @type var kwargs: Hash[Symbol, untyped]
+        string_kwargs = kwargs.transform_keys(&:to_s)
+        data.merge!(string_kwargs)
+        # @type self: singleton(Data) & _StructuredDataClass
+        # @type var final: Hash[Symbol, untyped]
+        final = {}
 
-          # @type var meta: untyped
-          meta = __structure_meta__
+        # @type var meta: untyped
+        meta = __structure_meta__
 
-          attributes = meta.fetch(:attributes)
-          defaults = meta.fetch(:defaults)
-          mappings = meta.fetch(:mappings)
-          coercions = meta.fetch(:coercions)
-          after = meta.fetch(:after)
+        attributes = meta.fetch(:attributes)
+        defaults = meta.fetch(:defaults)
+        mappings = meta.fetch(:mappings)
+        coercions = meta.fetch(:coercions)
+        after = meta.fetch(:after)
 
-          attributes.each do |attr|
-            source = mappings[attr] || attr.to_s
-            value =
-              if data.key?(source)            then data[source]
-              elsif data.key?(source.to_sym)  then data[source.to_sym]
-              elsif defaults.key?(attr) then defaults[attr]
-              end
-
-            coercion = coercions[attr]
-            if coercion && !value.nil?
-              # Procs (not lambdas) need class context for self-referential parsing
-              # Lambdas and other callables use direct invocation
-              value =
-                if coercion.is_a?(Proc) && !coercion.lambda?
-                  instance_exec(value, &coercion) # steep:ignore
-                else
-                  coercion.call(value)
-                end
+        attributes.each do |attr|
+          source = mappings[attr] || attr.to_s
+          value =
+            if data.key?(source)            then data[source]
+            elsif data.key?(source.to_sym)  then data[source.to_sym]
+            elsif defaults.key?(attr) then defaults[attr]
             end
 
-            final[attr] = value
+          coercion = coercions[attr]
+          if coercion && !value.nil?
+            # Procs (not lambdas) need class context for self-referential parsing
+            # Lambdas and other callables use direct invocation
+            value =
+              if coercion.is_a?(Proc) && !coercion.lambda?
+                instance_exec(value, &coercion) # steep:ignore
+              else
+                coercion.call(value)
+              end
           end
 
-          obj = new(**final)
-          after&.call(obj) if after
-          obj
+          final[attr] = value
         end
-      RUBY
+
+        obj = new(**final)
+        after&.call(obj) if after
+        obj
+      end
 
       klass
     end
