@@ -95,7 +95,8 @@ module Structure
 
           coercion = coercions[attr]
           if coercion && !value.nil?
-            # self-referential types need class context to call parse
+            # Procs (not lambdas) need class context for self-referential parsing
+            # Lambdas and other callables use direct invocation
             value =
               if coercion.is_a?(Proc) && !coercion.lambda?
                 instance_exec(value, &coercion) # steep:ignore
