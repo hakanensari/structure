@@ -12,4 +12,9 @@ end
 RuboCop::RakeTask.new
 YARD::Rake::YardocTask.new
 
-task default: [:rubocop, :test]
+desc "Run Steep type checking"
+task :steep do
+  sh "bundle exec steep check"
+end
+
+task default: [:rubocop, :test, :steep]

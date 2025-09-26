@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add Steep type checking to default Rake task and CI workflow
+
 ### Fixed
 
 - Fix RBS type signatures to use specific class names instead of `instance` keyword for Steep compatibility
