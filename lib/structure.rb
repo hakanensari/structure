@@ -66,12 +66,12 @@ module Structure
       end
 
       # parse accepts JSON-ish hashes + kwargs override - using string eval to avoid closure capture
-      klass.singleton_class.module_eval do
+      klass.singleton_class.class_eval(<<~RUBY)
         def parse(data = {}, **kwargs)
           return data if data.is_a?(self)
 
           unless data.respond_to?(:merge!)
-            raise TypeError, "can't convert #{data.class} into #{self}"
+            raise TypeError, "can't convert \#{data.class} into \#{self}"
           end
 
           # @type var kwargs: Hash[Symbol, untyped]
@@ -114,10 +114,10 @@ module Structure
           end
 
           obj = new(**final)
-          after&.call(obj)
+          after&.call(obj) if after
           obj
         end
-      end
+      RUBY
 
       klass
     end
