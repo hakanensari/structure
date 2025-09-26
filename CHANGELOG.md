@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.6.2] - 2025-09-27
+
 ### Fixed
 
 - Add thread safety to string class resolution using mutex for concurrent parsing
@@ -137,4 +139,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.5.0]: https://github.com/hakanensari/structure/compare/v3.4.0...v3.5.0
 [3.6.0]: https://github.com/hakanensari/structure/compare/v3.5.0...v3.6.0
 [3.6.1]: https://github.com/hakanensari/structure/compare/v3.6.0...v3.6.1
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.6.1...HEAD
+[3.6.2]: https://github.com/hakanensari/structure/compare/v3.6.1...v3.6.2
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.6.2...HEAD
