@@ -4,16 +4,25 @@ require_relative "helper"
 require "structure"
 
 class TestThreadSafety < Minitest::Test
-  def test_concurrent_string_class_resolution
-    # Define a simple class in test namespace
-    Object.const_set(:TestItem, Structure.new do
-      attribute(:name, String)
-      attribute(:value, Integer)
-    end)
+  TestItem = Structure.new do
+    attribute(:name, String)
+    attribute(:value, Integer)
+  end
 
+  TestParent = Structure.new do
+    attribute(:name, String)
+    attribute(:children, ["TestThreadSafety::TestChild"])
+  end
+
+  TestChild = Structure.new do
+    attribute(:name, String)
+    attribute(:parent, "TestThreadSafety::TestParent")
+  end
+
+  def test_concurrent_string_class_resolution
     container = Structure.new do
       attribute(:id, String)
-      attribute(:item, "TestItem")  # String class name triggers the code path
+      attribute(:item, "TestThreadSafety::TestItem")
     end
 
     # Test data
@@ -55,16 +64,6 @@ class TestThreadSafety < Minitest::Test
   end
 
   def test_concurrent_circular_dependency_resolution
-    # Create circular dependencies to stress test the resolution
-    Object.const_set(:TestParent, Structure.new do
-      attribute(:name, String)
-      attribute(:children, ["TestChild"])
-    end)
-
-    Object.const_set(:TestChild, Structure.new do
-      attribute(:name, String)
-      attribute(:parent, "TestParent")
-    end)
 
     # Test data with circular references
     test_data = {
