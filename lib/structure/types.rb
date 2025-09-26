@@ -92,8 +92,15 @@ module Structure
 
       def string_class(class_name, context_class)
         resolved_class = nil
+        mutex = Mutex.new
+
         proc do |value|
-          resolved_class ||= Structure::Types.resolve_class(class_name, context_class)
+          unless resolved_class
+            mutex.synchronize do
+              resolved_class ||= Structure::Types.resolve_class(class_name, context_class)
+            end
+          end
+
           if resolved_class.respond_to?(:parse)
             resolved_class.parse(value) # steep:ignore
           else
