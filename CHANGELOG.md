@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.6.1] - 2025-09-26
+
 ### Added
 
 - Add Steep type checking to default Rake task and CI workflow
@@ -130,4 +132,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.4.0]: https://github.com/hakanensari/structure/compare/v3.3.0...v3.4.0
 [3.5.0]: https://github.com/hakanensari/structure/compare/v3.4.0...v3.5.0
 [3.6.0]: https://github.com/hakanensari/structure/compare/v3.5.0...v3.6.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v3.6.0...HEAD
+[3.6.1]: https://github.com/hakanensari/structure/compare/v3.6.0...v3.6.1
+[Unreleased]: https://github.com/hakanensari/structure/compare/v3.6.1...HEAD
