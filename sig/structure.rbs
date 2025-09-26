@@ -3,7 +3,11 @@ module Structure
     def __structure_meta__: () -> {
       attributes: Array[Symbol],
       types: Hash[Symbol, untyped],
-      defaults: Hash[Symbol, untyped]
+      defaults: Hash[Symbol, untyped],
+      mappings: Hash[Symbol, String],
+      coercions: Hash[Symbol, untyped],
+      predicates: Hash[Symbol, Symbol],
+      after: untyped
     }
     def parse: (?Hash[String | Symbol, untyped] data, **untyped kwargs) -> instance
   end

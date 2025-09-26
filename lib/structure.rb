@@ -26,20 +26,23 @@ module Structure
       # @type var klass: untyped
       klass = Data.define(*builder.attributes)
 
-      # capture metadata and attach to class
-      meta = {
-        attributes: builder.attributes.freeze,
-        types: builder.types.freeze,
-        defaults: builder.defaults.freeze,
-      }.freeze
-      klass.instance_variable_set(:@__structure_meta__, meta)
-      klass.singleton_class.attr_reader(:__structure_meta__)
-
-      # capture locals for method generation
+      # capture all metadata and attach to class - no closure capture needed
       mappings = builder.mappings
       coercions = builder.coercions(klass)
       predicates = builder.predicate_methods
       after = builder.after_parse_callback
+
+      meta = {
+        attributes: builder.attributes.freeze,
+        types: builder.types.freeze,
+        defaults: builder.defaults.freeze,
+        mappings: mappings.freeze,
+        coercions: coercions.freeze,
+        predicates: predicates.freeze,
+        after: after,
+      }.freeze
+      klass.instance_variable_set(:@__structure_meta__, meta)
+      klass.singleton_class.attr_reader(:__structure_meta__)
 
       # Define predicate methods
       predicates.each do |pred, attr|
@@ -62,55 +65,58 @@ module Structure
         h
       end
 
-      # parse accepts JSON-ish hashes + kwargs override
-      klass.define_singleton_method(:parse) do |data = {}, **kwargs|
-        return data if data.is_a?(self)
+      # parse accepts JSON-ish hashes + kwargs override - using string eval to avoid closure capture
+      klass.singleton_class.module_eval do
+        def parse(data = {}, **kwargs)
+          return data if data.is_a?(self)
 
-        unless data.respond_to?(:merge!)
-          raise TypeError, "can't convert #{data.class} into #{self}"
-        end
-
-        # @type var kwargs: Hash[Symbol, untyped]
-        string_kwargs = kwargs.transform_keys(&:to_s)
-        data.merge!(string_kwargs)
-        # @type self: singleton(Data) & _StructuredDataClass
-        # @type var final: Hash[Symbol, untyped]
-        final = {}
-
-        # TODO: `__structure_meta__` exists but seems not to return the types it defines, so going untyped for now
-        #
-        # @type var meta: untyped
-        meta = __structure_meta__
-
-        attributes = meta.fetch(:attributes)
-        defaults = meta.fetch(:defaults)
-
-        attributes.each do |attr|
-          source = mappings[attr] || attr.to_s
-          value =
-            if data.key?(source)            then data[source]
-            elsif data.key?(source.to_sym)  then data[source.to_sym]
-            elsif defaults.key?(attr) then defaults[attr]
-            end
-
-          coercion = coercions[attr]
-          if coercion && !value.nil?
-            # Procs (not lambdas) need class context for self-referential parsing
-            # Lambdas and other callables use direct invocation
-            value =
-              if coercion.is_a?(Proc) && !coercion.lambda?
-                instance_exec(value, &coercion) # steep:ignore
-              else
-                coercion.call(value)
-              end
+          unless data.respond_to?(:merge!)
+            raise TypeError, "can't convert #{data.class} into #{self}"
           end
 
-          final[attr] = value
-        end
+          # @type var kwargs: Hash[Symbol, untyped]
+          string_kwargs = kwargs.transform_keys(&:to_s)
+          data.merge!(string_kwargs)
+          # @type self: singleton(Data) & _StructuredDataClass
+          # @type var final: Hash[Symbol, untyped]
+          final = {}
 
-        obj = new(**final)
-        after&.call(obj)
-        obj
+          # @type var meta: untyped
+          meta = __structure_meta__
+
+          attributes = meta.fetch(:attributes)
+          defaults = meta.fetch(:defaults)
+          mappings = meta.fetch(:mappings)
+          coercions = meta.fetch(:coercions)
+          after = meta.fetch(:after)
+
+          attributes.each do |attr|
+            source = mappings[attr] || attr.to_s
+            value =
+              if data.key?(source)            then data[source]
+              elsif data.key?(source.to_sym)  then data[source.to_sym]
+              elsif defaults.key?(attr) then defaults[attr]
+              end
+
+            coercion = coercions[attr]
+            if coercion && !value.nil?
+              # Procs (not lambdas) need class context for self-referential parsing
+              # Lambdas and other callables use direct invocation
+              value =
+                if coercion.is_a?(Proc) && !coercion.lambda?
+                  instance_exec(value, &coercion) # steep:ignore
+                else
+                  coercion.call(value)
+                end
+            end
+
+            final[attr] = value
+          end
+
+          obj = new(**final)
+          after&.call(obj)
+          obj
+        end
       end
 
       klass
