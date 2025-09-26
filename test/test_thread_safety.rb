@@ -25,18 +25,13 @@ class TestThreadSafety < Minitest::Test
       attribute(:item, "TestThreadSafety::TestItem")
     end
 
-    # Test data
     test_data = { "id" => "test", "item" => { "name" => "concurrent", "value" => 42 } }
-
-    # Track results from all threads
     results = []
     errors = []
     threads = []
 
-    # Create multiple threads that simultaneously parse using string class resolution
     10.times do |_i|
       threads << Thread.new do
-        # Each thread parses the same data structure multiple times
         5.times do
           result = container.parse(test_data.dup)
           results << result
@@ -46,13 +41,9 @@ class TestThreadSafety < Minitest::Test
       end
     end
 
-    # Wait for all threads to complete
     threads.each(&:join)
 
-    # Verify no errors occurred
     assert_empty(errors, "Concurrent access should not cause errors: #{errors.map(&:message)}")
-
-    # Verify all results are correct
     assert_equal(50, results.length, "Should have 50 results (10 threads × 5 iterations)")
 
     results.each do |result|
@@ -64,8 +55,6 @@ class TestThreadSafety < Minitest::Test
   end
 
   def test_concurrent_circular_dependency_resolution
-
-    # Test data with circular references
     test_data = {
       "name" => "parent",
       "children" => [
@@ -80,7 +69,6 @@ class TestThreadSafety < Minitest::Test
     errors = []
     threads = []
 
-    # Multiple threads parsing circular dependencies
     5.times do
       threads << Thread.new do
         3.times do
