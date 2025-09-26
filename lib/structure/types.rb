@@ -75,7 +75,7 @@ module Structure
       private
 
       def boolean
-        @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
+        ->(val) { BOOLEAN_TRUTHY.include?(val) }
       end
 
       def self_referential
