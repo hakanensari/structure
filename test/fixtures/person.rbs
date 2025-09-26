@@ -1,8 +1,8 @@
 class Person < Data
-  def self.new: (name: String?, age: Integer?, active: bool?, email: String?) -> instance
-              | (String?, Integer?, bool?, String?) -> instance
+  def self.new: (name: String?, age: Integer?, active: bool?, email: String?) -> Person
+              | (String?, Integer?, bool?, String?) -> Person
 
-  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> instance
+  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> Person
 
   attr_reader name: String?
   attr_reader age: Integer?

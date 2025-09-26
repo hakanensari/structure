@@ -61,8 +61,8 @@ module Structure
           keyword_params = attributes.map { |attr| "#{attr}: #{rbs_types[attr]}" }.join(", ")
           positional_params = attributes.map { |attr| rbs_types[attr] }.join(", ")
 
-          lines << "  def self.new: (#{keyword_params}) -> instance"
-          lines << "              | (#{positional_params}) -> instance"
+          lines << "  def self.new: (#{keyword_params}) -> #{class_name}"
+          lines << "              | (#{positional_params}) -> #{class_name}"
           lines << ""
 
           needs_parse_data = types.any? do |_attr, type|
@@ -79,11 +79,11 @@ module Structure
             lines[-1] = lines[-1].chomp(",")
             lines << "  }"
             lines << ""
-            lines << "  def self.parse: (?parse_data data) -> instance"
-            lines << "                | (?Hash[String, untyped] data) -> instance"
+            lines << "  def self.parse: (?parse_data data) -> #{class_name}"
+            lines << "                | (?Hash[String, untyped] data) -> #{class_name}"
           else
             # For structures without special types, just use Hash
-            lines << "  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> instance"
+            lines << "  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> #{class_name}"
           end
           lines << ""
 

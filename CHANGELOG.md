@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix RBS type signatures to use specific class names instead of `instance` keyword for Steep compatibility
+
 ## [3.6.0] - 2025-09-25
 
 ### Added

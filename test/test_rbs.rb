@@ -104,7 +104,7 @@ class TestRBS < Minitest::Test
 
     # Arrays without self-referential types don't generate parse_data
     # They use the basic parse signature with Hash[String | Symbol, untyped]
-    assert_match(/def self\.parse: \(\?\(Hash\[String \| Symbol, untyped\]\), \*\*untyped\) -> instance/, rbs)
+    assert_match(/def self\.parse: \(\?\(Hash\[String \| Symbol, untyped\]\), \*\*untyped\) -> TestRBS::TestArrayClass/, rbs)
     refute_match(/type parse_data/, rbs)
   ensure
     self.class.send(:remove_const, :TestArrayClass) if self.class.const_defined?(:TestArrayClass)
@@ -131,5 +131,23 @@ class TestRBS < Minitest::Test
     assert_match(/\?children: Array\[TestRBS::TestMixedClass \| parse_data\]/, rbs)
   ensure
     self.class.send(:remove_const, :TestMixedClass) if self.class.const_defined?(:TestMixedClass)
+  end
+
+  def test_rbs_should_use_class_name_not_instance_keyword
+    # This test demonstrates the RBS generation issue where 'instance'
+    # should be replaced with the actual class name for Steep compatibility
+    self.class.const_set(:TestArrayList, Structure.new do
+      attribute(:items, [:array, String])
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestArrayList)
+
+    # The issue: these should return the class name, not 'instance'
+    # Current (broken): -> instance
+    # Expected (fixed): -> TestRBS::TestArrayList
+    refute_match(/-> instance/, rbs)
+    assert_match(/-> TestRBS::TestArrayList/, rbs)
+  ensure
+    self.class.send(:remove_const, :TestArrayList) if self.class.const_defined?(:TestArrayList)
   end
 end

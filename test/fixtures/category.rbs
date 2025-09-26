@@ -1,14 +1,14 @@
 class Category < Data
-  def self.new: (name: String?, children: Array[Category]?) -> instance
-              | (String?, Array[Category]?) -> instance
+  def self.new: (name: String?, children: Array[Category]?) -> Category
+              | (String?, Array[Category]?) -> Category
 
   type parse_data = {
     ?name: untyped,
     ?children: Array[Category | parse_data]
   }
 
-  def self.parse: (?parse_data data) -> instance
-                | (?Hash[String, untyped] data) -> instance
+  def self.parse: (?parse_data data) -> Category
+                | (?Hash[String, untyped] data) -> Category
 
   attr_reader name: String?
   attr_reader children: Array[Category]?

@@ -1,8 +1,8 @@
 class Measure < Data
-  def self.new: (amount: untyped, unit: untyped) -> instance
-              | (untyped, untyped) -> instance
+  def self.new: (amount: untyped, unit: untyped) -> Measure
+              | (untyped, untyped) -> Measure
 
-  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> instance
+  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> Measure
 
   attr_reader amount: untyped
   attr_reader unit: untyped
