@@ -4,24 +4,16 @@ require_relative "helper"
 require "structure"
 
 class TestThreadSafety < Minitest::Test
-  def setup
-    Object.const_set(:ThreadTest, Module.new) unless defined?(::ThreadTest)
-  end
-
-  def teardown
-    Object.send(:remove_const, :ThreadTest) if defined?(::ThreadTest)
-  end
-
   def test_concurrent_string_class_resolution
-    # Define a Structure class that uses string class names
-    ThreadTest.const_set(:Item, Structure.new do
+    # Define a simple class in test namespace
+    Object.const_set(:TestItem, Structure.new do
       attribute(:name, String)
       attribute(:value, Integer)
     end)
 
     container = Structure.new do
       attribute(:id, String)
-      attribute(:item, "ThreadTest::Item")
+      attribute(:item, "TestItem")  # String class name triggers the code path
     end
 
     # Test data
@@ -56,7 +48,7 @@ class TestThreadSafety < Minitest::Test
 
     results.each do |result|
       assert_equal("test", result.id)
-      assert_instance_of(ThreadTest::Item, result.item)
+      assert_instance_of(TestItem, result.item)
       assert_equal("concurrent", result.item.name)
       assert_equal(42, result.item.value)
     end
@@ -64,14 +56,14 @@ class TestThreadSafety < Minitest::Test
 
   def test_concurrent_circular_dependency_resolution
     # Create circular dependencies to stress test the resolution
-    ThreadTest.const_set(:Parent, Structure.new do
+    Object.const_set(:TestParent, Structure.new do
       attribute(:name, String)
-      attribute(:children, ["ThreadTest::Child"])
+      attribute(:children, ["TestChild"])
     end)
 
-    ThreadTest.const_set(:Child, Structure.new do
+    Object.const_set(:TestChild, Structure.new do
       attribute(:name, String)
-      attribute(:parent, "ThreadTest::Parent")
+      attribute(:parent, "TestParent")
     end)
 
     # Test data with circular references
@@ -93,7 +85,7 @@ class TestThreadSafety < Minitest::Test
     5.times do
       threads << Thread.new do
         3.times do
-          result = ThreadTest::Parent.parse(test_data.dup)
+          result = TestParent.parse(test_data.dup)
           results << result
         end
       rescue => e
@@ -109,9 +101,9 @@ class TestThreadSafety < Minitest::Test
     results.each do |result|
       assert_equal("parent", result.name)
       assert_equal(1, result.children.length)
-      assert_instance_of(ThreadTest::Child, result.children.first)
+      assert_instance_of(TestChild, result.children.first)
       assert_equal("child1", result.children.first.name)
-      assert_instance_of(ThreadTest::Parent, result.children.first.parent)
+      assert_instance_of(TestParent, result.children.first.parent)
     end
   end
 end
