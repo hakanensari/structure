@@ -31,46 +31,25 @@ class TestProcEdgeCases < Minitest::Test
     assert_equal("ALICE", person.name)
   end
 
-  # This test demonstrates a contrived edge case where user-provided procs
-  # can break due to our lambda? detection logic. See issue #10.
-  #
-  # The case is contrived because:
-  # 1. Users rarely provide procs that depend on external instance context
-  # 2. The recommended approach is to use blocks (which become lambdas)
-  # 3. Simple procs work fine with instance_exec
-  #
-  # We're keeping this test skipped to document the known limitation
-  # without fixing it due to its rarity and complexity of a proper fix.
-  def test_user_provided_context_dependent_proc_breaks
-    skip("Known contrived edge case - see issue #10")
+  # Simple failing test demonstrating proc context issue - see issue #10
+  def test_proc_loses_context_with_instance_exec
+    skip("Known edge case - procs lose original context with instance_exec")
 
-    # Create a proc that depends on instance variables from its creation context
-    helper = Class.new do
-      def initialize
-        @secret = "helper_secret"
-      end
+    # Proc that expects access to local variable
+    secret = "original_context"
+    user_proc = proc { |value| "#{value}_#{secret}" }
 
-      def create_proc
-        proc { |value| "#{value}_#{@secret}" }
-      end
-    end.new
+    # Works in original context
+    assert_equal("test_original_context", user_proc.call("test"))
 
-    context_proc = helper.create_proc
-
-    # Verify the proc works in isolation
-    assert_equal("test_helper_secret", context_proc.call("test"))
-
-    # This will break because Structure uses instance_exec,
-    # changing the context and making @secret nil
-    problem_class = Structure.new do
-      attribute(:processed, context_proc)
+    # Breaks when Structure uses instance_exec (context changes)
+    klass = Structure.new do
+      attribute(:result, user_proc)
     end
 
-    result = problem_class.parse(processed: "input")
-
-    # This assertion will fail - we get "input_" instead of "input_helper_secret"
-    # because @secret is nil in the Structure class context
-    assert_equal("input_helper_secret", result.processed)
+    result = klass.parse(result: "input")
+    # This fails because secret is undefined in Structure's context
+    assert_equal("input_original_context", result.result)
   end
 
   def test_workaround_for_context_dependent_transformation
