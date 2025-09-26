@@ -69,7 +69,7 @@ module Structure
         if type == :boolean
           ["#{name}?".to_sym, name] unless name.to_s.end_with?("?")
         end
-      end.compact.to_h
+      end.to_h
     end
   end
 end
