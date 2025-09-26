@@ -67,7 +67,7 @@ module Structure
 
       # parse accepts JSON-ish hashes + kwargs override - using string eval to avoid closure capture
       klass.singleton_class.class_eval(<<~RUBY)
-        def parse(data = {}, **kwargs) # steep:ignore
+        def parse(data = {}, **kwargs)
           return data if data.is_a?(self)
 
           unless data.respond_to?(:merge!)
