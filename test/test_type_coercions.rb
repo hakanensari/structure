@@ -107,4 +107,51 @@ class TestTypeCoercions < Minitest::Test
     end
     assert_equal("can't convert String into Array", error.message)
   end
+
+  def test_empty_array_type_raises_error
+    error = assert_raises(ArgumentError) do
+      Structure.new do
+        attribute(:tags, [])
+      end
+    end
+    assert_equal("Cannot specify [] as type", error.message)
+  end
+
+  def test_multi_element_array_type_raises_error
+    error = assert_raises(ArgumentError) do
+      Structure.new do
+        attribute(:mixed, [String, Symbol])
+      end
+    end
+    assert_equal("Cannot specify [String, Symbol] as type", error.message)
+  end
+
+  def test_hash_type_raises_error
+    error = assert_raises(ArgumentError) do
+      Structure.new do
+        attribute(:metadata, { String => Integer })
+      end
+    end
+    assert_equal("Cannot specify {String => Integer} as type", error.message)
+  end
+
+  def test_empty_hash_type_raises_error
+    error = assert_raises(ArgumentError) do
+      Structure.new do
+        attribute(:data, {})
+      end
+    end
+    assert_equal("Cannot specify {} as type", error.message)
+  end
+
+  def test_invalid_object_type_raises_error
+    invalid_object = Object.new
+
+    error = assert_raises(ArgumentError) do
+      Structure.new do
+        attribute(:value, invalid_object)
+      end
+    end
+    assert_equal("Cannot specify #{invalid_object.inspect} as type", error.message)
+  end
 end

@@ -175,19 +175,6 @@ class TestRBS < Minitest::Test
     self.class.send(:remove_const, :TestTypedArray) if self.class.const_defined?(:TestTypedArray)
   end
 
-  def test_emit_rbs_to_h_signature_typed_hash
-    self.class.const_set(:TestTypedHash, Structure.new do
-      attribute(:metadata, { String => String })
-    end)
-
-    rbs = Structure::RBS.emit(self.class::TestTypedHash)
-    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
-
-    assert_match(/Hash\[String, String\]\?/, to_h_line, "to_h should contain Hash[String, String]? for typed hashes")
-  ensure
-    self.class.send(:remove_const, :TestTypedHash) if self.class.const_defined?(:TestTypedHash)
-  end
-
   def test_emit_rbs_to_h_signature_unknown_array_as_untyped
     self.class.const_set(:TestUnknownArray, Structure.new do
       attribute(:unknown_array, Array)

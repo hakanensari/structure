@@ -36,20 +36,20 @@ module Structure
           self_referential
         when String
           string_class(type, context_class)
-        when Array
-          if type.length == 1
-            array(type.first, context_class)
-          else
-            type
-          end
+        when ->(t) { t.is_a?(Array) && t.length == 1 }
+          array(type.first, context_class)
+        when Hash
+          raise ArgumentError, "Cannot specify #{type.inspect} as type"
+        when ->(t) { t.respond_to?(:parse) }
+          parseable(type)
+        when ->(t) { t.respond_to?(:name) && t.name && Kernel.respond_to?(t.name) }
+          kernel(type)
+        when ->(t) { t.respond_to?(:call) }
+          type
+        when nil
+          type
         else
-          if type.respond_to?(:parse)
-            parseable(type)
-          elsif type.respond_to?(:name) && type.name && Kernel.respond_to?(type.name)
-            kernel(type)
-          else
-            type
-          end
+          raise ArgumentError, "Cannot specify #{type.inspect} as type"
         end
       end
 

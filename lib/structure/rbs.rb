@@ -137,15 +137,7 @@ module Structure
           else
             type.name || "untyped"
           end
-        when Hash
-          if type.size == 1
-            key_type, value_type = type.first
-            key_rbs = map_type_to_rbs(key_type, class_name)
-            value_rbs = map_type_to_rbs(value_type, class_name)
-            "Hash[#{key_rbs}, #{value_rbs}]"
-          else
-            "Hash[untyped, untyped]"
-          end
+
         when :boolean
           "bool"
         when :self
