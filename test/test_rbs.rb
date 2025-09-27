@@ -123,19 +123,6 @@ class TestRBS < Minitest::Test
     self.class.send(:remove_const, :TestMixedClass) if self.class.const_defined?(:TestMixedClass)
   end
 
-  def test_rbs_should_use_class_name_not_instance_keyword
-    self.class.const_set(:TestArrayList, Structure.new do
-      attribute(:items, [:array, String])
-    end)
-
-    rbs = Structure::RBS.emit(self.class::TestArrayList)
-
-    refute_match(/-> instance/, rbs)
-    assert_match(/-> TestRBS::TestArrayList/, rbs)
-  ensure
-    self.class.send(:remove_const, :TestArrayList) if self.class.const_defined?(:TestArrayList)
-  end
-
   def test_emit_rbs_to_h_signature_present
     self.class.const_set(:TestBareTypes, Structure.new do
       attribute(:tags, [String])

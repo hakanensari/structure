@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix RBS generation to use typed signatures instead of bare Array/Hash types in to_h method
 
+### Removed
+
+- Remove unused [:array, Type] syntax support from RBS generation
+
 ## [3.6.2] - 2025-09-27
 
 ### Fixed

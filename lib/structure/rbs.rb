@@ -66,7 +66,7 @@ module Structure
           lines << ""
 
           needs_parse_data = types.any? do |_attr, type|
-            type == :self || type == [:self] || (type.is_a?(Array) && type.first == :array)
+            type == :self || type == [:self]
           end
 
           if needs_parse_data
@@ -111,13 +111,7 @@ module Structure
         when [:self]
           "Array[#{class_name} | parse_data]"
         when Array
-          if type.first == :array && type.last == :self
-            "Array[#{class_name} | parse_data]"
-          elsif type.first == :array
-            # For [:array, SomeType] format, use Array[untyped] since we coerce
-            "Array[untyped]"
-          elsif type.size == 1 && type.first == :self
-            # [:self] is handled above, this shouldn't happen
+          if type.size == 1 && type.first == :self
             "Array[#{class_name} | parse_data]"
           elsif type.size == 1
             # Regular array type like [String], [Integer], etc.
@@ -157,10 +151,7 @@ module Structure
         when :self
           class_name || "untyped"
         when Array
-          if type.size == 2 && type.first == :array
-            element_type = map_type_to_rbs(type.last, class_name)
-            "Array[#{element_type}]"
-          elsif type.size == 1
+          if type.size == 1
             # Single element array means array of that type
             element_type = map_type_to_rbs(type.first, class_name)
             "Array[#{element_type}]"
