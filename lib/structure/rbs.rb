@@ -136,7 +136,22 @@ module Structure
       def map_type_to_rbs(type, class_name)
         case type
         when Class
-          type.name || "untyped"
+          if type == Array
+            "Array[untyped]"
+          elsif type == Hash
+            "Hash[untyped, untyped]"
+          else
+            type.name || "untyped"
+          end
+        when Hash
+          if type.size == 1
+            key_type, value_type = type.first
+            key_rbs = map_type_to_rbs(key_type, class_name)
+            value_rbs = map_type_to_rbs(value_type, class_name)
+            "Hash[#{key_rbs}, #{value_rbs}]"
+          else
+            "Hash[untyped, untyped]"
+          end
         when :boolean
           "bool"
         when :self

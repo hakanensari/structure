@@ -65,31 +65,26 @@ class TestRBS < Minitest::Test
 
   def test_write_rbs_returns_nil_for_non_data_class
     Dir.mktmpdir do |dir|
-      # Should return nil for non-Data classes
       result = Structure::RBS.write(String, dir: dir)
 
       assert_nil(result)
 
-      # Should not create any files
       assert(Dir.empty?(dir))
     end
   end
 
   def test_write_rbs_returns_nil_for_anonymous_class
     Dir.mktmpdir do |dir|
-      # Should return nil for anonymous classes
       anon_data = Data.define(:x, :y)
       result = Structure::RBS.write(anon_data, dir: dir)
 
       assert_nil(result)
 
-      # Should not create any files
       assert(Dir.empty?(dir))
     end
   end
 
   def test_emit_rbs_with_array_types
-    # Create a named class constant
     self.class.const_set(:TestArrayClass, Structure.new do
       attribute(:tags, [String])
       attribute(:numbers, [Integer])
@@ -102,8 +97,6 @@ class TestRBS < Minitest::Test
     assert_match(/attr_reader numbers: Array\[Integer\]\?/, rbs)
     assert_match(/attr_reader flags: Array\[bool\]\?/, rbs)
 
-    # Arrays without self-referential types don't generate parse_data
-    # They use the basic parse signature with Hash[String | Symbol, untyped]
     assert_match(/def self\.parse: \(\?\(Hash\[String \| Symbol, untyped\]\), \*\*untyped\) -> TestRBS::TestArrayClass/, rbs)
     refute_match(/type parse_data/, rbs)
   ensure
@@ -111,7 +104,6 @@ class TestRBS < Minitest::Test
   end
 
   def test_emit_rbs_mixed_array_and_self_referential
-    # Create a named class constant
     self.class.const_set(:TestMixedClass, Structure.new do
       attribute(:name, String)
       attribute(:tags, [String])
@@ -120,12 +112,10 @@ class TestRBS < Minitest::Test
 
     rbs = Structure::RBS.emit(self.class::TestMixedClass)
 
-    # Check attribute readers
     assert_match(/attr_reader name: String\?/, rbs)
     assert_match(/attr_reader tags: Array\[String\]\?/, rbs)
     assert_match(/attr_reader children: Array\[TestRBS::TestMixedClass\]\?/, rbs)
 
-    # Check parse_data
     assert_match(/\?name: untyped/, rbs)
     assert_match(/\?tags: Array\[untyped\]/, rbs)
     assert_match(/\?children: Array\[TestRBS::TestMixedClass \| parse_data\]/, rbs)
@@ -134,20 +124,106 @@ class TestRBS < Minitest::Test
   end
 
   def test_rbs_should_use_class_name_not_instance_keyword
-    # This test demonstrates the RBS generation issue where 'instance'
-    # should be replaced with the actual class name for Steep compatibility
     self.class.const_set(:TestArrayList, Structure.new do
       attribute(:items, [:array, String])
     end)
 
     rbs = Structure::RBS.emit(self.class::TestArrayList)
 
-    # The issue: these should return the class name, not 'instance'
-    # Current (broken): -> instance
-    # Expected (fixed): -> TestRBS::TestArrayList
     refute_match(/-> instance/, rbs)
     assert_match(/-> TestRBS::TestArrayList/, rbs)
   ensure
     self.class.send(:remove_const, :TestArrayList) if self.class.const_defined?(:TestArrayList)
+  end
+
+  def test_emit_rbs_to_h_signature_present
+    self.class.const_set(:TestBareTypes, Structure.new do
+      attribute(:tags, [String])
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestBareTypes)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    refute_nil(to_h_line, "to_h method signature should be present")
+  ensure
+    self.class.send(:remove_const, :TestBareTypes) if self.class.const_defined?(:TestBareTypes)
+  end
+
+  def test_emit_rbs_to_h_signature_no_bare_array_type
+    self.class.const_set(:TestBareArrayType, Structure.new do
+      attribute(:unknown_array, Array)
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestBareArrayType)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    refute_match(/Array\?\s*[,}]/, to_h_line, "to_h should not contain bare Array? type")
+  ensure
+    self.class.send(:remove_const, :TestBareArrayType) if self.class.const_defined?(:TestBareArrayType)
+  end
+
+  def test_emit_rbs_to_h_signature_no_bare_hash_type
+    self.class.const_set(:TestBareHashType, Structure.new do
+      attribute(:unknown_hash, Hash)
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestBareHashType)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    refute_match(/Hash\?\s*[,}]/, to_h_line, "to_h should not contain bare Hash? type")
+  ensure
+    self.class.send(:remove_const, :TestBareHashType) if self.class.const_defined?(:TestBareHashType)
+  end
+
+  def test_emit_rbs_to_h_signature_typed_array
+    self.class.const_set(:TestTypedArray, Structure.new do
+      attribute(:tags, [String])
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestTypedArray)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    assert_match(/Array\[String\]\?/, to_h_line, "to_h should contain Array[String]? for typed arrays")
+  ensure
+    self.class.send(:remove_const, :TestTypedArray) if self.class.const_defined?(:TestTypedArray)
+  end
+
+  def test_emit_rbs_to_h_signature_typed_hash
+    self.class.const_set(:TestTypedHash, Structure.new do
+      attribute(:metadata, { String => String })
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestTypedHash)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    assert_match(/Hash\[String, String\]\?/, to_h_line, "to_h should contain Hash[String, String]? for typed hashes")
+  ensure
+    self.class.send(:remove_const, :TestTypedHash) if self.class.const_defined?(:TestTypedHash)
+  end
+
+  def test_emit_rbs_to_h_signature_unknown_array_as_untyped
+    self.class.const_set(:TestUnknownArray, Structure.new do
+      attribute(:unknown_array, Array)
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestUnknownArray)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    assert_match(/Array\[untyped\]\?/, to_h_line, "to_h should contain Array[untyped]? for unknown arrays")
+  ensure
+    self.class.send(:remove_const, :TestUnknownArray) if self.class.const_defined?(:TestUnknownArray)
+  end
+
+  def test_emit_rbs_to_h_signature_unknown_hash_as_untyped
+    self.class.const_set(:TestUnknownHash, Structure.new do
+      attribute(:unknown_hash, Hash)
+    end)
+
+    rbs = Structure::RBS.emit(self.class::TestUnknownHash)
+    to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
+
+    assert_match(/Hash\[untyped, untyped\]\?/, to_h_line, "to_h should contain Hash[untyped, untyped]? for unknown hashes")
+  ensure
+    self.class.send(:remove_const, :TestUnknownHash) if self.class.const_defined?(:TestUnknownHash)
   end
 end

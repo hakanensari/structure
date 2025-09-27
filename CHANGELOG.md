@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix RBS generation to use typed signatures instead of bare Array/Hash types in to_h method
+
 ## [3.6.2] - 2025-09-27
 
 ### Fixed
