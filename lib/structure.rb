@@ -113,7 +113,7 @@ module Structure
         end
 
         obj = new(**final)
-        after&.call(obj) if after
+        after&.call(obj)
         obj
       end
 
