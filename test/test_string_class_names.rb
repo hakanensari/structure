@@ -5,15 +5,15 @@ require "structure"
 
 class TestStringClassNames < Minitest::Test
   def setup
-    Object.const_set(:Fixtures, Module.new) unless defined?(::Fixtures)
+    Object.const_set(:Fixtures, Module.new)
   end
 
   def teardown
-    Object.send(:remove_const, :Fixtures) if defined?(::Fixtures)
+    Object.send(:remove_const, :Fixtures)
   end
 
   def test_basic_string_class_name
-    create_fixture("SimpleClass") do
+    create_test_class("SimpleClass") do
       attribute(:name, String)
     end
 
@@ -30,7 +30,7 @@ class TestStringClassNames < Minitest::Test
   end
 
   def test_array_of_string_class
-    create_fixture("Item") do
+    create_test_class("Item") do
       attribute(:name, String)
       attribute(:price, Integer)
     end
@@ -53,24 +53,21 @@ class TestStringClassNames < Minitest::Test
   end
 
   def test_circular_dependencies
-    # Create a module for this test's fixtures
-    Fixtures.const_set(:Store, Module.new)
-
-    Fixtures::Store.const_set(:Order, Structure.new do
+    create_test_class("Order") do
       attribute(:id, String)
-      attribute(:items, ["OrderItem"])
-      attribute(:customer, "Customer")
-    end)
+      attribute(:items, ["Fixtures::OrderItem"])
+      attribute(:customer, "Fixtures::Customer")
+    end
 
-    Fixtures::Store.const_set(:OrderItem, Structure.new do
+    create_test_class("OrderItem") do
       attribute(:name, String)
-      attribute(:order, "Order")
-    end)
+      attribute(:order, "Fixtures::Order")
+    end
 
-    Fixtures::Store.const_set(:Customer, Structure.new do
+    create_test_class("Customer") do
       attribute(:name, String)
-      attribute(:orders, ["Order"])
-    end)
+      attribute(:orders, ["Fixtures::Order"])
+    end
 
     order_data = {
       "id" => "order-123",
@@ -81,12 +78,12 @@ class TestStringClassNames < Minitest::Test
       ],
     }
 
-    order = Fixtures::Store::Order.parse(order_data)
+    order = Fixtures::Order.parse(order_data)
 
-    assert_instance_of(Fixtures::Store::Customer, order.customer)
+    assert_instance_of(Fixtures::Customer, order.customer)
     assert_equal(2, order.items.length)
-    assert_instance_of(Fixtures::Store::OrderItem, order.items[0])
-    assert_instance_of(Fixtures::Store::OrderItem, order.items[1])
+    assert_instance_of(Fixtures::OrderItem, order.items[0])
+    assert_instance_of(Fixtures::OrderItem, order.items[1])
 
     # Test circular reference back
     item_with_order = {
@@ -97,36 +94,10 @@ class TestStringClassNames < Minitest::Test
         "items" => [],
       },
     }
-    item = Fixtures::Store::OrderItem.parse(item_with_order)
+    item = Fixtures::OrderItem.parse(item_with_order)
 
-    assert_instance_of(Fixtures::Store::Order, item.order)
-    assert_instance_of(Fixtures::Store::Customer, item.order.customer)
-  end
-
-  def test_nested_modules
-    Fixtures.const_set(:Blog, Module.new)
-
-    create_fixture("User") do
-      attribute(:name, String)
-    end
-
-    # Move User into Blog namespace
-    Fixtures::Blog.const_set(:User, Fixtures.send(:remove_const, :User))
-
-    Fixtures::Blog.const_set(:Post, Structure.new do
-      attribute(:title, String)
-      attribute(:author, "User")
-    end)
-
-    post_data = {
-      "title" => "Hello World",
-      "author" => { "name" => "Alice" },
-    }
-
-    post = Fixtures::Blog::Post.parse(post_data)
-
-    assert_instance_of(Fixtures::Blog::Post, post)
-    assert_instance_of(Fixtures::Blog::User, post.author)
+    assert_instance_of(Fixtures::Order, item.order)
+    assert_instance_of(Fixtures::Customer, item.order.customer)
   end
 
   def test_non_existent_class_raises_error
@@ -142,7 +113,7 @@ class TestStringClassNames < Minitest::Test
   end
 
   def test_backwards_compatibility_with_class_constants
-    item_class = create_fixture("BackCompat") do
+    item_class = create_test_class("BackCompat") do
       attribute(:name, String)
     end
 
@@ -164,15 +135,15 @@ class TestStringClassNames < Minitest::Test
   end
 
   def test_mixed_string_and_direct_references
-    simple_class = create_fixture("MixedRef") do
+    klass = create_test_class("MixedRef") do
       attribute(:value, String)
     end
 
     wrapper = Structure.new do
       attribute(:string_ref, "Fixtures::MixedRef")
-      attribute(:direct_ref, simple_class)
+      attribute(:direct_ref, klass)
       attribute(:string_array, ["Fixtures::MixedRef"])
-      attribute(:direct_array, [simple_class])
+      attribute(:direct_array, [klass])
     end
 
     data = {
@@ -195,19 +166,19 @@ class TestStringClassNames < Minitest::Test
     Fixtures::App.const_set(:Models, Module.new)
     Fixtures::App.const_set(:Services, Module.new)
 
-    Fixtures::App::Models.const_set(:InnerClass, Structure.new do
+    create_test_class("InnerClass", namespace: Fixtures::App::Models) do
       attribute(:inner_value, String)
-    end)
+    end
 
-    Fixtures::App::Models.const_set(:MiddleClass, Structure.new do
+    create_test_class("MiddleClass", namespace: Fixtures::App::Models) do
       attribute(:middle_value, String)
       attribute(:inner, "InnerClass")
-    end)
+    end
 
-    Fixtures::App::Services.const_set(:OuterClass, Structure.new do
+    create_test_class("OuterClass", namespace: Fixtures::App::Services) do
       attribute(:outer_value, String)
       attribute(:middle, "Fixtures::App::Models::MiddleClass")
-    end)
+    end
 
     data = {
       "outer_value" => "outer",
@@ -227,7 +198,7 @@ class TestStringClassNames < Minitest::Test
   end
 
   def test_string_class_resolution_caching
-    create_fixture("CachedClass") do
+    create_test_class("CachedClass") do
       attribute(:value, String)
     end
 
@@ -259,15 +230,15 @@ class TestStringClassNames < Minitest::Test
   def test_string_references_within_fixtures_namespace
     # Test that classes within the Fixtures namespace can reference each other
     # using just the class name (without the Fixtures:: prefix)
-    Fixtures.const_set(:Department, Structure.new do
+    create_test_class("Department") do
       attribute(:name, String)
       attribute(:manager, "Employee")
-    end)
+    end
 
-    Fixtures.const_set(:Employee, Structure.new do
+    create_test_class("Employee") do
       attribute(:name, String)
       attribute(:department, "Department")
-    end)
+    end
 
     dept_data = {
       "name" => "Engineering",
@@ -282,9 +253,10 @@ class TestStringClassNames < Minitest::Test
 
   private
 
-  def create_fixture(class_name, &block)
+  def create_test_class(class_name, namespace: Fixtures, &block)
     klass = Structure.new(&block)
-    Fixtures.const_set(class_name, klass)
+    namespace.const_set(class_name, klass)
+
     klass
   end
 end

@@ -9,6 +9,16 @@ require_relative "fixtures/person"
 require_relative "fixtures/measure"
 
 class TestRBS < Minitest::Test
+  def setup
+    @created_classes = []
+  end
+
+  def teardown
+    @created_classes.each do |class_name|
+      self.class.send(:remove_const, class_name) if self.class.const_defined?(class_name)
+    end
+  end
+
   def test_emit_rbs
     expected = File.read("test/fixtures/person.rbs")
     actual = Structure::RBS.emit(Person)
@@ -85,13 +95,13 @@ class TestRBS < Minitest::Test
   end
 
   def test_emit_rbs_with_array_types
-    self.class.const_set(:TestArrayClass, Structure.new do
+    klass = create_test_class(:TestArrayClass) do
       attribute(:tags, [String])
       attribute(:numbers, [Integer])
       attribute(:flags, [:boolean])
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestArrayClass)
+    rbs = Structure::RBS.emit(klass)
 
     assert_match(/attr_reader tags: Array\[String\]\?/, rbs)
     assert_match(/attr_reader numbers: Array\[Integer\]\?/, rbs)
@@ -99,18 +109,16 @@ class TestRBS < Minitest::Test
 
     assert_match(/def self\.parse: \(\?\(Hash\[String \| Symbol, untyped\]\), \*\*untyped\) -> TestRBS::TestArrayClass/, rbs)
     refute_match(/type parse_data/, rbs)
-  ensure
-    self.class.send(:remove_const, :TestArrayClass) if self.class.const_defined?(:TestArrayClass)
   end
 
   def test_emit_rbs_mixed_array_and_self_referential
-    self.class.const_set(:TestMixedClass, Structure.new do
+    klass = create_test_class(:TestMixedClass) do
       attribute(:name, String)
       attribute(:tags, [String])
       attribute(:children, [:self])
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestMixedClass)
+    rbs = Structure::RBS.emit(klass)
 
     assert_match(/attr_reader name: String\?/, rbs)
     assert_match(/attr_reader tags: Array\[String\]\?/, rbs)
@@ -119,85 +127,80 @@ class TestRBS < Minitest::Test
     assert_match(/\?name: untyped/, rbs)
     assert_match(/\?tags: Array\[untyped\]/, rbs)
     assert_match(/\?children: Array\[TestRBS::TestMixedClass \| parse_data\]/, rbs)
-  ensure
-    self.class.send(:remove_const, :TestMixedClass) if self.class.const_defined?(:TestMixedClass)
   end
 
   def test_emit_rbs_to_h_signature_present
-    self.class.const_set(:TestBareTypes, Structure.new do
+    klass = create_test_class(:TestBareTypes) do
       attribute(:tags, [String])
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestBareTypes)
+    rbs = Structure::RBS.emit(klass)
     to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
 
     refute_nil(to_h_line, "to_h method signature should be present")
-  ensure
-    self.class.send(:remove_const, :TestBareTypes) if self.class.const_defined?(:TestBareTypes)
   end
 
   def test_emit_rbs_to_h_signature_no_bare_array_type
-    self.class.const_set(:TestBareArrayType, Structure.new do
+    klass = create_test_class(:TestBareArrayType) do
       attribute(:unknown_array, Array)
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestBareArrayType)
+    rbs = Structure::RBS.emit(klass)
     to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
 
     refute_match(/Array\?\s*[,}]/, to_h_line, "to_h should not contain bare Array? type")
-  ensure
-    self.class.send(:remove_const, :TestBareArrayType) if self.class.const_defined?(:TestBareArrayType)
   end
 
   def test_emit_rbs_to_h_signature_no_bare_hash_type
-    self.class.const_set(:TestBareHashType, Structure.new do
+    klass = create_test_class(:TestBareHashType) do
       attribute(:unknown_hash, Hash)
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestBareHashType)
+    rbs = Structure::RBS.emit(klass)
     to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
 
     refute_match(/Hash\?\s*[,}]/, to_h_line, "to_h should not contain bare Hash? type")
-  ensure
-    self.class.send(:remove_const, :TestBareHashType) if self.class.const_defined?(:TestBareHashType)
   end
 
   def test_emit_rbs_to_h_signature_typed_array
-    self.class.const_set(:TestTypedArray, Structure.new do
+    klass = create_test_class(:TestTypedArray) do
       attribute(:tags, [String])
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestTypedArray)
+    rbs = Structure::RBS.emit(klass)
     to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
 
     assert_match(/Array\[String\]\?/, to_h_line, "to_h should contain Array[String]? for typed arrays")
-  ensure
-    self.class.send(:remove_const, :TestTypedArray) if self.class.const_defined?(:TestTypedArray)
   end
 
   def test_emit_rbs_to_h_signature_unknown_array_as_untyped
-    self.class.const_set(:TestUnknownArray, Structure.new do
+    klass = create_test_class(:TestUnknownArray) do
       attribute(:unknown_array, Array)
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestUnknownArray)
+    rbs = Structure::RBS.emit(klass)
     to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
 
     assert_match(/Array\[untyped\]\?/, to_h_line, "to_h should contain Array[untyped]? for unknown arrays")
-  ensure
-    self.class.send(:remove_const, :TestUnknownArray) if self.class.const_defined?(:TestUnknownArray)
   end
 
   def test_emit_rbs_to_h_signature_unknown_hash_as_untyped
-    self.class.const_set(:TestUnknownHash, Structure.new do
+    klass = create_test_class(:TestUnknownHash) do
       attribute(:unknown_hash, Hash)
-    end)
+    end
 
-    rbs = Structure::RBS.emit(self.class::TestUnknownHash)
+    rbs = Structure::RBS.emit(klass)
     to_h_line = rbs.lines.find { |line| line.include?("def to_h:") }
 
     assert_match(/Hash\[untyped, untyped\]\?/, to_h_line, "to_h should contain Hash[untyped, untyped]? for unknown hashes")
-  ensure
-    self.class.send(:remove_const, :TestUnknownHash) if self.class.const_defined?(:TestUnknownHash)
+  end
+
+  private
+
+  def create_test_class(class_name, &block)
+    klass = Structure.new(&block)
+    self.class.const_set(class_name, klass)
+    @created_classes << class_name.to_sym
+    klass
   end
 end
