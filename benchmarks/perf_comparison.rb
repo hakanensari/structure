@@ -38,6 +38,8 @@ module DryStructModels
   end
 
   class User < Dry::Struct
+    transform_keys(&:to_sym)
+
     attribute? :name, Types::String
     attribute? :age, Types::Coercible::Integer
     attribute? :email, Types::String
