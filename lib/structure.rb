@@ -83,7 +83,6 @@ module Structure
         attributes = meta[:attributes]
         defaults = meta[:defaults]
         mappings = meta[:mappings]
-        coercions = meta[:coercions]
         after = meta[:after]
 
         attributes.each do |attr|
@@ -94,18 +93,19 @@ module Structure
             end
           end
 
-          coercion = coercions[attr]
-          if coercion && !value.nil?
-            # Procs (not lambdas) need class context for self-referential parsing
-            # Lambdas and other callables use direct invocation
-            value =
-              if coercion.is_a?(Proc) && !coercion.lambda?
-                instance_exec(value, &coercion) # steep:ignore
-              else
-                coercion.call(value)
-              end
+          if value
+            coercion = meta.dig(:coercions, attr)
+            if coercion
+              # Procs (not lambdas) need class context for self-referential parsing
+              # Lambdas and other callables use direct invocation
+              value =
+                if coercion.is_a?(Proc) && !coercion.lambda?
+                  instance_exec(value, &coercion) # steep:ignore
+                else
+                  coercion.call(value)
+                end
+            end
           end
-
           final[attr] = value
         end
 
