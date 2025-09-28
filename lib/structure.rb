@@ -65,37 +65,34 @@ module Structure
         h
       end
 
-      # parse accepts JSON-ish hashes + kwargs override
-      klass.singleton_class.define_method(:parse) do |data = {}, **kwargs|
+      # parse accepts JSON-ish hashes + optional overrides hash
+      klass.singleton_class.define_method(:parse) do |data = {}, overrides = nil|
         return data if data.is_a?(self)
 
         unless data.respond_to?(:merge!)
           raise TypeError, "can't convert #{data.class} into #{self}"
         end
 
-        # @type var kwargs: Hash[Symbol, untyped]
-        string_kwargs = kwargs.transform_keys(&:to_s)
-        data.merge!(string_kwargs)
+        overrides&.each { |k, v| data[k.to_s] = v }
         # @type self: singleton(Data) & _StructuredDataClass
         # @type var final: Hash[Symbol, untyped]
         final = {}
 
         # @type var meta: untyped
         meta = __structure_meta__
-
-        attributes = meta.fetch(:attributes)
-        defaults = meta.fetch(:defaults)
-        mappings = meta.fetch(:mappings)
-        coercions = meta.fetch(:coercions)
-        after = meta.fetch(:after)
+        attributes = meta[:attributes]
+        defaults = meta[:defaults]
+        mappings = meta[:mappings]
+        coercions = meta[:coercions]
+        after = meta[:after]
 
         attributes.each do |attr|
-          source = mappings[attr] || attr.to_s
-          value =
-            if data.key?(source)            then data[source]
-            elsif data.key?(source.to_sym)  then data[source.to_sym]
-            elsif defaults.key?(attr) then defaults[attr]
+          source = mappings.fetch(attr) { attr.to_s }
+          value = data.fetch(source) do
+            data.fetch(source.to_sym) do
+              defaults[attr]
             end
+          end
 
           coercion = coercions[attr]
           if coercion && !value.nil?
