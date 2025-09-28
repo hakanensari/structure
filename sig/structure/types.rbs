@@ -3,6 +3,8 @@ module Structure
     BOOLEAN_TRUTHY: Array[untyped]
 
     self.@boolean: Proc
+    self.@kernel_cache: Hash[untyped, Proc]
+    self.@parseable_cache: Hash[untyped, Proc]
 
     def self.coerce: (untyped type, ?untyped? context_class) -> untyped
     def self.resolve_class: (String class_name, untyped? context_class) -> untyped

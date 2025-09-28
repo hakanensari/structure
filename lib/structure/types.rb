@@ -75,7 +75,7 @@ module Structure
       private
 
       def boolean
-        ->(val) { BOOLEAN_TRUTHY.include?(val) }
+        @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
       end
 
       def self_referential
@@ -83,11 +83,13 @@ module Structure
       end
 
       def kernel(type)
-        ->(val) { Kernel.send(type.name, val) }
+        @kernel_cache ||= {} # : Hash[untyped, Proc]
+        @kernel_cache[type] ||= ->(val) { Kernel.send(type.name, val) }
       end
 
       def parseable(type)
-        ->(val) { type.parse(val) }
+        @parseable_cache ||= {} # : Hash[untyped, Proc]
+        @parseable_cache[type] ||= ->(val) { type.parse(val) }
       end
 
       def string_class(class_name, context_class)
