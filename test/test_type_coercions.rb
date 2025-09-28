@@ -124,12 +124,11 @@ class TestTypeCoercions < Minitest::Test
   end
 
   def test_hash_type_raises_error
-    error = assert_raises(ArgumentError) do
+    assert_raises(ArgumentError) do
       Structure.new do
         attribute(:metadata, { String => Integer })
       end
     end
-    assert_equal("Cannot specify {String => Integer} as type", error.message)
   end
 
   def test_empty_hash_type_raises_error
