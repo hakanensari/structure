@@ -418,3 +418,7 @@ Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
 $ bundle install
 $ bundle exec rake
 ```
+
+### Performance Considerations
+
+String-based method generation with `class_eval` is more performant but also overcomplicates the code. For now, I prioritize legibility.
