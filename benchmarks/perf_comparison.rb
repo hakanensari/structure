@@ -3,6 +3,18 @@
 
 # Performance comparison between Structure and dry-struct
 # Usage: ruby perf_comparison.rb
+#
+# Key findings:
+#
+# Speed:
+# - Structure uses Data.define (Ruby 3.2+) with values stored in C structs
+# - dry-struct uses plain Ruby objects with type validation
+#
+# Memory:
+# - Structure: Data.define stores values directly in C array (no Ruby @attributes hash)
+# - dry-struct: Stores input hash as @attributes instance variable (persists for object lifetime)
+#
+# Trade-off: Structure trades temporary allocations (fast GC) for speed and lower retained memory
 
 require "benchmark"
 require "bundler/inline"
@@ -17,19 +29,17 @@ end
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "structure"
 
-puts "Ruby #{RUBY_VERSION}"
-puts "Testing performance: Structure vs dry-struct"
-puts "=" * 50
-
-# Test data with coercion - both implementations convert age to Integer and active to Boolean
+# Test data with coercion
 TEST_DATA = {
-  "name" => "John Doe",
-  "age" => "30",
-  "email" => "john@example.com",
-  "active" => "true",
+  "attr1" => "foo",
+  "attr2" => "123",
+  "attr3" => "bar",
+  "attr4" => "true",
+  "attr5" => ["a", "b", "c"],
+  "attr6" => { "x" => "y" },
 }.freeze
 
-# Define dry-struct models (simple version)
+# Define dry-struct models
 module DryStructModels
   require "dry-struct"
 
@@ -37,94 +47,69 @@ module DryStructModels
     include Dry.Types()
   end
 
-  class User < Dry::Struct
+  class Model < Dry::Struct
     transform_keys(&:to_sym)
 
-    attribute? :name, Types::String
-    attribute? :age, Types::Coercible::Integer
-    attribute? :email, Types::String
-    attribute? :active, Types::Params::Bool
+    attribute? :attr1, Types::String
+    attribute? :attr2, Types::Coercible::Integer
+    attribute? :attr3, Types::String
+    attribute? :attr4, Types::Params::Bool
+    attribute? :attr5, Types::Array
+    attribute? :attr6, Types::Hash
+    attribute? :attr7, Types::String.default("default")
   end
 end
 
 # Define Structure models
 module StructureModels
-  User = Structure.new do
-    attribute(:name, String)
-    attribute(:age, Integer)
-    attribute(:email, String)
-    attribute(:active, :boolean)
+  Model = Structure.new do
+    attribute(:attr1, String)
+    attribute(:attr2, Integer)
+    attribute(:attr3, String)
+    attribute(:attr4, :boolean)
+    attribute(:attr5)
+    attribute(:attr6)
+    attribute(:attr7, String, default: "default")
   end
 end
 
-# Test that both work with type coercion
-puts "Testing basic functionality:"
-dry_user = DryStructModels::User.new(TEST_DATA)
-structure_user = StructureModels::User.parse(TEST_DATA)
-
-puts "dry-struct user: #{dry_user.name}, #{dry_user.age} (#{dry_user.age.class}), #{dry_user.active} (#{dry_user.active.class})"
-puts "Structure user: #{structure_user.name}, #{structure_user.age} (#{structure_user.age.class}), #{structure_user.active} (#{structure_user.active.class})"
-puts "✓ Both perform the same type coercions"
-puts
-
-# Warm up
-puts "Warming up..."
-100.times do
-  DryStructModels::User.new(TEST_DATA)
-  StructureModels::User.parse(TEST_DATA)
-end
-
-# Performance test
 iterations = 100_000
 
-puts "Performance test (#{iterations} iterations):"
-puts
+dry_time = nil
+structure_time = nil
 
 Benchmark.bm(15) do |x|
   dry_time = x.report("dry-struct") do
     iterations.times do
-      DryStructModels::User.new(TEST_DATA)
+      DryStructModels::Model.new(TEST_DATA)
     end
   end
 
-  structure_time = x.report("Structure") do
+  structure_time = x.report("structure") do
     iterations.times do
-      StructureModels::User.parse(TEST_DATA)
+      StructureModels::Model.parse(TEST_DATA)
     end
   end
-
-  diff = ((structure_time.real - dry_time.real) / dry_time.real * 100)
-  puts "Structure is #{format("%.1f", diff.abs)}% #{diff > 0 ? "slower" : "faster"} than dry-struct"
 end
 
 puts
-puts "Memory usage comparison (1000 iterations):"
+time_diff = ((structure_time.real - dry_time.real) / dry_time.real * 100)
+puts "structure is #{format("%.1f", time_diff.abs)}% #{time_diff > 0 ? "slower" : "faster"}"
 
-# Test memory usage
-def test_memory_usage(label, &block)
-  GC.start
-  before = GC.stat[:total_allocated_objects]
+GC.start
+before_heap = GC.stat[:heap_allocated_pages]
+_dry_instances = Array.new(iterations) { DryStructModels::Model.new(TEST_DATA) }
+GC.start
+after_heap = GC.stat[:heap_allocated_pages]
+dry_pages = after_heap - before_heap
 
-  1000.times(&block)
+GC.start
+before_heap = GC.stat[:heap_allocated_pages]
+_structure_instances = Array.new(iterations) { StructureModels::Model.parse(TEST_DATA) }
+GC.start
+after_heap = GC.stat[:heap_allocated_pages]
+structure_pages = after_heap - before_heap
 
-  GC.start
-  after = GC.stat[:total_allocated_objects]
-
-  puts "#{label}: #{after - before} objects allocated"
-end
-
-test_memory_usage("dry-struct") do
-  DryStructModels::User.new(TEST_DATA)
-end
-
-test_memory_usage("Structure") do
-  StructureModels::User.parse(TEST_DATA)
-end
-
-puts
-puts "Summary:"
-puts "=" * 30
-puts "✓ Structure: Built on Ruby Data.define, performs type coercion"
-puts "✓ dry-struct: Full dry-rb ecosystem, performs same coercions"
-puts "✓ Fair comparison: Both convert age to Integer and active to Boolean"
-puts "✓ Structure: Zero dependencies, competitive performance"
+pages_diff = dry_pages - structure_pages
+comparison = pages_diff.positive? ? "#{pages_diff} pages less" : "#{pages_diff.abs} pages more"
+puts "structure uses #{structure_pages} pages vs #{dry_pages} pages (#{comparison})"

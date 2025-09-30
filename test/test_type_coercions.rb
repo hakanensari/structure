@@ -123,7 +123,17 @@ class TestTypeCoercions < Minitest::Test
     end
   end
 
-  def test_hash_type_raises_error
+  def test_hash_coercion
+    data_class = Structure.new do
+      attribute(:metadata, Hash)
+    end
+
+    data = data_class.parse(metadata: { key: "value", another: 123 })
+
+    assert_equal({ key: "value", another: 123 }, data.metadata)
+  end
+
+  def test_hash_with_structure_raises_error
     assert_raises(ArgumentError) do
       Structure.new do
         attribute(:metadata, { String => Integer })

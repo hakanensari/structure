@@ -14,7 +14,7 @@ module Structure
     def mappings: () -> Hash[Symbol, String]
     def types: () -> Hash[Symbol, untyped]
     def defaults: () -> Hash[Symbol, untyped]
-    def coercions: (?untyped? context_class) -> Hash[Symbol, Proc]
+    def coercions: (?untyped? context) -> Hash[Symbol, Proc]
     def predicate_methods: () -> Hash[Symbol, Symbol]
     def after_parse_callback: () -> (Proc | nil)
   end

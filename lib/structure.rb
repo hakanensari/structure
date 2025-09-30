@@ -26,46 +26,39 @@ module Structure
       # @type var klass: untyped
       klass = Data.define(*builder.attributes)
 
-      # capture all metadata and attach to class - no closure capture needed
-      mappings = builder.mappings
-      coercions = builder.coercions(klass)
-      predicates = builder.predicate_methods
-      after = builder.after_parse_callback
+      builder.predicate_methods.each do |pred, attr|
+        klass.define_method(pred) { !!public_send(attr) }
+      end
 
+      # Store metadata on class to avoid closure capture (memory optimization)
       meta = {
-        attributes: builder.attributes.freeze,
-        types: builder.types.freeze,
-        defaults: builder.defaults.freeze,
-        mappings: mappings.freeze,
-        coercions: coercions.freeze,
-        predicates: predicates.freeze,
-        after: after,
+        types: builder.types,
+        defaults: builder.defaults,
+        mappings: builder.mappings,
+        coercions: builder.coercions(klass),
+        after_parse: builder.after_parse_callback,
       }.freeze
       klass.instance_variable_set(:@__structure_meta__, meta)
       klass.singleton_class.attr_reader(:__structure_meta__)
 
-      # Define predicate methods
-      predicates.each do |pred, attr|
-        klass.define_method(pred) { !!public_send(attr) }
-      end
-
       # recursive to_h
       klass.define_method(:to_h) do
-        # @type var h: Hash[Symbol, untyped]
-        h = {}
-        klass.members.each do |m|
+        klass.members.to_h do |m|
           v = public_send(m)
-          h[m] =
-            case v
-            when Array then v.map { |x| x.respond_to?(:to_h) && x ? x.to_h : x }
-            when ->(x) { x.respond_to?(:to_h) && x } then v.to_h
-            else v
-            end
+          value = case v
+          when Array then v.map { |x| x.respond_to?(:to_h) && x ? x.to_h : x }
+          when ->(x) { x.respond_to?(:to_h) && x } then v.to_h
+          else v
+          end
+          [m, value]
         end
-        h
       end
 
       # parse accepts JSON-ish hashes + optional overrides hash
+      # overrides is a positional arg (not **kwargs) to avoid hash allocation when unused
+      #
+      # @type self: singleton(Data) & _StructuredDataClass
+      # @type var final: Hash[Symbol, untyped]
       klass.singleton_class.define_method(:parse) do |data = {}, overrides = nil|
         return data if data.is_a?(self)
 
@@ -74,43 +67,29 @@ module Structure
         end
 
         overrides&.each { |k, v| data[k.to_s] = v }
-        # @type self: singleton(Data) & _StructuredDataClass
-        # @type var final: Hash[Symbol, untyped]
-        final = {}
 
-        # @type var meta: untyped
-        meta = __structure_meta__
-        attributes = meta[:attributes]
-        defaults = meta[:defaults]
-        mappings = meta[:mappings]
-        after = meta[:after]
+        final       = {}
+        mappings    = __structure_meta__[:mappings]
+        defaults    = __structure_meta__[:defaults]
+        after_parse = __structure_meta__[:after_parse]
 
-        attributes.each do |attr|
-          source = mappings.fetch(attr) { attr.to_s }
-          value = data.fetch(source) do
-            data.fetch(source.to_sym) do
+        mappings.each do |attr, from|
+          value = data.fetch(from) do
+            data.fetch(from.to_sym) do
               defaults[attr]
             end
           end
 
           if value
-            coercion = meta.dig(:coercions, attr)
-            if coercion
-              # Procs (not lambdas) need class context for self-referential parsing
-              # Lambdas and other callables use direct invocation
-              value =
-                if coercion.is_a?(Proc) && !coercion.lambda?
-                  instance_exec(value, &coercion) # steep:ignore
-                else
-                  coercion.call(value)
-                end
-            end
+            coercion = __structure_meta__[:coercions][attr]
+            value = coercion.call(value) if coercion
           end
+
           final[attr] = value
         end
 
         obj = new(**final)
-        after&.call(obj)
+        after_parse&.call(obj)
         obj
       end
 

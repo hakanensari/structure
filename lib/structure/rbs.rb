@@ -15,10 +15,13 @@ module Structure
         # @type var meta: Hash[Symbol, untyped]
         meta = klass.respond_to?(:__structure_meta__) ? klass.__structure_meta__ : {}
 
+        attributes = meta[:mappings] ? meta[:mappings].keys : klass.members
+        types = meta.fetch(:types, {}) # steep:ignore
+
         emit_rbs_content(
-          class_name: class_name,
-          attributes: meta.fetch(:attributes, klass.members),
-          types: meta.fetch(:types, {}), # steep:ignore
+          class_name:,
+          attributes:,
+          types:,
           has_structure_modules: meta.any?,
         )
       end

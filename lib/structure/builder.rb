@@ -5,12 +5,14 @@ require "structure/types"
 module Structure
   # Builder class for accumulating attribute definitions
   class Builder
-    attr_reader :mappings, :types, :defaults, :after_parse_callback
+    # @api private
+    attr_reader :mappings, :defaults, :types, :after_parse_callback
 
+    # @api private
     def initialize
       @mappings = {}
-      @types = {}
       @defaults = {}
+      @types = {}
     end
 
     # DSL method for defining attributes with optional type coercion
@@ -56,14 +58,17 @@ module Structure
       @after_parse_callback = block
     end
 
+    # @api private
     def attributes
       @mappings.keys
     end
 
-    def coercions(context_class = nil)
-      @types.transform_values { |type| Types.coerce(type, context_class) }
+    # @api private
+    def coercions(context = nil)
+      @types.transform_values { |type| Types.coerce(type, context) }
     end
 
+    # @api private
     def predicate_methods
       @types.filter_map do |name, type|
         if type == :boolean
