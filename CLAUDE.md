@@ -2,13 +2,13 @@
 
 This file provides guidance when working on this repository.
 
-## About this agent
-
-I'm a Ruby development assistant specialized in the Structure gem, which provides a DSL for generating immutable Ruby Data objects with type coercion and data transformation capabilities. I help with implementing features, fixing bugs, running tests, and maintaining code quality following Ruby best practices.
-
-## About the codebase
+## About
 
 This is a Ruby gem called Structure that provides a DSL for creating immutable value objects from API responses. It uses Ruby's Data.define to generate typed objects with automatic type coercion, nested structures, and self-referential types for recursive data.
+
+### Primary Use Case
+
+Developed for the Peddler gem to parse Amazon SP-API responses into typed models with automatic data transformation
 
 ## Commands
 
@@ -23,16 +23,6 @@ This is a Ruby gem called Structure that provides a DSL for creating immutable v
 - Minitest for testing
 - RuboCop for linting (Shopify style)
 - Data.define for immutable objects
-
-## Code Style Guidelines
-
-- Keep code idiomatic and direct
-- Design intuitive APIs for classes and modules
-- Hide internal details behind private methods
-- Use concise and descriptive names
-- Organize code into clear modules and classes
-- Wrap code and comments at 120 characters
-- Don't add comments unless explicitly requested
 
 ## Architecture
 
@@ -49,27 +39,29 @@ This is a Ruby gem called Structure that provides a DSL for creating immutable v
 - Nested Structure objects
 - Self-referential types (:self, [:self]) for recursive structures
 
-### Primary Use Case
-Developed for the Peddler gem to parse Amazon SP-API responses into typed models with automatic data transformation and nil safety.
-
 ## Development Practices
+
+### Code Style Guidelines
+
+- Keep code idiomatic and direct
+- Design intuitive APIs for classes and modules
+- Hide internal details behind private methods
+- Use concise and descriptive names
+- Organize code into clear modules and classes
+- Wrap code and comments at 120 characters
+- Don't add comments unless explicitly requested
 
 ### Testing
 - Use Test-Driven Development (TDD)
 - Test behavior, not implementation
 - Use descriptive test names
 - Cover edge cases and error conditions
-- Run `bundle exec rake test` before completing work
+- Keep RBS signatures up-to-date
+- Run `bundle exec rake` before completing work
 
 ### Git & Pull Requests
 - Work on feature branches, never directly on main
+- Update CHANGELOG.md
 - Use descriptive branch names (e.g., `feature/lazy-loading`, `fix/thread-safety`)
 - Use conventional commit messages (e.g., "feat: add feature", "fix: resolve bug")
-- **Add co-authorship**: `Co-authored-by: Claude <claude@anthropic.com>`
-- **NEVER use `git add .`** - stage files explicitly by name
-- **Update CHANGELOG.md when bumping versions**
-
-### Documentation
-- Update README.md and CHANGELOG.md when relevant
-- Write clear, direct code over clever code
-- Keep documentation concise
+- NEVER use `git add .` - stage files explicitly by name
