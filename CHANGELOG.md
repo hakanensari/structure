@@ -9,9 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Performance
 
-- Skip coercion for nil and false values to reduce unnecessary processing
-- Memoize coercion procs to reduce memory allocations
-- Optimize parsing for speed improvements (~30% faster than dry-struct)
+- Optimize parsing for speed improvements
 
 ## [3.6.3] - 2025-01-27
 
