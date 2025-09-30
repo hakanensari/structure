@@ -7,5 +7,5 @@ Category = Structure.new do
   attribute(:children, [:self], default: [])
 end
 
-cat = Category.parse(children: [Category.new(name: "root", children: [])])
+cat = Category.parse(name: "parent", children: [Category.new(name: "root", children: [])])
 cat.to_h

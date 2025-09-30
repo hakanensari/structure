@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `attribute?` method for defining optional attributes (inspired by dry-struct's API)
+
+### Changed
+
+- `attribute` now defines required attributes (key must be present in input hash)
+
 ## [3.7.0] - 2025-01-30
 
 ### Performance

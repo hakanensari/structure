@@ -26,6 +26,21 @@ module Structure
       # @type var klass: untyped
       klass = Data.define(*builder.attributes)
 
+      # Override initialize to make optional attributes truly optional
+      optional_attrs = builder.optional
+      unless optional_attrs.empty?
+        klass.class_eval do
+          alias_method(:__data_initialize__, :initialize)
+
+          define_method(:initialize) do |**kwargs| # steep:ignore
+            optional_attrs.each do |attr|
+              kwargs[attr] = nil unless kwargs.key?(attr)
+            end
+            __data_initialize__(**kwargs) # steep:ignore
+          end
+        end
+      end
+
       builder.predicate_methods.each do |pred, attr|
         klass.define_method(pred) { !!public_send(attr) }
       end
@@ -37,6 +52,7 @@ module Structure
         mappings: builder.mappings,
         coercions: builder.coercions(klass),
         after_parse: builder.after_parse_callback,
+        required: builder.required,
       }.freeze
       klass.instance_variable_set(:@__structure_meta__, meta)
       klass.singleton_class.attr_reader(:__structure_meta__)
@@ -72,6 +88,15 @@ module Structure
         mappings    = __structure_meta__[:mappings]
         defaults    = __structure_meta__[:defaults]
         after_parse = __structure_meta__[:after_parse]
+        required    = __structure_meta__[:required]
+
+        # Check for missing required attributes
+        required.each do |attr|
+          from = mappings[attr]
+          next if data.key?(from) || data.key?(from.to_sym) || defaults.key?(attr)
+
+          raise ArgumentError, "missing keyword: :#{attr}"
+        end
 
         mappings.each do |attr, from|
           value = data.fetch(from) do

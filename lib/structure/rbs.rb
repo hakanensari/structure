@@ -17,11 +17,13 @@ module Structure
 
         attributes = meta[:mappings] ? meta[:mappings].keys : klass.members
         types = meta.fetch(:types, {}) # steep:ignore
+        required = meta.fetch(:required, attributes) # steep:ignore
 
         emit_rbs_content(
           class_name:,
           attributes:,
           types:,
+          required:,
           has_structure_modules: meta.any?,
         )
       end
@@ -47,7 +49,7 @@ module Structure
 
       private
 
-      def emit_rbs_content(class_name:, attributes:, types:, has_structure_modules:)
+      def emit_rbs_content(class_name:, attributes:, types:, required:, has_structure_modules:)
         # @type var lines: Array[String]
         lines = []
         lines << "class #{class_name} < Data"
@@ -61,7 +63,11 @@ module Structure
             [attr, rbs_type != "untyped" ? "#{rbs_type}?" : rbs_type]
           end.to_h
 
-          keyword_params = attributes.map { |attr| "#{attr}: #{rbs_types[attr]}" }.join(", ")
+          # Mark optional attributes with ? prefix in keyword params
+          keyword_params = attributes.map do |attr|
+            prefix = required.include?(attr) ? "" : "?"
+            "#{prefix}#{attr}: #{rbs_types[attr]}"
+          end.join(", ")
           positional_params = attributes.map { |attr| rbs_types[attr] }.join(", ")
 
           lines << "  def self.new: (#{keyword_params}) -> #{class_name}"

@@ -97,6 +97,36 @@ person.name    # => "Bob Smith"
 person.active? # => true
 ```
 
+### Optional Attributes
+
+Structure wraps Data classes. All attributes are required when creating instances, even if their value is `nil`.
+
+```ruby
+User = Structure.new do
+  attribute(:name, String)
+  attribute(:age, Integer)
+end
+
+User.parse(name: "Alice", age: 30) # Works
+User.parse(name: nil, age: nil)    # Works, nil values allowed
+User.parse(name: "Alice")          # ArgumentError: missing keyword: :age
+```
+
+Use `attribute?` to make attributes truly optional. The key can then be omitted entirely.
+
+```ruby
+User = Structure.new do
+  attribute(:name, String)
+  attribute?(:age, Integer)
+end
+
+# Now you can omit the optional attribute
+User.parse(name: "Bob")            # Works, age defaults to nil
+
+# You still must provide regular attributes
+User.parse(age: 10)                # ArgumentError: missing keyword: :name
+```
+
 ### Default Values
 
 Handle missing data:
@@ -190,7 +220,7 @@ product.title           # => "Laptop"
 product.tags.first.name # => "electronics"
 ```
 
-### String Class Names (Lazy Resolution)
+### Lazy Resolution
 
 To handle circular dependencies between classes, you can use string class names that are resolved lazily:
 

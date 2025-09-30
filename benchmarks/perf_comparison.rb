@@ -37,6 +37,7 @@ TEST_DATA = {
   "attr4" => "true",
   "attr5" => ["a", "b", "c"],
   "attr6" => { "x" => "y" },
+  "attr8" => "optional",
 }.freeze
 
 # Define dry-struct models
@@ -50,13 +51,14 @@ module DryStructModels
   class Model < Dry::Struct
     transform_keys(&:to_sym)
 
-    attribute? :attr1, Types::String
-    attribute? :attr2, Types::Coercible::Integer
-    attribute? :attr3, Types::String
-    attribute? :attr4, Types::Params::Bool
-    attribute? :attr5, Types::Array
-    attribute? :attr6, Types::Hash
-    attribute? :attr7, Types::String.default("default")
+    attribute :attr1, Types::String
+    attribute :attr2, Types::Coercible::Integer
+    attribute :attr3, Types::String
+    attribute :attr4, Types::Params::Bool
+    attribute :attr5, Types::Array
+    attribute :attr6, Types::Hash
+    attribute :attr7, Types::String.default("default")
+    attribute? :attr8, Types::String
   end
 end
 
@@ -70,6 +72,7 @@ module StructureModels
     attribute(:attr5)
     attribute(:attr6)
     attribute(:attr7, String, default: "default")
+    attribute?(:attr8, String)
   end
 end
 

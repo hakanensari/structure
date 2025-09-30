@@ -36,7 +36,7 @@ class TestAfterParse < Minitest::Test
 
   def test_after_parse_can_raise_errors
     person_class = Structure.new do
-      attribute(:name)
+      attribute?(:name)
 
       after_parse do |instance|
         raise "Name is required" if instance.name.nil?

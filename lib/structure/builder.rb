@@ -13,6 +13,7 @@ module Structure
       @mappings = {}
       @defaults = {}
       @types = {}
+      @optional = Set.new
     end
 
     # DSL method for defining attributes with optional type coercion
@@ -45,6 +46,25 @@ module Structure
       end
     end
 
+    # DSL method for defining optional attributes (key can be missing from input hash)
+    #
+    # @param name [Symbol] The attribute name
+    # @param type [Class, Symbol, Array, nil] Type for coercion (e.g., String, :boolean, [String])
+    # @param from [String, nil] Source key in the data hash (defaults to name.to_s)
+    # @param default [Object, nil] Default value if attribute is missing
+    # @yield [value] Block for custom transformation
+    # @raise [ArgumentError] If both type and block are provided
+    #
+    # @example Optional attribute
+    #   attribute? :age, Integer
+    #
+    # @example Optional with default
+    #   attribute? :status, String, default: "pending"
+    def attribute?(name, type = nil, from: nil, default: nil, &block)
+      attribute(name, type, from: from, default: default, &block)
+      @optional.add(name)
+    end
+
     # Defines a callback to run after parsing
     #
     # @yield [instance] Block that receives the parsed instance
@@ -59,9 +79,13 @@ module Structure
     end
 
     # @api private
-    def attributes
-      @mappings.keys
-    end
+    def attributes = @mappings.keys
+
+    # @api private
+    def optional = @optional.to_a
+
+    # @api private
+    def required = attributes - optional
 
     # @api private
     def coercions(context = nil)

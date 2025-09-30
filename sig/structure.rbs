@@ -5,7 +5,8 @@ module Structure
       defaults: Hash[Symbol, untyped],
       mappings: Hash[Symbol, String],
       coercions: Hash[Symbol, untyped],
-      after_parse: untyped
+      after_parse: untyped,
+      required: Array[Symbol]
     }
   end
 

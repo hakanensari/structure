@@ -1,5 +1,5 @@
 class Person < Data
-  def self.new: (name: String?, age: Integer?, active: bool?, email: String?) -> Person
+  def self.new: (name: String?, ?age: Integer?, active: bool?, email: String?) -> Person
               | (String?, Integer?, bool?, String?) -> Person
 
   def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> Person

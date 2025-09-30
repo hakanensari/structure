@@ -3,7 +3,7 @@ module Structure
     def self.emit: (untyped klass) -> String?
     def self.write: (untyped klass, ?dir: String) -> String?
 
-    private def self.emit_rbs_content: (class_name: String, attributes: Array[Symbol], types: Hash[Symbol, untyped], has_structure_modules: bool) -> String
+    private def self.emit_rbs_content: (class_name: String, attributes: Array[Symbol], types: Hash[Symbol, untyped], required: Array[Symbol], has_structure_modules: bool) -> String
     private def self.parse_data_type: (untyped type, String class_name) -> String
     private def self.map_type_to_rbs: (untyped type, String class_name) -> String
   end

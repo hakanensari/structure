@@ -61,12 +61,12 @@ class TestStringClassNames < Minitest::Test
 
     create_test_class("OrderItem") do
       attribute(:name, String)
-      attribute(:order, "Fixtures::Order")
+      attribute?(:order, "Fixtures::Order")
     end
 
     create_test_class("Customer") do
       attribute(:name, String)
-      attribute(:orders, ["Fixtures::Order"])
+      attribute?(:orders, ["Fixtures::Order"])
     end
 
     order_data = {
@@ -237,7 +237,7 @@ class TestStringClassNames < Minitest::Test
 
     create_test_class("Employee") do
       attribute(:name, String)
-      attribute(:department, "Department")
+      attribute?(:department, "Department")
     end
 
     dept_data = {
