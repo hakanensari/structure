@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.0.0] - 2025-09-30
+
 ### Added
 
 - Add `attribute?` method for defining optional attributes (inspired by the API of [dry-struct](https://dry-rb.org/gems/dry-struct/1.0/))
