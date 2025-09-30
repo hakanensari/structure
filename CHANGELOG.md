@@ -7,24 +7,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.7.0] - 2025-01-30
 
-### Changed
-
-- Rename internal parameter `context_class` to `context` throughout codebase
-- Rename `string_class` to `lazy_class` for better clarity
-- Rename `after` to `after_parse` for consistency
-- Rename `source` to `from` in parse method
-- Move `Types.resolve_class` to private methods
-- Mark Builder internal methods as `@api private`
-
 ### Performance
 
 - Skip coercion for nil and false values to reduce unnecessary processing
 - Memoize coercion procs to reduce memory allocations
 - Optimize parsing for speed improvements (~30% faster than dry-struct)
-
-### Removed
-
-- Remove mutex and thread safety test (harmless race condition, simplified implementation)
 
 ## [3.6.3] - 2025-01-27
 
