@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Add `attribute?` method for defining optional attributes (inspired by dry-struct's API)
+- Add `attribute?` method for defining optional attributes (inspired by the API of [dry-struct](https://dry-rb.org/gems/dry-struct/1.0/))
 
 ### Changed
 

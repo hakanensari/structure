@@ -6,7 +6,7 @@
 
 **Structure your data**
 
-Turn unruly hashes into clean, immutable Ruby Data objects with type coercion.
+Turn unruly hashes into clean, immutable [Ruby Data](https://docs.ruby-lang.org/en/3.4/Data.html) objects with type coercion.
 
 ```ruby
 # Before: Hash drilling
@@ -20,7 +20,7 @@ user.age      # => 25 (Integer)
 user.active?  # => true
 ```
 
-Built on the [Ruby Data class](https://docs.ruby-lang.org/en//3.4/Data.html) for immutability, pattern matching, and all the other good stuff. Zero dependencies.
+Built on the [Ruby Data class](https://docs.ruby-lang.org/en/3.4/Data.html) for immutability, pattern matching, and all the other good stuff. Zero dependencies.
 
 ## Installation
 
