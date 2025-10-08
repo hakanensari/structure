@@ -1,6 +1,5 @@
 .gem_rbs_collection
 .yardoc
 doc
-docs/reviews
 Gemfile.lock
 pkg
