@@ -26,6 +26,22 @@ module Structure
       # @type var klass: untyped
       klass = Data.define(*builder.attributes)
 
+      # Enable custom method definitions by evaluating block on the class
+      if block
+        # Provide temporary dummy DSL methods to prevent NoMethodError during class_eval
+        klass.define_singleton_method(:attribute) { |*args, **kwargs, &blk| }
+        klass.define_singleton_method(:attribute?) { |*args, **kwargs, &blk| }
+        klass.define_singleton_method(:after_parse) { |&blk| }
+
+        # Evaluate block in class context for method definitions
+        klass.class_eval(&block)
+
+        # Remove temporary DSL methods
+        klass.singleton_class.send(:remove_method, :attribute)
+        klass.singleton_class.send(:remove_method, :attribute?)
+        klass.singleton_class.send(:remove_method, :after_parse)
+      end
+
       # Override initialize to make optional attributes truly optional
       optional_attrs = builder.optional
       unless optional_attrs.empty?

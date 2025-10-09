@@ -4,6 +4,10 @@ require "fileutils"
 require "pathname"
 
 module Structure
+  # Generates RBS type signatures for Structure classes
+  #
+  # Note: Custom methods defined in Structure blocks are not included and must be manually added to RBS files. This is
+  # consistent with how Ruby's RBS tooling handles Data classes.
   module RBS
     class << self
       def emit(klass)
