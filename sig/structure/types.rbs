@@ -4,7 +4,7 @@ module Structure
       def parse: (untyped) -> untyped
     end
 
-    BOOLEAN_TRUTHY: Array[untyped]
+    BOOLEAN_TRUTHY: Set[untyped]
 
     self.@boolean: Proc
     self.@kernel_cache: Hash[untyped, Proc]

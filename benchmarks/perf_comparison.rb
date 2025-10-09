@@ -29,15 +29,23 @@ end
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "structure"
 
-# Test data with coercion
+# Test data with more coercions and nested structures
 TEST_DATA = {
   "attr1" => "foo",
-  "attr2" => "123",
+  "attr2" => "123",         # Integer coercion
   "attr3" => "bar",
-  "attr4" => "true",
+  "attr4" => "true",        # Boolean coercion
   "attr5" => ["a", "b", "c"],
   "attr6" => { "x" => "y" },
   "attr8" => "optional",
+  "attr9" => "3.14",        # Float coercion
+  "attr10" => "42",         # Integer coercion
+  "attr11" => "1",          # Boolean coercion
+  "items" => [ # Array of nested structures
+    { "name" => "Item 1", "price" => "10.99" },
+    { "name" => "Item 2", "price" => "20.50" },
+    { "name" => "Item 3", "price" => "15.25" },
+  ],
 }.freeze
 
 # Define dry-struct models
@@ -46,6 +54,13 @@ module DryStructModels
 
   module Types
     include Dry.Types()
+  end
+
+  class Item < Dry::Struct
+    transform_keys(&:to_sym)
+
+    attribute :name, Types::String
+    attribute :price, Types::Coercible::Float
   end
 
   class Model < Dry::Struct
@@ -59,11 +74,20 @@ module DryStructModels
     attribute :attr6, Types::Hash
     attribute :attr7, Types::String.default("default")
     attribute? :attr8, Types::String
+    attribute :attr9, Types::Coercible::Float
+    attribute :attr10, Types::Coercible::Integer
+    attribute :attr11, Types::Params::Bool
+    attribute :items, Types::Array.of(Item)
   end
 end
 
 # Define Structure models
 module StructureModels
+  Item = Structure.new do
+    attribute(:name, String)
+    attribute(:price, Float)
+  end
+
   Model = Structure.new do
     attribute(:attr1, String)
     attribute(:attr2, Integer)
@@ -73,6 +97,10 @@ module StructureModels
     attribute(:attr6)
     attribute(:attr7, String, default: "default")
     attribute?(:attr8, String)
+    attribute(:attr9, Float)
+    attribute(:attr10, Integer)
+    attribute(:attr11, :boolean)
+    attribute(:items, ["Item"])
   end
 end
 

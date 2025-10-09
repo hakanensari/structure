@@ -4,6 +4,9 @@ require "structure/builder"
 
 # A library for parsing data into immutable Ruby Data objects with type coercion
 module Structure
+  TO_H_CHECKER = ->(x) { x.respond_to?(:to_h) && x }
+  private_constant :TO_H_CHECKER
+
   class << self
     # Creates a new Data class with attribute definitions and type coercion
     #
@@ -79,7 +82,7 @@ module Structure
           v = public_send(m)
           value = case v
           when Array then v.map { |x| x.respond_to?(:to_h) && x ? x.to_h : x }
-          when ->(x) { x.respond_to?(:to_h) && x } then v.to_h
+          when TO_H_CHECKER then v.to_h
           else v
           end
           [m, value]
@@ -103,6 +106,7 @@ module Structure
         final       = {}
         mappings    = __structure_meta__[:mappings]
         defaults    = __structure_meta__[:defaults]
+        coercions   = __structure_meta__[:coercions]
         after_parse = __structure_meta__[:after_parse]
         required    = __structure_meta__[:required]
 
@@ -122,7 +126,7 @@ module Structure
           end
 
           if value
-            coercion = __structure_meta__[:coercions][attr]
+            coercion = coercions[attr]
             value = coercion.call(value) if coercion
           end
 

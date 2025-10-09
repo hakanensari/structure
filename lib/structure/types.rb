@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
+require "set"
+
 module Structure
   # Type coercion methods for converting values to specific types
   module Types
     class << self
       # Rails-style boolean truthy values
       # Reference: https://api.rubyonrails.org/classes/ActiveModel/Type/Boolean.html
-      BOOLEAN_TRUTHY = [true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"].freeze
+      BOOLEAN_TRUTHY = Set.new([true, 1, "1", "t", "T", "true", "TRUE", "on", "ON"]).freeze
       private_constant :BOOLEAN_TRUTHY
 
       # Main factory method for creating type coercers
@@ -93,12 +95,15 @@ module Structure
             value.map { |element| context.parse(element) }
           end
         when String
+          resolved_class = nil
+
           lambda do |value|
             unless value.respond_to?(:map)
               raise TypeError, "can't convert #{value.class} into Array"
             end
 
-            resolved_class = resolve_class(element_type, context)
+            resolved_class ||= resolve_class(element_type, context)
+            # @type var resolved_class: untyped
             value.map { |element| resolved_class.parse(element) }
           end
         else

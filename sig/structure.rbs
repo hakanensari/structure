@@ -1,4 +1,6 @@
 module Structure
+  TO_H_CHECKER: Proc
+
   interface _StructuredDataClass
     def __structure_meta__: () -> {
       types: Hash[Symbol, untyped],
