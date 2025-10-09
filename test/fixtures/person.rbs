@@ -1,14 +1,21 @@
 class Person < Data
-  def self.new: (name: String?, ?age: Integer?, active: bool?, email: String?) -> Person
+  def self.new: (name: String?, active: bool?, email: String?, ?age: Integer?) -> Person
               | (String?, Integer?, bool?, String?) -> Person
 
-  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> Person
+  def self.[]: (name: String?, active: bool?, email: String?, ?age: Integer?) -> Person
+             | (String?, Integer?, bool?, String?) -> Person
 
-  attr_reader name: String?
-  attr_reader age: Integer?
+  def self.members: () -> [ :name, :age, :active, :email ]
+
+  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> Person
+
   attr_reader active: bool?
+  attr_reader age: Integer?
   attr_reader email: String?
+  attr_reader name: String?
 
   def active?: () -> bool
+  def members: () -> [ :name, :age, :active, :email ]
+
   def to_h: () -> { name: String?, age: Integer?, active: bool?, email: String? }
 end

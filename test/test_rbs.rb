@@ -107,7 +107,7 @@ class TestRBS < Minitest::Test
     assert_match(/attr_reader numbers: Array\[Integer\]\?/, rbs)
     assert_match(/attr_reader flags: Array\[bool\]\?/, rbs)
 
-    assert_match(/def self\.parse: \(\?\(Hash\[String \| Symbol, untyped\]\), \*\*untyped\) -> TestRBS::TestArrayClass/, rbs)
+    assert_match(/def self\.parse: \(\?Hash\[String \| Symbol, untyped\], \*\*untyped\) -> TestRBS::TestArrayClass/, rbs)
     refute_match(/type parse_data/, rbs)
   end
 

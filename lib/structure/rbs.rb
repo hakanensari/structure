@@ -67,49 +67,65 @@ module Structure
             [attr, rbs_type != "untyped" ? "#{rbs_type}?" : rbs_type]
           end.to_h
 
-          # Mark optional attributes with ? prefix in keyword params
-          keyword_params = attributes.map do |attr|
-            prefix = required.include?(attr) ? "" : "?"
-            "#{prefix}#{attr}: #{rbs_types[attr]}"
-          end.join(", ")
+          # Sort keyword params: required first, then optional (with ? prefix)
+          # Within each group, maintain declaration order
+          required_params = required.map { |attr| "#{attr}: #{rbs_types[attr]}" }
+          optional_params = (attributes - required).map { |attr| "?#{attr}: #{rbs_types[attr]}" }
+          keyword_params = (required_params + optional_params).join(", ")
           positional_params = attributes.map { |attr| rbs_types[attr] }.join(", ")
-
-          lines << "  def self.new: (#{keyword_params}) -> #{class_name}"
-          lines << "              | (#{positional_params}) -> #{class_name}"
-          lines << ""
 
           needs_parse_data = types.any? do |_attr, type|
             type == :self || type == [:self]
           end
 
+          # Generate type alias first if needed (RBS::Sorter puts types at top)
           if needs_parse_data
-            lines << "  type parse_data = {"
-            attributes.each do |attr|
+            lines << "  type parse_data = { " + attributes.map { |attr|
               type = types.fetch(attr, nil)
               parse_type = parse_data_type(type, class_name)
-              lines << "    ?#{attr}: #{parse_type},"
-            end
-            lines[-1] = lines[-1].chomp(",")
-            lines << "  }"
-            lines << ""
+              "?#{attr}: #{parse_type}"
+            }.join(", ") + " }"
+          end
+
+          lines << "  def self.new: (#{keyword_params}) -> #{class_name}"
+          lines << "              | (#{positional_params}) -> #{class_name}"
+          lines << ""
+          lines << "  def self.[]: (#{keyword_params}) -> #{class_name}"
+          lines << "             | (#{positional_params}) -> #{class_name}"
+          lines << ""
+
+          # Generate members tuple type
+          members_tuple = attributes.map { |attr| ":#{attr}" }.join(", ")
+          lines << "  def self.members: () -> [ #{members_tuple} ]"
+          lines << ""
+
+          # Generate parse method signatures
+          if needs_parse_data
             lines << "  def self.parse: (?parse_data data) -> #{class_name}"
             lines << "                | (?Hash[String, untyped] data) -> #{class_name}"
           else
-            # For structures without special types, just use Hash
-            lines << "  def self.parse: (?(Hash[String | Symbol, untyped]), **untyped) -> #{class_name}"
+            # Remove optional parentheses to match RBS::Sorter style
+            lines << "  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> #{class_name}"
           end
           lines << ""
 
-          attributes.each do |attr|
+          # Sort attr_reader lines alphabetically (RBS::Sorter does this)
+          attributes.sort.each do |attr|
             lines << "  attr_reader #{attr}: #{rbs_types[attr]}"
           end
-          lines << ""
 
-          types.each do |attr, type|
-            if type == :boolean && !attr.to_s.end_with?("?")
+          # Add boolean predicates
+          boolean_predicates = types.sort.select { |attr, type| type == :boolean && !attr.to_s.end_with?("?") }
+          unless boolean_predicates.empty?
+            lines << ""
+            boolean_predicates.each do |attr, _type|
               lines << "  def #{attr}?: () -> bool"
             end
           end
+
+          # Instance members method comes after attr_readers and predicates
+          lines << "  def members: () -> [ #{members_tuple} ]"
+          lines << ""
 
           hash_type = attributes.map { |attr| "#{attr}: #{rbs_types[attr]}" }.join(", ")
           lines << "  def to_h: () -> { #{hash_type} }"
