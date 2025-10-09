@@ -539,6 +539,7 @@ end
 
 ```bash
 $ bundle install
+$ bundle exec rbs collection install
 $ bundle exec rake
 ```
 

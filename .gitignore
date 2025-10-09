@@ -3,3 +3,4 @@
 doc
 Gemfile.lock
 pkg
+rbs_collection.lock.yaml
