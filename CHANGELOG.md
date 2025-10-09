@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.1.0] - 2025-10-09
+
 ### Added
 
 - Support for defining custom instance and class methods within `Structure.new` blocks, matching `Data.define` behavior
@@ -21,6 +23,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     end
   end
   ```
+
+### Fixed
+
+- Complete RBS type signature generation with missing standard Data class methods (`[]`, `members`)
+- RBS output now follows `RBS::Sorter` conventions for consistency with Ruby's official tooling
 
 ## [4.0.0] - 2025-09-30
 
