@@ -414,6 +414,81 @@ order.order_id  # => "123"
 
 The `after_parse` callback receives the parsed instance and runs after all attributes have been coerced. Any exception raised prevents the instance from being returned.
 
+### Custom Methods
+
+Define instance and class methods directly in the Structure block, just like `Data.define`:
+
+```ruby
+User = Structure.new do
+  attribute(:name, String)
+  attribute(:age, Integer)
+  attribute(:active, :boolean)
+
+  # Instance methods
+  def adult?
+    age >= 18
+  end
+
+  def greeting
+    "Hello, I'm #{name}"
+  end
+
+  def status
+    active ? "online" : "offline"
+  end
+
+  # Class methods
+  def self.create_guest
+    parse(name: "Guest", age: 0, active: false)
+  end
+end
+
+user = User.parse(name: "Alice", age: 25, active: true)
+user.adult?      # => true
+user.greeting    # => "Hello, I'm Alice"
+user.status      # => "online"
+
+guest = User.create_guest
+guest.name       # => "Guest"
+guest.adult?     # => false
+```
+
+Custom methods work seamlessly with all Structure features including type coercion, key mapping, defaults, optional attributes, nested structures, and arrays:
+
+```ruby
+Product = Structure.new do
+  attribute(:name, String)
+  attribute(:price, Float)
+  attribute(:tags, [String])
+  attribute?(:discount, Float)
+
+  def discounted_price
+    return price unless discount
+
+    price * (1 - discount)
+  end
+
+  def has_tag?(tag)
+    tags.include?(tag)
+  end
+
+  def self.categories
+    ["electronics", "books", "clothing"]
+  end
+end
+
+product = Product.parse(
+  name: "Laptop",
+  price: "999.99",
+  tags: ["electronics", "computers"],
+  discount: "0.1"
+)
+
+product.discounted_price         # => 899.991
+product.has_tag?("electronics")  # => true
+Product.categories               # => ["electronics", "books", "clothing"]
+```
+
 ### RBS Type Signatures
 
 Generate RBS type signatures for your Structure classes:
@@ -440,6 +515,24 @@ Structure::RBS.emit(User)
 
 # Write RBS to file
 Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
+```
+
+#### Note on Custom Methods
+
+Like Ruby's built-in `rbs prototype` command, `Structure::RBS.emit` generates signatures for attributes and the standard Structure/Data API, but does not include custom methods defined in the block. You'll need to manually add signatures for custom methods to the generated RBS file:
+
+```ruby
+User = Structure.new do
+  attribute(:age, Integer)
+  
+  def adult?
+    age >= 18
+  end
+end
+
+# After running Structure::RBS.write(User, dir: "sig")
+# Manually add to sig/user.rbs:
+#   def adult?: () -> bool
 ```
 
 ## Development

@@ -5,6 +5,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Support for defining custom instance and class methods within `Structure.new` blocks, matching `Data.define` behavior
+  ```ruby
+  User = Structure.new do
+    attribute(:age, Integer)
+
+    def adult?
+      age >= 18
+    end
+
+    def self.legal_age
+      18
+    end
+  end
+  ```
+
 ## [4.0.0] - 2025-09-30
 
 ### Added
