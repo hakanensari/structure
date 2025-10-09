@@ -2,7 +2,6 @@ class Category < Data
   type parse_data = { ?name: untyped, ?children: Array[Category | parse_data] }
   def self.new: (name: String?, children: Array[Category]?) -> Category
               | (String?, Array[Category]?) -> Category
-
   def self.[]: (name: String?, children: Array[Category]?) -> Category
              | (String?, Array[Category]?) -> Category
 
@@ -13,7 +12,7 @@ class Category < Data
 
   attr_reader children: Array[Category]?
   attr_reader name: String?
-  def members: () -> [ :name, :children ]
 
+  def members: () -> [ :name, :children ]
   def to_h: () -> { name: String?, children: Array[Category]? }
 end

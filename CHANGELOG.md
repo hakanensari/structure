@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Include custom instance and class methods from `Structure.new` blocks when emitting RBS signatures
+
 ## [4.1.0] - 2025-10-09
 
 ### Added

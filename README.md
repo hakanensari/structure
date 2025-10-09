@@ -517,23 +517,30 @@ Structure::RBS.emit(User)
 Structure::RBS.write(User, dir: "sig")  # => "sig/user.rbs"
 ```
 
-#### Note on Custom Methods
+#### Custom Methods and Steep
 
-Like Ruby's built-in `rbs prototype` command, `Structure::RBS.emit` generates signatures for attributes and the standard Structure/Data API, but does not include custom methods defined in the block. You'll need to manually add signatures for custom methods to the generated RBS file:
+`Structure::RBS.emit` generates type signatures for custom methods with parameters and return types defaulting to `untyped`:
 
 ```ruby
 User = Structure.new do
   attribute(:age, Integer)
-  
+
+  # steep:ignore:start
   def adult?
     age >= 18
   end
+  # steep:ignore:end
 end
 
-# After running Structure::RBS.write(User, dir: "sig")
-# Manually add to sig/user.rbs:
-#   def adult?: () -> bool
+Structure::RBS.emit(User)
+# => ...
+#      def adult?: () -> untyped
+#    end
 ```
+
+The generated signatures work for code that uses your Structure classes, but Steep may report warnings in definition files when custom methods are present. This happens because the `Structure.new` block is evaluated in two different contexts at runtime (once for DSL methods like `attribute`, once for custom methods), but Steep can only analyze one static context. Wrap custom methods with `# steep:ignore:start` and `# steep:ignore:end` comments, or exclude definition files from Steep checking in your `Steepfile`.
+
+See also: [RBS Data/Struct documentation](https://github.com/ruby/rbs/blob/master/docs/data_and_struct.md), [RBS issue #654](https://github.com/ruby/rbs/issues/654), [RBS issue #1077](https://github.com/ruby/rbs/issues/1077)
 
 ## Development
 

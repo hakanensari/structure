@@ -6,6 +6,3 @@ Category = Structure.new do
   attribute(:name, String)
   attribute(:children, [:self], default: [])
 end
-
-cat = Category.parse(name: "parent", children: [Category.new(name: "root", children: [])])
-cat.to_h

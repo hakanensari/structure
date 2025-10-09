@@ -7,6 +7,7 @@ require "tmpdir"
 require_relative "fixtures/category"
 require_relative "fixtures/person"
 require_relative "fixtures/measure"
+require_relative "fixtures/product"
 
 class TestRBS < Minitest::Test
   def setup
@@ -36,6 +37,13 @@ class TestRBS < Minitest::Test
   def test_emit_rbs_plain_data
     expected = File.read("test/fixtures/measure.rbs")
     actual = Structure::RBS.emit(Measure)
+
+    assert_equal(expected.strip, actual.strip)
+  end
+
+  def test_emit_rbs_custom_methods
+    expected = File.read("test/fixtures/product.rbs")
+    actual = Structure::RBS.emit(Product)
 
     assert_equal(expected.strip, actual.strip)
   end

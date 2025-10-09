@@ -23,5 +23,8 @@ module Structure
     def optional: () -> Array[Symbol]
     def required: () -> Array[Symbol]
     def after_parse_callback: () -> (Proc | nil)
+
+    def method_missing: (Symbol, *untyped, **untyped) ?{ (*untyped, **untyped) -> untyped } -> untyped
+    def respond_to_missing?: (Symbol, bool) -> bool
   end
 end

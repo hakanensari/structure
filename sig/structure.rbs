@@ -12,5 +12,7 @@ module Structure
     }
   end
 
-  def self.new: () ?{ (Structure::Builder) [self: Structure::Builder] -> void } -> untyped
+  # Block evaluated twice: first for DSL methods (attribute calls), then for custom methods
+  # Context set to Builder so DSL methods are recognized
+  def self.new: () ?{ () [self: Structure::Builder] -> void } -> untyped
 end

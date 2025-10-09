@@ -1,0 +1,19 @@
+class Product < Data
+  def self.new: (name: String?, price: Float?) -> Product
+              | (String?, Float?) -> Product
+  def self.[]: (name: String?, price: Float?) -> Product
+             | (String?, Float?) -> Product
+
+  def self.build: (untyped) -> untyped
+
+  def self.members: () -> [ :name, :price ]
+
+  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> Product
+
+  attr_reader name: String?
+  attr_reader price: Float?
+
+  def discounted_price: (?untyped) -> untyped
+  def members: () -> [ :name, :price ]
+  def to_h: () -> { name: String?, price: Float? }
+end

@@ -5,10 +5,13 @@ require "pathname"
 
 module Structure
   # Generates RBS type signatures for Structure classes
-  #
-  # Note: Custom methods defined in Structure blocks are not included and must be manually added to RBS files. This is
-  # consistent with how Ruby's RBS tooling handles Data classes.
   module RBS
+    # @type const EMPTY_CUSTOM_METHODS: { instance: Array[untyped], singleton: Array[untyped] }
+    empty_instance = _ = [] #: Array[untyped]
+    empty_singleton = _ = [] #: Array[untyped]
+    EMPTY_CUSTOM_METHODS = { instance: empty_instance, singleton: empty_singleton }.freeze
+    private_constant :EMPTY_CUSTOM_METHODS
+
     class << self
       def emit(klass)
         return unless klass < Data
@@ -20,8 +23,12 @@ module Structure
         meta = klass.respond_to?(:__structure_meta__) ? klass.__structure_meta__ : {}
 
         attributes = meta[:mappings] ? meta[:mappings].keys : klass.members
-        types = meta.fetch(:types, {}) # steep:ignore
-        required = meta.fetch(:required, attributes) # steep:ignore
+        # @type var types: Hash[Symbol, untyped]
+        default_types = _ = {} #: Hash[Symbol, untyped]
+        types = meta.fetch(:types, default_types)
+        # @type var required: Array[Symbol]
+        required = meta.fetch(:required, attributes)
+        custom_methods = meta.fetch(:custom_methods, EMPTY_CUSTOM_METHODS)
 
         emit_rbs_content(
           class_name:,
@@ -29,6 +36,7 @@ module Structure
           types:,
           required:,
           has_structure_modules: meta.any?,
+          custom_methods:,
         )
       end
 
@@ -53,7 +61,7 @@ module Structure
 
       private
 
-      def emit_rbs_content(class_name:, attributes:, types:, required:, has_structure_modules:)
+      def emit_rbs_content(class_name:, attributes:, types:, required:, has_structure_modules:, custom_methods:)
         # @type var lines: Array[String]
         lines = []
         lines << "class #{class_name} < Data"
@@ -87,48 +95,127 @@ module Structure
             }.join(", ") + " }"
           end
 
-          lines << "  def self.new: (#{keyword_params}) -> #{class_name}"
-          lines << "              | (#{positional_params}) -> #{class_name}"
-          lines << ""
-          lines << "  def self.[]: (#{keyword_params}) -> #{class_name}"
-          lines << "             | (#{positional_params}) -> #{class_name}"
-          lines << ""
+          # Build singleton methods list
+          # Note: `new` and `[]` are kept at top (RBS::Sorter convention)
+          special_singleton_methods = [
+            {
+              name: "new",
+              lines: [
+                "  def self.new: (#{keyword_params}) -> #{class_name}",
+                "              | (#{positional_params}) -> #{class_name}",
+              ],
+            },
+            {
+              name: "[]",
+              lines: [
+                "  def self.[]: (#{keyword_params}) -> #{class_name}",
+                "             | (#{positional_params}) -> #{class_name}",
+              ],
+            },
+          ]
 
-          # Generate members tuple type
-          members_tuple = attributes.map { |attr| ":#{attr}" }.join(", ")
-          lines << "  def self.members: () -> [ #{members_tuple} ]"
-          lines << ""
+          # Regular singleton methods (to be sorted)
+          # @type var singleton_methods_list: Array[{ name: String, lines: Array[String] }]
+          singleton_methods_list = []
 
-          # Generate parse method signatures
-          if needs_parse_data
-            lines << "  def self.parse: (?parse_data data) -> #{class_name}"
-            lines << "                | (?Hash[String, untyped] data) -> #{class_name}"
-          else
-            # Remove optional parentheses to match RBS::Sorter style
-            lines << "  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> #{class_name}"
+          # Add custom singleton methods
+          # @type var custom_singleton: Array[untyped]
+          default_singleton = _ = [] #: Array[untyped]
+          custom_singleton = custom_methods.fetch(:singleton, default_singleton)
+          custom_singleton.each do |method_meta|
+            singleton_methods_list << {
+              name: method_meta[:name].to_s,
+              lines: [format_method_signature(method_meta, singleton: true)],
+            }
           end
+
+          # Add standard singleton methods
+          members_tuple = attributes.map { |attr| ":#{attr}" }.join(", ")
+          singleton_methods_list << {
+            name: "members",
+            lines: ["  def self.members: () -> [ #{members_tuple} ]"],
+          }
+
+          singleton_methods_list << if needs_parse_data
+            {
+              name: "parse",
+              lines: [
+                "  def self.parse: (?parse_data data) -> #{class_name}",
+                "                | (?Hash[String, untyped] data) -> #{class_name}",
+              ],
+            }
+          else
+            {
+              name: "parse",
+              lines: ["  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> #{class_name}"],
+            }
+          end
+
+          # Emit special singleton methods first (new, [])
+          special_singleton_methods.each do |method|
+            # @type var method_lines: Array[String]
+            method_lines = method[:lines]
+            method_lines.each { |line| lines << line }
+          end
+
+          # Sort and emit other singleton methods
+          singleton_methods_list.sort_by { |m| m[:name] }.each do |method|
+            lines << "" # Blank line before each method group
+            # @type var method_lines: Array[String]
+            method_lines = method[:lines]
+            method_lines.each { |line| lines << line }
+          end
+
           lines << ""
 
           # Sort attr_reader lines alphabetically (RBS::Sorter does this)
           attributes.sort.each do |attr|
             lines << "  attr_reader #{attr}: #{rbs_types[attr]}"
           end
+          lines << ""
+
+          # Build instance methods list (standard + custom), then sort
+          # @type var instance_methods_list: Array[{ name: String, lines: Array[String] }]
+          instance_methods_list = []
 
           # Add boolean predicates
           boolean_predicates = types.sort.select { |attr, type| type == :boolean && !attr.to_s.end_with?("?") }
-          unless boolean_predicates.empty?
-            lines << ""
-            boolean_predicates.each do |attr, _type|
-              lines << "  def #{attr}?: () -> bool"
-            end
+          boolean_predicates.each do |attr, _type|
+            instance_methods_list << {
+              name: "#{attr}?",
+              lines: ["  def #{attr}?: () -> bool"],
+            }
           end
 
-          # Instance members method comes after attr_readers and predicates
-          lines << "  def members: () -> [ #{members_tuple} ]"
-          lines << ""
+          # Add custom instance methods
+          # @type var custom_instance: Array[untyped]
+          default_instance = _ = [] #: Array[untyped]
+          custom_instance = custom_methods.fetch(:instance, default_instance)
+          custom_instance.each do |method_meta|
+            instance_methods_list << {
+              name: method_meta[:name].to_s,
+              lines: [format_method_signature(method_meta, singleton: false)],
+            }
+          end
+
+          # Add standard instance methods
+          instance_methods_list << {
+            name: "members",
+            lines: ["  def members: () -> [ #{members_tuple} ]"],
+          }
 
           hash_type = attributes.map { |attr| "#{attr}: #{rbs_types[attr]}" }.join(", ")
-          lines << "  def to_h: () -> { #{hash_type} }"
+          instance_methods_list << {
+            name: "to_h",
+            lines: ["  def to_h: () -> { #{hash_type} }"],
+          }
+
+          # Sort and emit instance methods
+          instance_methods_list.sort_by { |m| m[:name] }.each do |method|
+            # @type var method_lines: Array[String]
+            method_lines = method[:lines]
+            method_lines.each { |line| lines << line }
+          end
         end
 
         lines << "end"
@@ -182,6 +269,54 @@ module Structure
         else
           "untyped"
         end
+      end
+
+      def format_method_signature(method_meta, singleton:)
+        name = method_meta.fetch(:name)
+        parameters = method_meta.fetch(:parameters, [])
+
+        params_str, block_str = build_parameters_fragment(parameters)
+
+        method_prefix = singleton ? "self." : ""
+        signature = "  def #{method_prefix}#{name}: #{params_str}"
+        signature += " #{block_str}" if block_str
+        signature + " -> untyped"
+      end
+
+      def build_parameters_fragment(parameters)
+        # @type var parts: Array[String]
+        parts = []
+        block_required = false
+
+        parameters.each do |kind, param_name|
+          case kind
+          when :req
+            parts << "untyped"
+          when :opt
+            parts << "?untyped"
+          when :rest
+            parts << "*untyped"
+          when :keyreq
+            key_name = param_name || :arg
+            parts << "#{key_name}: untyped"
+          when :key
+            key_name = param_name || :arg
+            parts << "?#{key_name}: untyped"
+          when :keyrest
+            parts << "**untyped"
+          when :block
+            block_required = true
+          else
+            parts << "untyped"
+          end
+        end
+
+        params_str = "(#{parts.join(", ")})"
+        params_str = "()" if parts.empty?
+
+        block_str = block_required ? "?{ (*untyped, **untyped) -> untyped }" : nil
+
+        [params_str, block_str]
       end
     end
   end
