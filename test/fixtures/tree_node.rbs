@@ -1,0 +1,19 @@
+class TreeNode < Data
+  type parse_data = { ?name: untyped, ?tags: Array[untyped], ?children: Array[TreeNode | parse_data] }
+  def self.new: (name: String?, tags: Array[String]?, children: Array[TreeNode]?) -> TreeNode
+              | (String?, Array[String]?, Array[TreeNode]?) -> TreeNode
+  def self.[]: (name: String?, tags: Array[String]?, children: Array[TreeNode]?) -> TreeNode
+             | (String?, Array[String]?, Array[TreeNode]?) -> TreeNode
+
+  def self.members: () -> [ :name, :tags, :children ]
+
+  def self.parse: (?parse_data data) -> TreeNode
+                | (?Hash[String, untyped] data) -> TreeNode
+
+  attr_reader children: Array[TreeNode]?
+  attr_reader name: String?
+  attr_reader tags: Array[String]?
+
+  def members: () -> [ :name, :tags, :children ]
+  def to_h: () -> { name: String?, tags: Array[String]?, children: Array[TreeNode]? }
+end

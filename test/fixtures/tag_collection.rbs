@@ -1,0 +1,17 @@
+class TagCollection < Data
+  def self.new: (tags: Array[String]?, numbers: Array[Integer]?, flags: Array[bool]?) -> TagCollection
+              | (Array[String]?, Array[Integer]?, Array[bool]?) -> TagCollection
+  def self.[]: (tags: Array[String]?, numbers: Array[Integer]?, flags: Array[bool]?) -> TagCollection
+             | (Array[String]?, Array[Integer]?, Array[bool]?) -> TagCollection
+
+  def self.members: () -> [ :tags, :numbers, :flags ]
+
+  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> TagCollection
+
+  attr_reader flags: Array[bool]?
+  attr_reader numbers: Array[Integer]?
+  attr_reader tags: Array[String]?
+
+  def members: () -> [ :tags, :numbers, :flags ]
+  def to_h: () -> { tags: Array[String]?, numbers: Array[Integer]?, flags: Array[bool]? }
+end
