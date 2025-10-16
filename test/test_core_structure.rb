@@ -85,7 +85,7 @@ class TestCoreStructure < Minitest::Test
       end
     end
 
-    assert_match(/Cannot specify both type and block/, error.message)
+    assert_match(/cannot specify both type and block/, error.message)
   end
 
   def test_attribute_with_default_value

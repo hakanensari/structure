@@ -60,7 +60,7 @@ module Structure
         when String
           lazy_class(type, context)
         else
-          raise ArgumentError, "Cannot specify #{type.inspect} as type"
+          raise ArgumentError, "cannot specify #{type.inspect} as type"
         end
       end
 

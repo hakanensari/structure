@@ -152,10 +152,12 @@ class TestTypeCoercions < Minitest::Test
   def test_invalid_object_type_raises_error
     invalid_object = Object.new
 
-    assert_raises(ArgumentError) do
+    error = assert_raises(ArgumentError) do
       Structure.new do
         attribute(:value, invalid_object)
       end
     end
+
+    assert_match(/cannot specify.*as type for :value/, error.message)
   end
 end

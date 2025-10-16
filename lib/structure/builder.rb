@@ -46,7 +46,7 @@ module Structure
       @non_nullable.add(name) unless null
 
       if type && block
-        raise ArgumentError, "Cannot specify both type and block for :#{name}"
+        raise ArgumentError, "cannot specify both type and block for :#{name}"
       else
         types[name] = type || block
       end
@@ -102,7 +102,12 @@ module Structure
 
     # @api private
     def coercions(context = nil)
-      @types.transform_values { |type| Types.coerce(type, context) }
+      @types.to_h do |attr, type|
+        coercion = Types.coerce(type, context)
+        [attr, coercion]
+      rescue ArgumentError => e
+        raise ArgumentError, "#{e.message} for :#{attr}"
+      end
     end
 
     # @api private

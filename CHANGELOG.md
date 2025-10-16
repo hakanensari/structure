@@ -21,6 +21,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   User.parse(id: "123")                              # ✓ valid (name is optional)
   ```
 
+### Changed
+
+- Standardize error messages to use lowercase for consistency with Ruby conventions
+- Improve type error messages to include attribute name for easier debugging
+
 ## [4.1.0] - 2025-10-09
 
 ### Added
