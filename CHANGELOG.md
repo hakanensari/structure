@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.2.0] - 2025-10-16
+
 ### Added
 
 - Include custom instance and class methods from `Structure.new` blocks when emitting RBS signatures
@@ -20,6 +22,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   User.parse(id: "123", name: nil)                   # ✗ raises ArgumentError: cannot be null: :name
   User.parse(id: "123")                              # ✓ valid (name is optional)
   ```
+- Accept String or Symbol for `from:` parameter in attribute definitions
 
 ### Changed
 
@@ -211,4 +214,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [3.6.3]: https://github.com/hakanensari/structure/compare/v3.6.2...v3.6.3
 [3.7.0]: https://github.com/hakanensari/structure/compare/v3.6.3...v3.7.0
 [4.0.0]: https://github.com/hakanensari/structure/compare/v3.7.0...v4.0.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v4.0.0...HEAD
+[4.1.0]: https://github.com/hakanensari/structure/compare/v4.0.0...v4.1.0
+[4.2.0]: https://github.com/hakanensari/structure/compare/v4.1.0...v4.2.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v4.2.0...HEAD
