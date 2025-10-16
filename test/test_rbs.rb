@@ -10,6 +10,7 @@ require_relative "fixtures/measure"
 require_relative "fixtures/product"
 require_relative "fixtures/tag_collection"
 require_relative "fixtures/tree_node"
+require_relative "fixtures/user"
 
 class TestRBS < Minitest::Test
   def setup
@@ -60,6 +61,13 @@ class TestRBS < Minitest::Test
   def test_emit_rbs_mixed_array_and_self_referential
     expected = File.read("test/fixtures/tree_node.rbs")
     actual = Structure::RBS.emit(TreeNode)
+
+    assert_equal(expected.strip, actual.strip)
+  end
+
+  def test_emit_rbs_non_nullable
+    expected = File.read("test/fixtures/user.rbs")
+    actual = Structure::RBS.emit(User)
 
     assert_equal(expected.strip, actual.strip)
   end

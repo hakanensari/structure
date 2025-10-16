@@ -5,6 +5,7 @@ require_relative "category"
 require_relative "product"
 require_relative "tag_collection"
 require_relative "tree_node"
+require_relative "user"
 
 # Test that application code using Structure classes type-checks correctly. These should all pass Steep with no
 # warnings.
@@ -48,3 +49,13 @@ tree_node.tags
 tree_node.children
 tree_node.children&.first&.name
 tree_node.children&.first&.tags
+
+user = User.parse(id: "123", name: "Alice", bio: "Developer")
+user.id
+user.name
+user.bio
+
+user_without_bio = User.parse(id: "456", name: "Bob")
+user_without_bio.id
+user_without_bio.name
+user_without_bio.bio

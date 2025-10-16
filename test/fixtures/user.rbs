@@ -1,0 +1,17 @@
+class User < Data
+  def self.new: (id: String?, ?name: String?, ?bio: String?) -> User
+              | (String?, String?, String?) -> User
+  def self.[]: (id: String?, ?name: String?, ?bio: String?) -> User
+             | (String?, String?, String?) -> User
+
+  def self.members: () -> [ :id, :name, :bio ]
+
+  def self.parse: (?Hash[String | Symbol, untyped], **untyped) -> User
+
+  attr_reader bio: String?
+  attr_reader id: String?
+  attr_reader name: String?
+
+  def members: () -> [ :id, :name, :bio ]
+  def to_h: () -> { id: String?, name: String?, bio: String? }
+end
