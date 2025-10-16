@@ -86,12 +86,14 @@ module Structure
         klass.class_eval do
           alias_method(:__data_initialize__, :initialize)
 
-          define_method(:initialize) do |**kwargs| # steep:ignore
+          # steep:ignore:start
+          define_method(:initialize) do |**kwargs|
             optional_attrs.each do |attr|
               kwargs[attr] = nil unless kwargs.key?(attr)
             end
-            __data_initialize__(**kwargs) # steep:ignore
+            __data_initialize__(**kwargs)
           end
+          # steep:ignore:end
         end
       end
 

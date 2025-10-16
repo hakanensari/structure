@@ -41,7 +41,7 @@ module Structure
     # @example Non-nullable attribute
     #   attribute :id, String, null: false
     def attribute(name, type = nil, from: nil, default: nil, null: true, &block)
-      mappings[name] = from || name.to_s
+      mappings[name] = (from || name).to_s
       defaults[name] = default unless default.nil?
       @non_nullable.add(name) unless null
 

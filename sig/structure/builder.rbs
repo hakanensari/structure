@@ -7,11 +7,11 @@ module Structure
     @optional: Set[Symbol]
     @non_nullable: Set[Symbol]
 
-    def attribute: (Symbol name, untyped type, ?from: String?, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
-                 | (Symbol name, ?from: String, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
+    def attribute: (Symbol name, untyped type, ?from: String | Symbol | nil, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
+                 | (Symbol name, ?from: String | Symbol | nil, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
 
-    def attribute?: (Symbol name, untyped type, ?from: String?, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
-                  | (Symbol name, ?from: String, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
+    def attribute?: (Symbol name, untyped type, ?from: String | Symbol | nil, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
+                  | (Symbol name, ?from: String | Symbol | nil, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
 
     def after_parse: () { (Data) -> void } -> void
 
