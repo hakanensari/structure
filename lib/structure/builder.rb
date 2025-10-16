@@ -14,6 +14,7 @@ module Structure
       @defaults = {}
       @types = {}
       @optional = Set.new
+      @non_nullable = Set.new
     end
 
     # DSL method for defining attributes with optional type coercion
@@ -22,6 +23,7 @@ module Structure
     # @param type [Class, Symbol, Array, nil] Type for coercion (e.g., String, :boolean, [String])
     # @param from [String, nil] Source key in the data hash (defaults to name.to_s)
     # @param default [Object, nil] Default value if attribute is missing
+    # @param null [Boolean] Whether nil values are allowed (default: true)
     # @yield [value] Block for custom transformation
     # @raise [ArgumentError] If both type and block are provided
     #
@@ -35,9 +37,13 @@ module Structure
     #   attribute :price do |value|
     #     Money.new(value["amount"], value["currency"])
     #   end
-    def attribute(name, type = nil, from: nil, default: nil, &block)
+    #
+    # @example Non-nullable attribute
+    #   attribute :id, String, null: false
+    def attribute(name, type = nil, from: nil, default: nil, null: true, &block)
       mappings[name] = from || name.to_s
       defaults[name] = default unless default.nil?
+      @non_nullable.add(name) unless null
 
       if type && block
         raise ArgumentError, "Cannot specify both type and block for :#{name}"
@@ -52,6 +58,7 @@ module Structure
     # @param type [Class, Symbol, Array, nil] Type for coercion (e.g., String, :boolean, [String])
     # @param from [String, nil] Source key in the data hash (defaults to name.to_s)
     # @param default [Object, nil] Default value if attribute is missing
+    # @param null [Boolean] Whether nil values are allowed (default: true)
     # @yield [value] Block for custom transformation
     # @raise [ArgumentError] If both type and block are provided
     #
@@ -60,8 +67,11 @@ module Structure
     #
     # @example Optional with default
     #   attribute? :status, String, default: "pending"
-    def attribute?(name, type = nil, from: nil, default: nil, &block)
-      attribute(name, type, from: from, default: default, &block)
+    #
+    # @example Optional but non-nullable when present
+    #   attribute? :name, String, null: false
+    def attribute?(name, type = nil, from: nil, default: nil, null: true, &block)
+      attribute(name, type, from: from, default: default, null: null, &block)
       @optional.add(name)
     end
 
@@ -86,6 +96,9 @@ module Structure
 
     # @api private
     def required = attributes - optional
+
+    # @api private
+    def non_nullable = @non_nullable.to_a
 
     # @api private
     def coercions(context = nil)

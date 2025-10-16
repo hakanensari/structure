@@ -107,6 +107,7 @@ module Structure
         coercions: builder.coercions(klass),
         after_parse: builder.after_parse_callback,
         required: builder.required,
+        non_nullable: builder.non_nullable,
         custom_methods: custom_methods_metadata,
       }.freeze
       klass.instance_variable_set(:@__structure_meta__, meta)
@@ -139,12 +140,13 @@ module Structure
 
         overrides&.each { |k, v| data[k.to_s] = v }
 
-        final       = {}
-        mappings    = __structure_meta__[:mappings]
-        defaults    = __structure_meta__[:defaults]
-        coercions   = __structure_meta__[:coercions]
-        after_parse = __structure_meta__[:after_parse]
-        required    = __structure_meta__[:required]
+        final        = {}
+        mappings     = __structure_meta__[:mappings]
+        defaults     = __structure_meta__[:defaults]
+        coercions    = __structure_meta__[:coercions]
+        after_parse  = __structure_meta__[:after_parse]
+        required     = __structure_meta__[:required]
+        non_nullable = __structure_meta__[:non_nullable]
 
         # Check for missing required attributes
         required.each do |attr|
@@ -155,6 +157,8 @@ module Structure
         end
 
         mappings.each do |attr, from|
+          key_present = data.key?(from) || data.key?(from.to_sym)
+
           value = data.fetch(from) do
             data.fetch(from.to_sym) do
               defaults[attr]
@@ -164,6 +168,12 @@ module Structure
           if value
             coercion = coercions[attr]
             value = coercion.call(value) if coercion
+          end
+
+          # Check non-null constraint after coercion
+          # Only check if key was present in data OR attribute has an explicit default
+          if value.nil? && non_nullable.include?(attr) && (key_present || defaults.key?(attr))
+            raise ArgumentError, "cannot be null: :#{attr}"
           end
 
           final[attr] = value

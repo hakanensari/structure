@@ -8,6 +8,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Include custom instance and class methods from `Structure.new` blocks when emitting RBS signatures
+- Add `null: false` option to `attribute` and `attribute?` for GraphQL-style non-null semantics
+  ```ruby
+  User = Structure.new do
+    attribute(:id, String, null: false)              # required key, must be non-null
+    attribute?(:name, String, null: false)           # optional key, but must be non-null when present
+    attribute?(:description, String)                 # optional key, can be null (default)
+  end
+
+  User.parse(id: "123", name: "Alice")               # ✓ valid
+  User.parse(id: "123", name: nil)                   # ✗ raises ArgumentError: cannot be null: :name
+  User.parse(id: "123")                              # ✓ valid (name is optional)
+  ```
 
 ## [4.1.0] - 2025-10-09
 
