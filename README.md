@@ -127,6 +127,22 @@ User.parse(name: "Bob")            # Works, age defaults to nil
 User.parse(age: 10)                # ArgumentError: missing keyword: :name
 ```
 
+### Non-Nullable Attributes
+
+By default, attributes can be `nil`. Use `null: false` to enforce GraphQL-style non-null semantics:
+
+```ruby
+User = Structure.new do
+  attribute?(:name, String, null: false) # optional key, but must be non-null when present
+  attribute?(:bio, String)               # optional key, can be null
+end
+
+User.parse(name: "Alice")                # works
+User.parse(name: nil)                    # ArgumentError: cannot be null: :name
+```
+
+This makes `null: false` perfect for parsing GraphQL responses where you need to specify that a field must be non-null when present.
+
 ### Default Values
 
 Handle missing data:
