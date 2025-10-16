@@ -138,6 +138,7 @@ User = Structure.new do
 end
 
 User.parse(name: "Alice")                # works
+User.parse(bio: nil)                     # works, bio can be null
 User.parse(name: nil)                    # ArgumentError: cannot be null: :name
 ```
 
