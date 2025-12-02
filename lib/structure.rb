@@ -186,6 +186,9 @@ module Structure
         obj
       end
 
+      klass.define_singleton_method(:load) { |data| parse(data) if data } # steep:ignore
+      klass.define_singleton_method(:dump) { |value| value&.to_h }
+
       klass
     end
   end

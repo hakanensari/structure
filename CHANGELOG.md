@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `load` and `dump` class methods for serialization
+
 ## [4.2.0] - 2025-10-16
 
 ### Added

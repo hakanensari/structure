@@ -431,6 +431,28 @@ order.order_id  # => "123"
 
 The `after_parse` callback receives the parsed instance and runs after all attributes have been coerced. Any exception raised prevents the instance from being returned.
 
+### Serialization
+
+Structure classes respond to `load` and `dump` for use with `Marshal`, `YAML`, or Rails `serialize`:
+
+```ruby
+Settings = Structure.new do
+  attribute(:theme, String, default: "light")
+  attribute(:notifications, :boolean, default: true)
+end
+
+settings = Settings.parse(theme: "dark")
+
+# Dump to hash, load back to instance
+hash = Settings.dump(settings)  # => {theme: "dark", notifications: true}
+Settings.load(hash)             # => #<data Settings theme="dark", notifications=true>
+
+# Use as Rails serialize coder
+class User < ApplicationRecord
+  serialize :settings, coder: Settings
+end
+```
+
 ### Custom Methods
 
 Define instance and class methods directly in the Structure block, just like `Data.define`:
