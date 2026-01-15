@@ -12,4 +12,5 @@ gem "rubocop-minitest", require: false
 gem "rubocop-rake", require: false
 gem "rubocop-shopify", require: false
 gem "steep", require: false
+gem "tapioca", require: false
 gem "yard"

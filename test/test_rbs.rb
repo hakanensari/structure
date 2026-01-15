@@ -115,6 +115,31 @@ class TestRBS < Minitest::Test
     end
   end
 
+  def test_write_all_with_array
+    Dir.mktmpdir do |dir|
+      paths = Structure::RBS.write_all([Person, Category], dir: dir)
+
+      assert_equal(2, paths.size)
+      assert(paths.all? { |p| File.exist?(p) })
+      assert(paths.any? { |p| p.end_with?("person.rbs") })
+      assert(paths.any? { |p| p.end_with?("category.rbs") })
+    end
+  end
+
+  def test_write_all_with_module
+    mod = Module.new
+    mod.const_set(:Order, Structure.new { attribute(:id, String) })
+    mod.const_set(:Item, Structure.new { attribute(:name, String) })
+    mod.const_set(:NotAStructure, "just a string")
+
+    Dir.mktmpdir do |dir|
+      paths = Structure::RBS.write_all(mod, dir: dir)
+
+      assert_equal(2, paths.size)
+      assert(paths.all? { |p| File.exist?(p) })
+    end
+  end
+
   def test_emit_rbs_to_h_signature_no_bare_array_type
     klass = create_test_class(:TestBareArrayType) do
       attribute(:unknown_array, Array)

@@ -581,6 +581,31 @@ The generated signatures work for code that uses your Structure classes, but Ste
 
 See also: [RBS Data/Struct documentation](https://github.com/ruby/rbs/blob/master/docs/data_and_struct.md), [RBS issue #654](https://github.com/ruby/rbs/issues/654), [RBS issue #1077](https://github.com/ruby/rbs/issues/1077)
 
+### Sorbet Support (Tapioca)
+
+For Sorbet users, Structure includes a Tapioca DSL compiler that automatically generates RBI files:
+
+```bash
+# In your project using Structure
+bundle exec tapioca dsl
+```
+
+This will generate RBI files for all Structure classes in your project, giving you full type checking with Sorbet.
+
+### Batch RBS Generation
+
+Generate RBS files for multiple classes at once:
+
+```ruby
+require 'structure/rbs'
+
+# From an array of classes
+Structure::RBS.write_all([User, Order, Product], dir: "sig")
+
+# From a module namespace
+Structure::RBS.write_all(MyApp::Models, dir: "sig")
+```
+
 ## Development
 
 ```bash

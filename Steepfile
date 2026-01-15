@@ -3,6 +3,7 @@
 target :lib do
   signature "sig"
   check "lib"
+  ignore "lib/tapioca"
 
   library "fileutils"
   library "pathname"

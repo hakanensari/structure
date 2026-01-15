@@ -59,7 +59,31 @@ module Structure
         file_path
       end
 
+      # Write RBS files for multiple classes or all Structure classes in a module
+      #
+      # @param classes [Array<Class>, Module] Classes to generate RBS for, or a module to scan
+      # @param dir [String] Output directory (default: "sig")
+      # @return [Array<String>] Paths of written RBS files
+      #
+      # @example With array of classes
+      #   Structure::RBS.write_all([Person, Address, Order])
+      #
+      # @example With module namespace
+      #   Structure::RBS.write_all(Peddler::Models)
+      def write_all(classes, dir: "sig")
+        classes = structure_classes_in(classes) if classes.is_a?(Module)
+
+        classes.filter_map { |klass| write(klass, dir: dir) }
+      end
+
       private
+
+      def structure_classes_in(mod)
+        mod.constants.filter_map do |const_name|
+          const = mod.const_get(const_name)
+          const if const.is_a?(Class) && const < Data && const.respond_to?(:__structure_meta__)
+        end
+      end
 
       def emit_rbs_content(class_name:, attributes:, types:, required:, has_structure_modules:, custom_methods:)
         # @type var lines: Array[String]
