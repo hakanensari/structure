@@ -68,7 +68,7 @@ module Structure
     # @example Optional with default
     #   attribute? :status, String, default: "pending"
     #
-    # @example Optional but non-nullable when present
+    # @example Optional but non-nullable when present (e.g. GraphQL String!)
     #   attribute? :name, String, null: false
     def attribute?(name, type = nil, from: nil, default: nil, null: true, &block)
       attribute(name, type, from: from, default: default, null: null, &block)
