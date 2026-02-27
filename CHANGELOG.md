@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.4.0] - 2026-02-27
 
 ### Added
 
@@ -232,4 +232,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [4.1.0]: https://github.com/hakanensari/structure/compare/v4.0.0...v4.1.0
 [4.2.0]: https://github.com/hakanensari/structure/compare/v4.1.0...v4.2.0
 [4.3.0]: https://github.com/hakanensari/structure/compare/v4.2.0...v4.3.0
-[Unreleased]: https://github.com/hakanensari/structure/compare/v4.3.0...HEAD
+[4.4.0]: https://github.com/hakanensari/structure/compare/v4.3.0...v4.4.0
+[Unreleased]: https://github.com/hakanensari/structure/compare/v4.4.0...HEAD
