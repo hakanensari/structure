@@ -53,7 +53,7 @@ class TestStdlibTypes < Minitest::Test
     calendar = calendar_class.parse(holidays: ["2024-12-25", "2024-01-01", "2024-07-04"])
 
     assert_equal(3, calendar.holidays.length)
-    assert(calendar.holidays.all? { |d| d.is_a?(Date) })
+    assert(calendar.holidays.all?(Date))
     assert_equal(Date.new(2024, 12, 25), calendar.holidays[0])
     assert_equal(Date.new(2024, 1, 1), calendar.holidays[1])
     assert_equal(Date.new(2024, 7, 4), calendar.holidays[2])

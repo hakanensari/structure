@@ -82,7 +82,7 @@ module DryStructModels
 end
 
 # Define Structure models
-module StructureModels
+module StructureModels # rubocop:disable Style/OneClassPerFile
   Item = Structure.new do
     attribute(:name, String)
     attribute(:price, Float)
