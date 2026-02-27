@@ -31,10 +31,9 @@ module Tapioca
       #     sig { params(data: T::Hash[T.any(String, Symbol), T.untyped]).returns(Person) }
       #     def self.parse(data = {}); end
       #   end
+      #: [ConstantType = singleton(::Data)]
       class Structure < Compiler
         extend T::Sig
-
-        ConstantType = type_member { { fixed: T.class_of(::Data) } }
 
         class << self
           extend T::Sig
