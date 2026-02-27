@@ -10,6 +10,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Add Tapioca DSL compiler for Sorbet users (`lib/tapioca/dsl/compilers/structure.rb`)
 - Add `Structure::RBS.write_all` for batch RBS generation from arrays or modules
 
+### Fixed
+
+- Respect `null: false` metadata in RBS and RBI type signature emitters
+
 ## [4.3.0] - 2025-12-02
 
 ### Added

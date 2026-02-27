@@ -54,24 +54,25 @@ module Tapioca
           attributes = meta[:mappings]&.keys || constant.members
           types = meta.fetch(:types, {})
           required = meta.fetch(:required, attributes)
+          non_nullable = meta.fetch(:non_nullable, [])
 
           root.create_path(constant) do |klass|
-            generate_new_and_brackets(klass, attributes, types, required)
+            generate_new_and_brackets(klass, attributes, types, required, non_nullable)
             generate_parse(klass)
             generate_load_dump(klass)
             generate_members(klass, attributes)
-            generate_attr_readers(klass, attributes, types)
-            generate_to_h(klass, attributes, types)
+            generate_attr_readers(klass, attributes, types, non_nullable, required)
+            generate_to_h(klass, attributes, types, non_nullable, required)
             generate_boolean_predicates(klass, types)
           end
         end
 
         private
 
-        sig { params(klass: RBI::Scope, attributes: T::Array[Symbol], types: T::Hash[Symbol, T.untyped], required: T::Array[Symbol]).void }
-        def generate_new_and_brackets(klass, attributes, types, required)
+        sig { params(klass: RBI::Scope, attributes: T::Array[Symbol], types: T::Hash[Symbol, T.untyped], required: T::Array[Symbol], non_nullable: T::Array[Symbol]).void }
+        def generate_new_and_brackets(klass, attributes, types, required, non_nullable)
           params = attributes.map do |attr|
-            type = map_type_to_sorbet(types[attr])
+            type = map_type_to_sorbet(types[attr], nullable: !(required.include?(attr) && non_nullable.include?(attr)))
             is_required = required.include?(attr)
             if is_required
               create_kw_param(attr.to_s, type: type)
@@ -121,18 +122,18 @@ module Tapioca
           klass.create_method("members", return_type: members_type)
         end
 
-        sig { params(klass: RBI::Scope, attributes: T::Array[Symbol], types: T::Hash[Symbol, T.untyped]).void }
-        def generate_attr_readers(klass, attributes, types)
+        sig { params(klass: RBI::Scope, attributes: T::Array[Symbol], types: T::Hash[Symbol, T.untyped], non_nullable: T::Array[Symbol], required: T::Array[Symbol]).void }
+        def generate_attr_readers(klass, attributes, types, non_nullable, required)
           attributes.each do |attr|
-            type = map_type_to_sorbet(types[attr])
+            type = map_type_to_sorbet(types[attr], nullable: !(required.include?(attr) && non_nullable.include?(attr)))
             klass.create_method(attr.to_s, return_type: type)
           end
         end
 
-        sig { params(klass: RBI::Scope, attributes: T::Array[Symbol], types: T::Hash[Symbol, T.untyped]).void }
-        def generate_to_h(klass, attributes, types)
+        sig { params(klass: RBI::Scope, attributes: T::Array[Symbol], types: T::Hash[Symbol, T.untyped], non_nullable: T::Array[Symbol], required: T::Array[Symbol]).void }
+        def generate_to_h(klass, attributes, types, non_nullable, required)
           hash_pairs = attributes.map do |attr|
-            type = map_type_to_sorbet(types[attr])
+            type = map_type_to_sorbet(types[attr], nullable: !(required.include?(attr) && non_nullable.include?(attr)))
             "#{attr}: #{type}"
           end.join(", ")
 
@@ -149,33 +150,35 @@ module Tapioca
           end
         end
 
-        sig { params(type: T.untyped).returns(String) }
-        def map_type_to_sorbet(type)
-          case type
+        sig { params(type: T.untyped, nullable: T::Boolean).returns(String) }
+        def map_type_to_sorbet(type, nullable: true)
+          raw = case type
           when Class
             if type == Array
               "T::Array[T.untyped]"
             elsif type == Hash
               "T::Hash[T.untyped, T.untyped]"
             else
-              "T.nilable(#{type.name || "T.untyped"})"
+              type.name || "T.untyped"
             end
           when :boolean
-            "T.nilable(T::Boolean)"
+            "T::Boolean"
           when :self
-            "T.nilable(#{constant.name})"
+            constant.name.to_s
           when Array
             if type.size == 1
               element_type = map_type_to_sorbet_element(type.first)
-              "T.nilable(T::Array[#{element_type}])"
+              "T::Array[#{element_type}]"
             else
-              "T.nilable(T.untyped)"
+              "T.untyped"
             end
           when Proc
-            "T.nilable(T.untyped)"
+            "T.untyped"
           else
-            "T.nilable(T.untyped)"
+            "T.untyped"
           end
+
+          nullable ? "T.nilable(#{raw})" : raw
         end
 
         sig { params(type: T.untyped).returns(String) }

@@ -28,6 +28,7 @@ module Structure
         types = meta.fetch(:types, default_types)
         # @type var required: Array[Symbol]
         required = meta.fetch(:required, attributes)
+        non_nullable = meta.fetch(:non_nullable, [])
         custom_methods = meta.fetch(:custom_methods, EMPTY_CUSTOM_METHODS)
 
         emit_rbs_content(
@@ -35,6 +36,7 @@ module Structure
           attributes:,
           types:,
           required:,
+          non_nullable:,
           has_structure_modules: meta.any?,
           custom_methods:,
         )
@@ -85,7 +87,7 @@ module Structure
         end
       end
 
-      def emit_rbs_content(class_name:, attributes:, types:, required:, has_structure_modules:, custom_methods:)
+      def emit_rbs_content(class_name:, attributes:, types:, required:, non_nullable:, has_structure_modules:, custom_methods:)
         # @type var lines: Array[String]
         lines = []
         lines << "class #{class_name} < Data"
@@ -95,8 +97,9 @@ module Structure
           rbs_types = attributes.map do |attr|
             type = types.fetch(attr, nil)
             rbs_type = map_type_to_rbs(type, class_name)
+            nullable = !(required.include?(attr) && non_nullable.include?(attr))
 
-            [attr, rbs_type != "untyped" ? "#{rbs_type}?" : rbs_type]
+            [attr, rbs_type != "untyped" && nullable ? "#{rbs_type}?" : rbs_type]
           end.to_h
 
           # Sort keyword params: required first, then optional (with ? prefix)
