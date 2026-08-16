@@ -104,7 +104,7 @@ module Structure
     def coercions(context = nil)
       @types.to_h do |attr, type|
         coercion = Types.coerce(type, context)
-        [attr, coercion]
+        [attr, coercion] #: [Symbol, Proc]
       rescue ArgumentError => e
         raise ArgumentError, "#{e.message} for :#{attr}"
       end
