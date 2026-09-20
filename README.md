@@ -1,3 +1,5 @@
+
+
 # Structure
 
 [![CI/CD Pipeline](https://github.com/hakanensari/structure/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanensari/structure/actions/workflows/ci.yml)
@@ -401,7 +403,7 @@ Order = Structure.new do
 end
 
 # Raises error for invalid data
-Order.parse(total: -10)  # => RuntimeError: Total must be positive
+Order.parse(order_id: "1", total: -10)  # => RuntimeError: Total must be positive
 
 # Works fine with valid data
 order = Order.parse(order_id: "123", total: 99.99)
