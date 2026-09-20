@@ -401,7 +401,7 @@ Order = Structure.new do
 end
 
 # Raises error for invalid data
-Order.parse(total: -10)  # => RuntimeError: Total must be positive
+Order.parse(order_id: "123", total: -10)  # => RuntimeError: Total must be positive
 
 # Works fine with valid data
 order = Order.parse(order_id: "123", total: 99.99)
