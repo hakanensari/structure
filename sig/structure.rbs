@@ -1,6 +1,8 @@
 module Structure
   TO_H_CHECKER: Proc
 
+  self.@common_methods: Hash[Symbol, Proc]
+
   interface _StructuredDataClass
     def __structure_meta__: () -> {
       types: Hash[Symbol, untyped],
@@ -15,4 +17,7 @@ module Structure
   # Block evaluated twice: first for DSL methods (attribute calls), then for custom methods
   # Context set to Builder so DSL methods are recognized
   def self.new: () ?{ () [self: Structure::Builder] -> void } -> untyped
+
+  private def self.define_shareable_method: (untyped target, Symbol name) { (?) -> untyped } -> void
+  private def self.define_common_method: (untyped target, Symbol name) { (?) -> untyped } -> void
 end

@@ -5,6 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add experimental Ractor support: parse, build, and dump structures in any Ractor (see README)
+
+### Changed
+
+- Keep an Array or String given as a type, and a String given as `from:`, as a frozen copy
+- Freeze the collections in `__structure_meta__`
+
 ### Removed
 
 - Support for Ruby 3.2

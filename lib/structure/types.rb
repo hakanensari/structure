@@ -64,28 +64,39 @@ module Structure
         end
       end
 
-      private
-
-      def boolean
-        @boolean ||= ->(val) { BOOLEAN_TRUTHY.include?(val) }
-      end
-
-      def self_referential(context)
-        ->(val) { context.parse(val) }
-      end
-
-      def lazy_class(class_name, context)
-        resolved_class = nil
-
-        ->(value) do
-          resolved_class ||= resolve_class(class_name, context)
-          # @type var resolved_class: untyped
-          resolved_class.parse(value)
+      # Makes an object shareable when Ruby can. A lambda that closes over a caller's unshareable object can't be,
+      # and comes back as it is. Where Ruby has no Ractor, nothing is shared.
+      if defined?(Ractor)
+        # @api private
+        def shareable(object)
+          Ractor.make_shareable(object)
+        rescue Ractor::IsolationError
+          object
+        end
+      else
+        # @api private
+        def shareable(object)
+          object
         end
       end
 
+      private
+
+      def boolean
+        @boolean ||= shareable(->(val) { BOOLEAN_TRUTHY.include?(val) })
+      end
+
+      def self_referential(context)
+        shareable(->(val) { context.parse(val) })
+      end
+
+      def lazy_class(class_name, context)
+        key = shareable(Object.new)
+        shareable(->(value) { parse_as(resolved_class(key, class_name, context), value) })
+      end
+
       def array(element_type, context = nil)
-        case element_type
+        coercion = case element_type
         when :self
           lambda do |value|
             unless value.respond_to?(:map)
@@ -95,16 +106,14 @@ module Structure
             value.map { |element| context.parse(element) }
           end
         when String
-          resolved_class = nil
-
+          key = shareable(Object.new)
           lambda do |value|
             unless value.respond_to?(:map)
               raise TypeError, "can't convert #{value.class} into Array"
             end
 
-            resolved_class ||= resolve_class(element_type, context)
-            # @type var resolved_class: untyped
-            value.map { |element| resolved_class.parse(element) }
+            element_class = resolved_class(key, element_type, context)
+            value.map { |element| parse_as(element_class, element) }
           end
         else
           element_coercer = coerce(element_type, context)
@@ -116,16 +125,38 @@ module Structure
             value.map { |element| element_coercer.call(element) }
           end
         end
+
+        shareable(coercion)
       end
 
       def parseable(type)
         @parseable_cache ||= {} # : Hash[untyped, Proc]
-        @parseable_cache[type] ||= ->(val) { type.parse(val) }
+        @parseable_cache[type] ||= shareable(->(val) { parse_as(type, val) })
+      end
+
+      # A method must make this call, not a lambda. A parser written in C, such as Date.parse, keeps its match in
+      # the caller's $~, and a lambda shared between Ractors shares its $~ too.
+      def parse_as(type, val)
+        type.parse(val)
       end
 
       def kernel(type)
         @kernel_cache ||= {} # : Hash[untyped, Proc]
-        @kernel_cache[type] ||= ->(val) { Kernel.send(type.name, val) }
+        @kernel_cache[type] ||= shareable(->(val) { Kernel.send(type.name, val) })
+      end
+
+      # Resolves a class given by name once in each Ractor. A shareable lambda can't keep the class itself, so it
+      # keeps a key into a weak map in the Ractor's local storage. Where Ruby has no Ractor, the key keeps the class.
+      if defined?(Ractor)
+        def resolved_class(key, class_name, context)
+          classes = Ractor.current[:__structure_classes__] ||= ObjectSpace::WeakMap.new # steep:ignore
+          classes[key] ||= resolve_class(class_name, context)
+        end
+      else
+        def resolved_class(key, class_name, context)
+          key.instance_variable_get(:@resolved) ||
+            key.instance_variable_set(:@resolved, resolve_class(class_name, context))
+        end
       end
 
       def resolve_class(class_name, context)

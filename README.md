@@ -507,6 +507,50 @@ product.has_tag?("electronics")  # => true
 Product.categories               # => ["electronics", "books", "clothing"]
 ```
 
+### Ractors
+
+Ractor support is experimental, as Ractors still are in Ruby.
+
+Define your structures in the main Ractor. Any Ractor can then parse, build, dump, and compare them:
+
+```ruby
+Order = Structure.new do
+  attribute(:id, String)
+  attribute(:total, Float)
+  attribute?(:tags, [String], default: [].freeze)
+end
+
+ractor = Ractor.new { Order.parse("id" => "123", "total" => "9.99") }
+ractor.value # => #<data Order id="123", total=9.99, tags=[]> (Ractor#take before Ruby 4.0)
+```
+
+To parse outside the main Ractor, a structure must hold only shareable types, defaults, and callbacks:
+
+- Built-in types, classes, and modules are shareable, including other structures and classes given by name.
+- A default must be deeply frozen, as `Ractor.make_shareable` leaves it: `default: Ractor.make_shareable(["none"])`, not `default: ["none"]`.
+- A custom type must be a class or module that responds to `parse` or `call`.
+- A block, whether for an attribute or for `after_parse`, is not shareable.
+
+```ruby
+module Slug
+  def self.call(value)
+    value.to_s.downcase.gsub(/\W+/, "-")
+  end
+end
+
+Post = Structure.new do
+  attribute(:slug, Slug)
+end
+```
+
+A lambda made shareable with `Ractor.make_shareable` is not a substitute. Ruby shares a lambda's last match (`$~`) between the Ractors that call it ([Bug #22216](https://bugs.ruby-lang.org/issues/22216)), so one that matches a Regexp can crash Ruby or hand one Ractor another's match.
+
+A structure that holds something unshareable works as before in the main Ractor. In another Ractor, `new`, `to_h`, and `dump` still work, and the first call to `parse` or `load` raises `Ractor::IsolationError`:
+
+```
+Order parses only in the main Ractor: a type, block, default or after_parse callback is not shareable
+```
+
 ### RBS Type Signatures
 
 Generate RBS type signatures for your Structure classes:

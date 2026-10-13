@@ -12,14 +12,17 @@ module Structure
     self.@string_class_cache: Hash[Array[untyped], Proc]
 
     def self.coerce: (untyped type, ?untyped? context) -> untyped
+    def self.shareable: [T] (T object) -> T
 
     private def self.boolean: () -> Proc
     private def self.self_referential: (_ParseableClass context) -> Proc
     private def self.lazy_class: (String class_name, untyped? context) -> Proc
     private def self.array: (untyped element_type, ?untyped? context) -> Proc
     private def self.parseable: (untyped type) -> Proc
+    private def self.parse_as: (untyped type, untyped val) -> untyped
     private def self.kernel: (Class type) -> Proc
     private def self.parse: (untyped val) -> untyped
+    private def self.resolved_class: (Object key, String class_name, untyped? context) -> _ParseableClass
     private def self.resolve_class: (String class_name, untyped? context) -> _ParseableClass
   end
 end

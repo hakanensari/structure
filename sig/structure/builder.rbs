@@ -26,6 +26,8 @@ module Structure
     def non_nullable: () -> Array[Symbol]
     def after_parse_callback: () -> (Proc | nil)
 
+    private def shareable: (untyped type) -> untyped
+
     def method_missing: (Symbol, *untyped, **untyped) ?{ (*untyped, **untyped) -> untyped } -> untyped
     def respond_to_missing?: (Symbol, bool) -> bool
   end

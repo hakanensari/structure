@@ -18,6 +18,14 @@ class TestCoreStructure < Minitest::Test
     assert_equal("John", person_class.new(name: "John").name)
   end
 
+  def test_new_with_attribute_named_by_a_string
+    person_class = Structure.new do
+      attribute("name", String)
+    end
+
+    assert_equal("John", person_class.parse("name" => "John").name)
+  end
+
   def test_new_generates_parse_method
     person_class = Structure.new do
       attribute(:name)

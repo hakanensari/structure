@@ -2,6 +2,7 @@
 
 require_relative "helper"
 require "structure"
+require "date"
 
 class TestRecursiveToH < Minitest::Test
   def test_nested_structure_to_h
@@ -35,6 +36,28 @@ class TestRecursiveToH < Minitest::Test
     assert_kind_of(Hash, result[:b])
     assert_kind_of(Hash, result[:b][:a])
     assert_equal(1, result[:b][:a][:val])
+  end
+
+  def test_to_h_with_an_attribute_named_members
+    klass = Structure.new do
+      attribute(:members, [String])
+      attribute(:id, Integer)
+    end
+    instance = klass.parse("members" => ["a", "b"], "id" => "1")
+
+    assert_equal({ members: ["a", "b"], id: 1 }, instance.to_h)
+    assert_equal({ members: ["a", "b"], id: 1 }, klass.dump(instance))
+  end
+
+  def test_to_h_with_an_attribute_named_class
+    klass = Structure.new do
+      attribute(:class, String)
+      attribute(:id, Integer)
+    end
+    instance = klass.parse("class" => "a", "id" => "1")
+
+    assert_equal({ class: "a", id: 1 }, instance.to_h)
+    assert_equal({ class: "a", id: 1 }, klass.dump(instance))
   end
 
   def test_preserves_non_structure_values

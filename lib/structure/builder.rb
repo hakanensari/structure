@@ -41,14 +41,18 @@ module Structure
     # @example Non-nullable attribute
     #   attribute :id, String, null: false
     def attribute(name, type = nil, from: nil, default: nil, null: true, &block)
-      mappings[name] = (from || name).to_s
+      key = from || name
+      mappings[name] = key.is_a?(Symbol) ? key.name : -key.to_s
       defaults[name] = default unless default.nil?
       @non_nullable.add(name) unless null
 
       if type && block
         raise ArgumentError, "cannot specify both type and block for :#{name}"
       else
-        types[name] = type || block
+        # TODO: Make the block shareable once Ruby fixes https://bugs.ruby-lang.org/issues/22216. Until then a shared
+        # block that matches a Regexp reads another Ractor's match, so a structure with a block parses in the main
+        # Ractor only. The block to share is the one from the class_eval pass: the self of this one is the builder.
+        types[name] = shareable(type) || block
       end
     end
 
@@ -85,6 +89,7 @@ module Structure
     #     raise "Invalid order" if order.total < 0
     #   end
     def after_parse(&block)
+      # TODO: Make the block shareable too. See #attribute.
       @after_parse_callback = block
     end
 
@@ -117,6 +122,18 @@ module Structure
           ["#{name}?".to_sym, name] unless name.to_s.end_with?("?")
         end
       end.to_h
+    end
+
+    private
+
+    # Returns the type as another Ractor can read it: a frozen copy of an Array or of a class name. The caller's own
+    # object is left as it is.
+    def shareable(type)
+      case type
+      when Array then type.map { |element| shareable(element) }.freeze
+      when String then -type
+      else type
+      end
     end
   end
 end

@@ -251,6 +251,59 @@ class TestStringClassNames < Minitest::Test
     assert_instance_of(Fixtures::Employee, dept.manager)
   end
 
+  def test_resolves_a_class_defined_after_a_failed_parse
+    wrapper = Structure.new do
+      attribute(:item, "Fixtures::Late")
+      attribute?(:items, ["Fixtures::Late"])
+    end
+
+    assert_raises(NameError) { wrapper.parse("item" => { "name" => "a" }) }
+
+    late = create_test_class("Late") do
+      attribute(:name, String)
+    end
+    result = wrapper.parse("item" => { "name" => "a" }, "items" => [{ "name" => "b" }])
+
+    assert_instance_of(late, result.item)
+    assert_instance_of(late, result.items.first)
+  end
+
+  def test_keeps_the_class_it_resolved
+    kept = create_test_class("Kept") do
+      attribute(:name, String)
+    end
+    wrapper = Structure.new do
+      attribute(:item, "Fixtures::Kept")
+      attribute(:items, ["Fixtures::Kept"])
+    end
+    data = { "item" => { "name" => "a" }, "items" => [{ "name" => "b" }] }
+    wrapper.parse(data)
+
+    Fixtures.send(:remove_const, :Kept)
+    create_test_class("Kept") do
+      attribute(:name, String)
+    end
+    result = wrapper.parse(data)
+
+    assert_instance_of(kept, result.item)
+    assert_instance_of(kept, result.items.first)
+  end
+
+  def test_resolves_anew_in_a_structure_defined_again
+    define = -> { Structure.new { attribute(:item, "Fixtures::Reloaded") } }
+    create_test_class("Reloaded") do
+      attribute(:name, String)
+    end
+    define.call.parse("item" => { "name" => "a" })
+
+    Fixtures.send(:remove_const, :Reloaded)
+    reloaded = create_test_class("Reloaded") do
+      attribute(:name, String)
+    end
+
+    assert_instance_of(reloaded, define.call.parse("item" => { "name" => "a" }).item)
+  end
+
   private
 
   def create_test_class(class_name, namespace: Fixtures, &block)
