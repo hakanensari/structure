@@ -6,6 +6,6 @@ inherit_gem:
 
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.2
+  TargetRubyVersion: 3.3
   Exclude:
     - "**/*.rbi"

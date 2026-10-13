@@ -19,7 +19,7 @@ Developed for the Peddler gem to parse Amazon SP-API responses into typed models
 
 ## Tech Stack
 
-- Ruby 3.2+
+- Ruby 3.3+
 - Minitest for testing
 - RuboCop for linting (Shopify style)
 - Data.define for immutable objects

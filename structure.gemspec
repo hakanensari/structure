@@ -14,6 +14,6 @@ Gem::Specification.new do |gem|
   gem.license  = "MIT"
   gem.files    = Dir.glob("lib/**/*") + Dir.glob("sig/**/*")
 
-  gem.required_ruby_version = ">= 3.2"
+  gem.required_ruby_version = ">= 3.3"
   gem.metadata["rubygems_mfa_required"] = "true"
 end
