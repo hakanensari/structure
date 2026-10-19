@@ -49,10 +49,7 @@ module Structure
       if type && block
         raise ArgumentError, "cannot specify both type and block for :#{name}"
       else
-        # TODO: Make the block shareable once Ruby fixes https://bugs.ruby-lang.org/issues/22216. Until then a shared
-        # block that matches a Regexp reads another Ractor's match, so a structure with a block parses in the main
-        # Ractor only. The block to share is the one from the class_eval pass: the self of this one is the builder.
-        types[name] = shareable(type) || block
+        types[name] = shareable(type) || shareable_block(block)
       end
     end
 
@@ -96,8 +93,7 @@ module Structure
     def after_parse(callable = nil, &block)
       raise ArgumentError, "cannot specify both a callable and a block for after_parse" if callable && block
 
-      # TODO: Make the block shareable too. See #attribute.
-      @after_parse_callback = callable || block
+      @after_parse_callback = callable || shareable_block(block)
     end
 
     # @api private
@@ -132,6 +128,21 @@ module Structure
     end
 
     private
+
+    # Before Ruby 4.1, Ractors that call the same shareable block share its $~
+    # (https://bugs.ruby-lang.org/issues/22216), so one that matches a Regexp would read another Ractor's match. A block
+    # is shared from 4.1 only, and only when Ruby can: one that uses a local variable from around it stays as it is.
+    if defined?(Ractor) && Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("4.1")
+      def shareable_block(block)
+        block && Ractor.shareable_proc(&block) # steep:ignore
+      rescue Ractor::IsolationError, ArgumentError
+        block
+      end
+    else
+      def shareable_block(block)
+        block
+      end
+    end
 
     # Returns the type as another Ractor can read it: a frozen copy of an Array or of a class name. The caller's own
     # object is left as it is.

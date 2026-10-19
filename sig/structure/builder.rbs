@@ -27,6 +27,7 @@ module Structure
     def after_parse_callback: () -> untyped
 
     private def shareable: (untyped type) -> untyped
+    private def shareable_block: (Proc? block) -> Proc?
 
     def method_missing: (Symbol, *untyped, **untyped) ?{ (*untyped, **untyped) -> untyped } -> untyped
     def respond_to_missing?: (Symbol, bool) -> bool

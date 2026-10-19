@@ -545,7 +545,7 @@ To parse outside the main Ractor, a structure must hold only shareable types, de
 - Built-in types, classes, and modules are shareable, including other structures and classes given by name.
 - A default must be deeply frozen, as `Ractor.make_shareable` leaves it: `default: Ractor.make_shareable(["none"])`, not `default: ["none"]`.
 - A custom type must be a class or module that responds to `parse` or `call`.
-- A block, whether for an attribute or for `after_parse`, is not shareable. For `after_parse`, pass a module that responds to `call` instead.
+- Before Ruby 4.1, a block, whether for an attribute or for `after_parse`, is not shareable: pass a module that responds to `call` instead. From 4.1, a block is shareable unless it uses a local variable from around it.
 
 ```ruby
 module Slug
@@ -559,7 +559,7 @@ Post = Structure.new do
 end
 ```
 
-A lambda made shareable with `Ractor.make_shareable` is not a substitute. Ruby shares a lambda's last match (`$~`) between the Ractors that call it ([Bug #22216](https://bugs.ruby-lang.org/issues/22216)), so one that matches a Regexp can crash Ruby or hand one Ractor another's match.
+Before Ruby 4.1, a lambda made shareable with `Ractor.make_shareable` is not a substitute. Ruby shares a lambda's last match (`$~`) between the Ractors that call it ([Bug #22216](https://bugs.ruby-lang.org/issues/22216)), so one that matches a Regexp can crash Ruby or hand one Ractor another's match.
 
 A structure that holds something unshareable works as before in the main Ractor. In another Ractor, `new`, `to_h`, and `dump` still work, and the first call to `parse` or `load` raises `Ractor::IsolationError`:
 

@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add experimental Ractor support: parse, build, and dump structures in any Ractor (see README)
 - Accept a callable in `after_parse`, such as a module, so a hook can run in any Ractor
+- Share attribute and `after_parse` blocks from Ruby 4.1, so they work in any Ractor
 
 ### Changed
 

@@ -10,6 +10,7 @@ return unless defined?(Ractor)
 class TestRactor < Minitest::Test
   DEADLINE = 30
   RACTORS = 8
+  BLOCKS_SHARED = Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("4.1")
   DATES = Ractor.make_shareable(["2020-01-02", "1999-12-31", "2011-06-15", "2026-10-10"])
 
   Upcase = Ractor.make_shareable(->(value) { value.to_s.upcase })
@@ -90,6 +91,10 @@ class TestRactor < Minitest::Test
     attribute(:word, Upcase)
     attribute?(:echo, &Upcase)
     after_parse(RequireWord)
+  end
+
+  Digits = Structure.new do
+    attribute(:phone) { |value| value.gsub(/\D/, "") }
   end
 
   WithBlock = Structure.new do
@@ -222,15 +227,20 @@ class TestRactor < Minitest::Test
     assert_equal([0] * RACTORS, wrong)
   end
 
-  def test_ruby_still_shares_the_last_match_between_ractors
+  # Ruby shares $~ between Ractors that call the same shareable Proc: https://bugs.ruby-lang.org/issues/22216. Ruby
+  # 4.1.0dev stopped doing so by 2026-10-18, while the issue was still open.
+  def test_ruby_shares_the_last_match_between_ractors_until_4_1
     LastMatch.call("111")
+    shared = in_ractor { LastMatch.call(nil) } == "111"
 
-    assert_equal(
-      "111",
-      in_ractor { LastMatch.call(nil) },
-      "Ruby no longer shares $~ between Ractors (Bug #22216). See the TODOs in Structure::Builder. The README's " \
-        "warning about lambdas and Structure::Types.parse_as can go",
-    )
+    if Gem::Version.new(RUBY_VERSION) < Gem::Version.new("4.1")
+      assert(shared, "Ruby #{RUBY_VERSION} no longer shares $~ between Ractors. Share blocks on it in " \
+        "Structure::Builder#shareable_block. Once no Ruby the gem supports does, the README's warning and " \
+        "Structure::Types.parse_as can go")
+    else
+      refute(shared, "Ruby #{RUBY_VERSION} shares $~ between Ractors again: stop sharing blocks on it in " \
+        "Structure::Builder#shareable_block")
+    end
   end
 
   def test_leaves_the_types_and_keys_it_is_given_unfrozen
@@ -274,9 +284,25 @@ class TestRactor < Minitest::Test
     assert_equal("word is blank", error.message)
   end
 
-  def test_parses_only_in_the_main_ractor_with_a_block
+  def test_parses_with_a_block_from_ruby_4_1_and_only_in_the_main_ractor_before
     assert_equal("A", WithBlock.parse("name" => "a").name)
-    assert_main_ractor_only(WithBlock) { in_ractor { WithBlock.parse("name" => "a") } }
+    if BLOCKS_SHARED
+      assert_equal(WithBlock.new(name: "A"), in_ractor { WithBlock.parse("name" => "a") })
+    else
+      assert_main_ractor_only(WithBlock) { in_ractor { WithBlock.parse("name" => "a") } }
+    end
+  end
+
+  def test_parses_a_block_that_matches_a_regexp_in_many_ractors_at_once
+    skip("Ruby #{RUBY_VERSION} doesn't share blocks: https://bugs.ruby-lang.org/issues/22216") unless BLOCKS_SHARED
+    wrong = in_ractors do |offset|
+      5_000.times.count do |i|
+        number = (i + offset).to_s
+        Digits.parse("phone" => "(#{number})").phone != number
+      end
+    end
+
+    assert_equal([0] * RACTORS, wrong)
   end
 
   def test_parses_only_in_the_main_ractor_with_an_unshareable_lambda
@@ -289,9 +315,13 @@ class TestRactor < Minitest::Test
     assert_main_ractor_only(WithLambdas) { in_ractor { WithLambdas.parse("names" => ["a"]) } }
   end
 
-  def test_parses_only_in_the_main_ractor_with_an_after_parse_block
+  def test_parses_with_an_after_parse_block_from_ruby_4_1_and_only_in_the_main_ractor_before
     assert_equal("a", WithHook.parse("name" => "a").name)
-    assert_main_ractor_only(WithHook) { in_ractor { WithHook.parse("name" => "a") } }
+    if BLOCKS_SHARED
+      assert_equal(WithHook.new(name: "a"), in_ractor { WithHook.parse("name" => "a") })
+    else
+      assert_main_ractor_only(WithHook) { in_ractor { WithHook.parse("name" => "a") } }
+    end
   end
 
   def test_parses_only_in_the_main_ractor_with_an_unshareable_default
@@ -299,12 +329,12 @@ class TestRactor < Minitest::Test
     assert_main_ractor_only(WithDefault) { in_ractor { WithDefault.parse({}) } }
   end
 
-  def test_loads_only_in_the_main_ractor_with_a_block
-    assert_main_ractor_only(WithBlock) { in_ractor { WithBlock.load("name" => "a") } }
+  def test_loads_only_in_the_main_ractor_with_an_unshareable_lambda
+    assert_main_ractor_only(WithLambda) { in_ractor { WithLambda.load("name" => "a") } }
   end
 
   def test_builds_and_dumps_what_only_the_main_ractor_parses
-    assert_equal({ name: "a" }, in_ractor { WithBlock.new(name: "a").to_h })
+    assert_equal({ name: "a" }, in_ractor { WithLambda.new(name: "a").to_h })
   end
 
   private
