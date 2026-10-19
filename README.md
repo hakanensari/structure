@@ -410,6 +410,22 @@ order.order_id  # => "123"
 
 The `after_parse` callback receives the parsed instance and runs after all attributes have been coerced. Any exception raised prevents the instance from being returned.
 
+In place of the block, `after_parse` also takes an object that responds to `call`, such as a module:
+
+```ruby
+module PositiveTotal
+  def self.call(order)
+    raise "Total must be positive" if order.total && order.total <= 0
+  end
+end
+
+Order = Structure.new do
+  attribute(:total, Float)
+
+  after_parse(PositiveTotal)
+end
+```
+
 ### Serialization
 
 Structure classes respond to `load` and `dump` for use with `Marshal`, `YAML`, or Rails `serialize`:
@@ -529,7 +545,7 @@ To parse outside the main Ractor, a structure must hold only shareable types, de
 - Built-in types, classes, and modules are shareable, including other structures and classes given by name.
 - A default must be deeply frozen, as `Ractor.make_shareable` leaves it: `default: Ractor.make_shareable(["none"])`, not `default: ["none"]`.
 - A custom type must be a class or module that responds to `parse` or `call`.
-- A block, whether for an attribute or for `after_parse`, is not shareable.
+- A block, whether for an attribute or for `after_parse`, is not shareable. For `after_parse`, pass a module that responds to `call` instead.
 
 ```ruby
 module Slug

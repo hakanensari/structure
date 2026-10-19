@@ -13,7 +13,15 @@ class TestRactor < Minitest::Test
   DATES = Ractor.make_shareable(["2020-01-02", "1999-12-31", "2011-06-15", "2026-10-10"])
 
   Upcase = Ractor.make_shareable(->(value) { value.to_s.upcase })
-  RequireWord = Ractor.make_shareable(->(shout) { raise ArgumentError, "word is blank" if shout.word.empty? })
+
+  module RequireWord
+    class << self
+      def call(shout)
+        raise ArgumentError, "word is blank" if shout.word.empty?
+      end
+    end
+  end
+
   LastMatch = Ractor.make_shareable(lambda do |string|
     string =~ /\d+/ if string
     Regexp.last_match(0)
@@ -81,7 +89,7 @@ class TestRactor < Minitest::Test
   Shout = Structure.new do
     attribute(:word, Upcase)
     attribute?(:echo, &Upcase)
-    after_parse(&RequireWord)
+    after_parse(RequireWord)
   end
 
   WithBlock = Structure.new do
@@ -260,7 +268,7 @@ class TestRactor < Minitest::Test
     assert_equal(Shout.new(word: "HEY", echo: "HO"), in_ractor { Shout.parse("word" => "hey", "echo" => "ho") })
   end
 
-  def test_raises_from_a_shareable_after_parse
+  def test_raises_from_an_after_parse_callable
     error = assert_raises(ArgumentError) { in_ractor { Shout.parse("word" => "") } }
 
     assert_equal("word is blank", error.message)

@@ -81,16 +81,23 @@ module Structure
 
     # Defines a callback to run after parsing
     #
+    # @param callable [#call, nil] Object that receives the parsed instance, such as a module with a call method
     # @yield [instance] Block that receives the parsed instance
     # @return [void]
+    # @raise [ArgumentError] If both a callable and a block are provided
     #
     # @example Validation
     #   after_parse do |order|
     #     raise "Invalid order" if order.total < 0
     #   end
-    def after_parse(&block)
+    #
+    # @example With a module, which any Ractor can call
+    #   after_parse(OrderValidator)
+    def after_parse(callable = nil, &block)
+      raise ArgumentError, "cannot specify both a callable and a block for after_parse" if callable && block
+
       # TODO: Make the block shareable too. See #attribute.
-      @after_parse_callback = block
+      @after_parse_callback = callable || block
     end
 
     # @api private

@@ -3,7 +3,7 @@ module Structure
     @mappings: Hash[Symbol, String]
     @types: Hash[Symbol, untyped]
     @defaults: Hash[Symbol, untyped]
-    @after_parse_callback: Proc?
+    @after_parse_callback: untyped
     @optional: Set[Symbol]
     @non_nullable: Set[Symbol]
 
@@ -13,7 +13,7 @@ module Structure
     def attribute?: (Symbol name, untyped type, ?from: String | Symbol | nil, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
                   | (Symbol name, ?from: String | Symbol | nil, ?default: untyped, ?null: bool) ?{ (untyped) -> untyped } -> void
 
-    def after_parse: () { (Data) -> void } -> void
+    def after_parse: (?untyped callable) ?{ (Data) -> void } -> void
 
     def attributes: () -> Array[Symbol]
     def mappings: () -> Hash[Symbol, String]
@@ -24,7 +24,7 @@ module Structure
     def optional: () -> Array[Symbol]
     def required: () -> Array[Symbol]
     def non_nullable: () -> Array[Symbol]
-    def after_parse_callback: () -> (Proc | nil)
+    def after_parse_callback: () -> untyped
 
     private def shareable: (untyped type) -> untyped
 

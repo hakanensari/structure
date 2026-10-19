@@ -39,7 +39,7 @@ module Structure
         # Provide temporary dummy DSL methods to prevent NoMethodError during class_eval
         klass.define_singleton_method(:attribute) { |*args, **kwargs, &blk| }
         klass.define_singleton_method(:attribute?) { |*args, **kwargs, &blk| }
-        klass.define_singleton_method(:after_parse) { |&blk| }
+        klass.define_singleton_method(:after_parse) { |*args, &blk| }
 
         # Evaluate block in class context for method definitions
         klass.class_eval(&block)
